@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>川麻向听计算器 · Chuanma Shanten Calculator</title>
+<title>川麻算牌器 · Chuanma Mahjong Hand Calculator</title>
 <style>
   :root{
     --bg:#f5f6f8; --card:#fff; --ink:#1a1d21; --sub:#5b6470; --line:#e4e8ed;
@@ -87,7 +87,7 @@
 <div class="wrap">
   <header>
     <div>
-      <h1 id="ttl">川麻向听计算器</h1>
+      <h1 id="ttl">川麻算牌器</h1>
       <div class="sub" id="sub"></div>
     </div>
     <button class="lang" id="langBtn">EN</button>
@@ -713,9 +713,9 @@
       if (flush && hasQuad) add("qingqidui", "清龙七对", 0);
     } else {
       add("pinghu", "平胡", cfg.fan.pinghu);
-      if (allTriplets) add("pengpeng", "碰碰胡", cfg.fan.pengpeng);
+      if (allTriplets) add("pengpeng", "大对子", cfg.fan.pengpeng);
       if (flush) add("qingyise", "清一色", cfg.fan.qingyise);
-      if (isJinGouDiao(p)) add("jingoudiao", "金钩钓", cfg.fan.jingoudiao);
+      if (isJinGouDiao(p)) add("jingoudiao", "十八罗汉", cfg.fan.jingoudiao);
     }
     if (roots > 0) add("gen", `根×${roots}`, cfg.fan.gen * roots);
     if (ctx.selfDraw) add("zimo", "自摸", cfg.fan.zimo);
@@ -899,7 +899,7 @@
               from: n,
               to: r,
               amount: pts,
-              note: `未听牌赔听牌 ${fan} 番 = ${pts}`
+              note: `未下叫赔下叫 ${fan} 番 = ${pts}`
             });
           }
         }
@@ -1567,8 +1567,8 @@
 
   var T = {
     zh: {
-      title: '川麻向听计算器',
-      sub: '输入手牌 → 实时算出向听数、听牌张、该打哪张。纯前端，无账号，不上传。',
+      title: '川麻算牌器',
+      sub: '输入手牌 → 实时算出离下叫还差几张、叫牌、该打哪张。纯前端，无账号，不上传。',
       hHand: '手牌',
       melds: '副露',
       meldsUnit: '副',
@@ -1577,28 +1577,28 @@
       clear: '清空',
       hint: '左键 +1，右键 / Shift+左键 −1，单张最多 4 张。',
       examples: '试试示例：',
-      ex1: '听牌例',
+      ex1: '下叫例',
       ex2: '14张待打',
       ex3: '散牌例',
       needMore: function (n, exp) { return '还需 ' + n + ' 张（该手牌应为 ' + exp + ' 张）'; },
       over: function (exp) { return '手牌已满（' + exp + ' 张），点右键减少或清空。'; },
-      shantenLbl: '向听数',
+      shantenLbl: '离下叫',
       win: '已和牌！',
       winExpl: '这副牌已经能和了。',
-      tenpaiExpl: '听牌了 —— 摸到下面任意一张即可和牌。',
-      farExpl: function (k) { return '离听牌还差 ' + k + ' 张。下面是能让向听前进的牌。'; },
-      tenpaiT: '听牌张（能和的牌）',
-      improveT: '进张（能推进向听的牌）',
+      tenpaiExpl: '已下叫 —— 摸到下面任意一张即可和牌。',
+      farExpl: function (k) { return '离下叫还差 ' + k + ' 张。下面是能往前推进的牌。'; },
+      tenpaiT: '叫牌（能和的牌）',
+      improveT: '进张（能往前推进的牌）',
       remain: '剩余',
       totalT: '合计',
       sheet: '张',
       kindsT: '种',
       discardT: '该打哪张？（按推荐排序）',
       colDiscard: '弃牌',
-      colShanten: '向听',
+      colShanten: '离下叫',
       colUkeire: '进张',
       colNote: '说明',
-      noteTenpai: '→ 听牌',
+      noteTenpai: '→ 下叫',
       noteBest: '推荐',
       bestIs: function (name) { return '推荐打：' + name; },
       missingHold: function (s) { return '你还持有「' + s + '」门牌。川麻必须先打完缺门牌才能和牌。'; },
@@ -1607,8 +1607,8 @@
       footer: '规则内核：自研川麻（血战到底）引擎 · 向听数已通过 5 万手独立对照验证'
     },
     en: {
-      title: 'Chuanma Shanten Calculator',
-      sub: 'Enter your hand → live shanten, winning tiles, and what to discard. Pure front-end, no account, nothing uploaded.',
+      title: 'Chuanma Hand Calculator',
+      sub: 'Enter your hand → live distance to ready, winning tiles, and what to discard. Pure front-end, no account, nothing uploaded.',
       hHand: 'Hand',
       melds: 'Melds',
       meldsUnit: '',
@@ -1617,16 +1617,16 @@
       clear: 'Clear',
       hint: 'Left-click +1, right-click / Shift+click −1, max 4 each.',
       examples: 'Try:',
-      ex1: 'Tenpai',
+      ex1: 'Ready',
       ex2: '14-tile discard',
       ex3: 'Scattered',
       needMore: function (n, exp) { return n + ' more tile(s) needed (hand should be ' + exp + ').'; },
       over: function (exp) { return 'Hand full (' + exp + ' tiles) — right-click to remove or Clear.'; },
-      shantenLbl: 'Shanten',
+      shantenLbl: 'To ready',
       win: 'Winning hand!',
       winExpl: 'This hand already wins.',
-      tenpaiExpl: 'Tenpai — draw any tile below to win.',
-      farExpl: function (k) { return k + ' tile(s) away from tenpai. These tiles advance your hand.'; },
+      tenpaiExpl: 'Ready — draw any tile below to win.',
+      farExpl: function (k) { return k + ' tile(s) away from ready. These tiles advance your hand.'; },
       tenpaiT: 'Winning tiles',
       improveT: 'Improving tiles (advance shanten)',
       remain: 'left',
@@ -1635,10 +1635,10 @@
       kindsT: 'kinds',
       discardT: 'What to discard? (ranked)',
       colDiscard: 'Discard',
-      colShanten: 'Shanten',
+      colShanten: 'To ready',
       colUkeire: 'Ukeire',
       colNote: 'Note',
-      noteTenpai: '→ tenpai',
+      noteTenpai: '→ ready',
       noteBest: 'best',
       bestIs: function (name) { return 'Best discard: ' + name; },
       missingHold: function (s) { return 'You still hold the "' + s + '" suit. In Sichuan mahjong you must clear your missing suit before winning.'; },

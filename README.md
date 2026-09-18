@@ -35,7 +35,7 @@ Four short lessons, in order. Each one assumes nothing.
 Then practise:
 
 - **[The table](play.html)** — a four-player game against three opponents, rendered on the GPU. A coaching strip along the bottom always tells you how many tiles you are from ready, which tiles you are waiting on and how many are left, which tile to discard **and why**. Three difficulty levels, and a full scoring breakdown at the end of every round.
-- **[The calculator](calculator.html)** — click in any hand and instantly see its shanten, its waits, the tiles that would improve it, and the best discard. The fastest way to build intuition for hand shape.
+- **[The calculator](calculator.html)** — click in any hand and instantly see how far it is from 下叫 (ready), which tiles it is waiting on, which tiles would pull it forward, and the best discard. The fastest way to build intuition for hand shape.
 - **[Glossary](glossary.html)** — every term in English and Chinese with pinyin, because discards are announced in Chinese at a real table.
 
 ---
@@ -138,10 +138,10 @@ The lessons and the tools are driven by the same engine, so a lesson can never d
 | `shanten` | Distance to a winning hand |
 | `ukeire` | Which tiles improve the hand, and which complete it |
 | `win` | Legal winning shapes — standard, seven pairs |
-| `scoring` | Fan composition (平胡 · 碰碰胡 · 清一色 · 七对 · 龙七对 · 根 · 自摸 · 杠上花 · 杠上炮 · 海底 · 金钩钓) |
+| `scoring` | Fan composition (平胡 · 大对子 · 清一色 · 七对 · 龙七对 · 根 · 自摸 · 杠上花 · 杠上炮 · 海底 · 十八罗汉) |
 | `flow` | Declaring the missing suit, draws, discards, claims, kong handling, battle-to-the-end |
 | `bot` | Three opponent personalities (easy / normal / hard) |
-| `settle` | Points, kong accounting, ready check (查大叫), flower pig (查花猪), tax refund (退税) |
+| `settle` | Points, kong accounting, ready check (查叫), flower pig (查花猪), tax refund (退税) |
 
 ## Ruleset, and how much to trust it
 

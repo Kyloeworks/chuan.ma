@@ -240,7 +240,7 @@ export function settleRoundImpl(g: GameState): RoundSettlement {
         for (const n of notReady) {
           entries.push({
             kind: 'ready', from: n, to: r, amount: pts,
-            note: `未听牌赔听牌 ${fan} 番 = ${pts}`,
+            note: `未下叫赔下叫 ${fan} 番 = ${pts}`,
           });
         }
       }

@@ -63,6 +63,14 @@
   .mp .cnt{font-size:13px;color:var(--sub);margin-top:4px}
   .mp .recs{font-size:11.5px;font-weight:800;color:var(--gold);margin-top:5px}
   .mp.recommend{border-color:var(--gold);background:#fffdf6}
+  .sgroup{margin-top:16px}
+  .slbl{font-size:12.5px;font-weight:800;color:var(--sub);letter-spacing:.04em;margin-bottom:7px}
+  .shint{font-size:12px;color:var(--sub);margin-top:6px}
+  .pills{display:flex;gap:8px;flex-wrap:wrap}
+  .pill{border:1px solid var(--line);background:#fff;color:#3a4149;font-size:13px;font-weight:700;
+    padding:7px 14px;border-radius:10px;cursor:pointer;transition:.14s}
+  .pill:hover{border-color:var(--accent);color:var(--accent)}
+  .pill.on{background:var(--accent);border-color:var(--accent);color:#fff}
   .res-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
   .res-table th,.res-table td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left}
   .res-table th{font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.03em}
@@ -701,9 +709,9 @@
       if (flush && hasQuad) add("qingqidui", "清龙七对", 0);
     } else {
       add("pinghu", "平胡", cfg.fan.pinghu);
-      if (allTriplets) add("pengpeng", "碰碰胡", cfg.fan.pengpeng);
+      if (allTriplets) add("pengpeng", "大对子", cfg.fan.pengpeng);
       if (flush) add("qingyise", "清一色", cfg.fan.qingyise);
-      if (isJinGouDiao(p)) add("jingoudiao", "金钩钓", cfg.fan.jingoudiao);
+      if (isJinGouDiao(p)) add("jingoudiao", "十八罗汉", cfg.fan.jingoudiao);
     }
     if (roots > 0) add("gen", `根×${roots}`, cfg.fan.gen * roots);
     if (ctx.selfDraw) add("zimo", "自摸", cfg.fan.zimo);
@@ -887,7 +895,7 @@
               from: n,
               to: r,
               amount: pts,
-              note: `未听牌赔听牌 ${fan} 番 = ${pts}`
+              note: `未下叫赔下叫 ${fan} 番 = ${pts}`
             });
           }
         }
@@ -46878,24 +46886,36 @@ ${parts.join("\n")}
       title: '川麻 2.5D · 血战到底',
       help: '说明', demo: '自动演示', demoStop: '停止演示', newGame: '新开一局', lang: 'EN',
       you: '你', next: '下家 →', opp: '对家', prev: '← 上家',
-      wall: '牌墙', turn: '轮到', dealer: '庄', shanten: '向听',
+      wall: '牌墙', turn: '轮到', dealer: '庄', shanten: '离下叫', shantenUnit: ' 张',
       claimT: '可以鸣牌', kong: '杠', pong: '碰', pass: '过', ck: '暗杠', ak: '补杠',
       hintTurn: '轮到你打牌 —— 点牌即可打出',
       hintMiss: '还有缺门牌，必须先打完（只能点缺门牌）',
       declareT: '定缺 —— 选一门要打光的牌',
       declareSub: '川麻开局必选一门「缺门」：必须先打完，且胡牌时手上不能有它。建议选张数最少的一门。',
       recommend: '推荐', start: '开始', again: '再来一局', close: '关闭',
+      setupT: '开局设置',
+      setupSub: '先定规则，再发牌。开局后每人 13 张，然后由你选一门「缺门」。',
+      seatPick: '谁先起手（庄）',
+      seatHint: '庄家先摸第 14 张，有先手优势。',
+      teachLbl: '教学提示',
+      langLbl: '语言',
+      optOn: '开', optOff: '关',
+      startGame: '开始对局',
+      settings: '改设置',
+      idleT: '准备开始',
+      idleSub: '在「开局设置」里选好难度与起手位，再点「开始对局」。',
       settled: '本局结束', r3: '3 家已胡', rw: '牌墙摸完 · 流局',
       seat: '座位', status: '结果', winTile: '和的牌', fan: '番种',
-      stWon: '胡', stReady: '听牌', stNot: '未听', won: '胡', reveal: '亮牌',
+      stWon: '胡', stReady: '下叫', stNot: '未下叫', won: '胡', reveal: '亮牌',
       logcap: '对局记录', lastDiscard: '刚刚打出',
       helpBody: '<b>渲染</b>：牌桌与牌由 <b>PixiJS（GPU）</b>绘制，按钮/弹层为 DOM（混合架构）。<br>' +
         '<b>座位</b>：你在下；<b>下家</b>在右、<b>上家</b>在左，四家围桌而坐，牌面朝向桌心。<br>' +
-        '<b>底部教学条</b>：常驻显示「离听牌还差几张」；听牌时金框虚线牌就是你在等的牌，右下角数字是还剩几张。<br>' +
+        '<b>底部教学条</b>：常驻显示「离下叫还差几张」；下叫时金框虚线牌就是你在等的牌，右下角数字是还剩几张。<br>' +
         '<b>★ 推荐</b>：金色光晕那张是建议打出的牌，教学条右侧会说明理由（打它之后进张多少张）。<br>' +
         '<b>难度</b>：右上角可切 新手 / 标准 / 困难 —— 只改对手的强弱，不改规则。<br>' +
-        '<b>结算</b>：终局按「番数×底分」计分，另算杠分、查大叫、查花猪、退税，给出每家净分。<br>' +
-        '<b>血战到底</b>：一家胡后本局继续，直到 3 家胡或牌墙摸完。',
+        '<b>结算</b>：终局按「番数×底分」计分，另算杠分、查叫、查花猪、退税，给出每家净分。<br>' +
+        '<b>血战到底</b>：一家胡后本局继续，直到 3 家胡或牌墙摸完。<br>' +
+        '<b>川麻用语</b>：下叫＝听牌 · 大对子＝碰碰胡 · 查叫＝查大叫 · 幺鸡＝一条 · 十八罗汉＝四副全杠。',
       evDeclare: function (s, su) { return s + ' 定缺 ' + su; },
       evDiscard: function (s, tl) { return s + ' 打出 ' + tl; },
       evPong: function (s, tl) { return s + ' 碰 ' + tl; },
@@ -46904,17 +46924,17 @@ ${parts.join("\n")}
       evWinRon: function (s, tl, by, f) { return '🎉 ' + s + ' 胡 ' + tl + '（' + by + ' 点炮，' + f + ' 番）'; },
       evEnd: '本局结算',
       // —— 教学脚手架 ——
-      teachReady: '已听牌',
+      teachReady: '已下叫',
       teachWait: function (n) { return '可和 ' + n + ' 张'; },
-      teachShanten: function (n) { return n <= 0 ? '已听牌' : '还差 ' + n + ' 张听牌'; },
+      teachShanten: function (n) { return n <= 0 ? '已下叫' : '还差 ' + n + ' 张下叫'; },
       teachImprove: function (n) { return '进张 ' + n + ' 张'; },
       teachReason: function (t, cnt) { return '打 ' + t + ' → 进张 ' + cnt + ' 张'; },
-      teachWinReason: function (t, f) { return '打 ' + t + ' → 听牌（' + f + '）'; },
+      teachWinReason: function (t, f) { return '打 ' + t + ' → 下叫（' + f + '）'; },
       teachMustMiss: '还有缺门牌，必须先打完',
       teachFlowerPig: '尚未打缺 · 流局要赔花猪',
-      teachGhost: '听',
+      teachGhost: '叫',
       teachLeft: '剩余',
-      teachWaiting: '听牌：',
+      teachWaiting: '叫牌：',
       winBanner: function (f) { return '你胡了！' + f + ' 番'; },
       winBannerSelf: '自摸',
       winBannerRon: '点炮',
@@ -46924,8 +46944,8 @@ ${parts.join("\n")}
       scoreTitle: '本局得分',
       colSeat: '座位', colNet: '净分', colDetail: '明细',
       detailFan: '胡牌', detailKong: '杠', detailReady: '查叫', detailPig: '花猪', detailRefund: '退税',
-      youWon: '你赢了',
-      scoreNote: '分 = 番数 × 底分(1)；自摸由尚未胡牌者各付一份，点炮由放炮者独付；流局时未听牌者赔听牌者（查大叫），未打缺者赔花猪；未胡者收到的杠分退还。',
+      youWon: '你赢了', fanUnit: ' 番',
+      scoreNote: '分 = 番数 × 底分(1)；自摸由尚未胡牌者各付一份，点炮由放炮者独付；流局时未下叫者赔下叫者（查叫），未打缺者赔花猪；未胡者收到的杠分退还。',
       diagOk: function (r, n, fps) { return 'PixiJS ' + r + ' · ' + n + ' 纹理 · ' + fps + 'fps'; },
       diagFail: 'PixiJS 不可用'
     },
@@ -46933,13 +46953,24 @@ ${parts.join("\n")}
       title: 'Chuanma 2.5D · Blood Battle',
       help: 'Help', demo: 'Auto demo', demoStop: 'Stop demo', newGame: 'New game', lang: '中文',
       you: 'You', next: 'Right →', opp: 'Across', prev: '← Left',
-      wall: 'Wall', turn: 'Turn', dealer: 'D', shanten: 'Shanten',
+      wall: 'Wall', turn: 'Turn', dealer: 'D', shanten: 'To ready', shantenUnit: '',
       claimT: 'Claim', kong: 'Kong', pong: 'Pong', pass: 'Pass', ck: 'Concealed', ak: 'Added',
       hintTurn: 'Your turn — click a tile to discard',
       hintMiss: 'Clear your missing suit first (only those tiles clickable)',
       declareT: 'Declare Missing Suit',
       declareSub: 'Pick one suit to clear. You must discard it all first, and a winning hand must not contain it.',
       recommend: 'PICK', start: 'Start', again: 'Play again', close: 'Close',
+      setupT: 'Round setup',
+      setupSub: 'Set the rules before the tiles are dealt. After the deal you pick the suit to clear.',
+      seatPick: 'Who starts (dealer)',
+      seatHint: 'The dealer draws the 14th tile and moves first.',
+      teachLbl: 'Coaching',
+      langLbl: 'Language',
+      optOn: 'On', optOff: 'Off',
+      startGame: 'Start round',
+      settings: 'Change setup',
+      idleT: 'Ready to start',
+      idleSub: 'Pick difficulty and who starts in “Round setup”, then press “Start round”.',
       settled: 'Round over', r3: '3 players won', rw: 'Wall empty · draw',
       seat: 'Seat', status: 'Result', winTile: 'Win tile', fan: 'Fan',
       stWon: 'Won', stReady: 'Ready', stNot: 'Not ready', won: 'Won', reveal: 'Revealed',
@@ -46950,7 +46981,8 @@ ${parts.join("\n")}
         '<b>River</b>: discards are laid neatly in <b>two rows</b> in front of each player.<br>' +
         '<b>Gold glow</b> = suggested discard. Opponents\' hands are tile backs.<br>' +
         '<b>Reveal</b>: on a win the hand turns face-up, winning tile gold and set apart.<br>' +
-        '<b>Blood Battle</b>: play continues until 3 wins or the wall empties.',
+        '<b>Blood Battle</b>: play continues until 3 wins or the wall empties.<br>' +
+        '<b>Sichuan terms</b>: 下叫 (ready) = listening; 大对子 = all triplets; 查叫 = ready check; 幺鸡 = the 1 of bamboo; 十八罗汉 = four kongs.',
       evDeclare: function (s, su) { return s + ' missing: ' + su; },
       evDiscard: function (s, tl) { return s + ' discards ' + tl; },
       evPong: function (s, tl) { return s + ' pongs ' + tl; },
@@ -46968,7 +47000,7 @@ ${parts.join("\n")}
       teachFlowerPig: 'Missing suit not cleared · flower-pig penalty',
       teachGhost: 'WAIT',
       teachLeft: 'left',
-      teachWaiting: 'Waiting:',
+      teachWaiting: 'Waiting on:',
       winBanner: function (f) { return 'YOU WIN! ' + f + ' fan'; },
       winBannerSelf: 'self-draw',
       winBannerRon: 'on discard',
@@ -46978,7 +47010,7 @@ ${parts.join("\n")}
       scoreTitle: 'Round score',
       colSeat: 'Seat', colNet: 'Net', colDetail: 'Breakdown',
       detailFan: 'Win', detailKong: 'Kong', detailReady: 'Ready', detailPig: 'Pig', detailRefund: 'Refund',
-      youWon: 'You win',
+      youWon: 'You win', fanUnit: ' fan',
       scoreNote: 'Points = fan × base (1). Self-draw: each player not yet won pays. Discard win: the discarder pays alone. On a draw, non-ready players pay ready players (big call) and uncleared players pay the flower-pig penalty; kong points received by non-winners are refunded.',
       diagOk: function (r, n, fps) { return 'PixiJS ' + r + ' · ' + n + ' tex · ' + fps + 'fps'; },
       diagFail: 'PixiJS unavailable'
@@ -46993,6 +47025,9 @@ ${parts.join("\n")}
     fxSeen: 0, pendingDeal: false, hideHandsUntil: 0, feltTex: null, feltKey: '',
     rendererName: '', needRender: false,
     diff: 'normal',          // 对手难度（B）
+    started: false,          // 是否已开局（false = 先显示「开局设置」，不自动发牌）
+    dealerSeat: 0,           // 起手位（庄）：庄家先摸第 14 张
+    teachOn: true,           // 教学提示开关
     teach: null,             // 本帧教学信息（A）
     banner: null,            // 胡牌横幅 {seat, fans, selfDraw, until}
     recTile: -1,
@@ -47101,10 +47136,30 @@ ${parts.join("\n")}
   var humanCK = act(function () { var k = CM.botConcealedKongTile(state.g, HUMAN); if (k >= 0) CM.applyConcealedKong(state.g, HUMAN, k); });
   var humanAK = act(function () { var k = CM.botAddedKongTile(state.g, HUMAN); if (k >= 0) CM.applyAddedKong(state.g, HUMAN, k); });
 
+  /** 进入「开局设置」：不建牌局、不发牌，等玩家选好再开始 */
+  function openSetup() {
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    state.demo = false;
+    state.started = false;
+    state.overlay = 'setup';
+    state.g = null;                 // 无牌局 → render 走「准备开始」画面
+    state.logLines = []; state.loggedUpTo = 0;
+    state.teach = null; state.recTile = -1;
+    clearFx();
+  }
+  /** 按当前设置真正开局：发牌动画 → 选缺门 → 对局 */
+  function startGame() {
+    state.started = true;
+    state.overlay = null;
+    newGame();
+  }
   function newGame() {
     if (state.timer) { clearInterval(state.timer); state.timer = null; }
-    state.demo = false; state.overlay = null;
+    state.demo = false; state.overlay = null; state.started = true;
     state.g = CM.createGame(HUMAN, CM.defaultRules, CM.defaultScoring);
+    // 起手位（庄）：createGame 固定 dealer = 0；declareMissing 收尾时会用 g.dealer 重置 turn，
+    // 所以这里只改 dealer 即可让选中的一家先摸第 14 张。
+    if (state.dealerSeat) state.g.dealer = state.dealerSeat;
     state.loggedUpTo = 0; state.logLines = [];
     state.fxSeen = state.g.history.length;
     state.pendingDeal = true;
@@ -47479,6 +47534,15 @@ ${parts.join("\n")}
         var rn = tileNode(p.river[i], rW, rH, { rot: F.rot });
         rn.position.set(F.riverX + F.right.x * o2 - F.out.x * d2, F.riverY + F.right.y * o2 - F.out.y * d2);
         state.world.addChild(rn);
+        // 最后一打：细白框 + 呼吸，标出「刚刚打出」是哪张（只加描边，不改位置/体积）
+        if (i === n - 1) {
+          var lf = gfx(), lw = rW, lh = rH;
+          if (F.isSide) lf.roundRect(rn.x - lh / 2 - 2, rn.y - lw / 2 - 2, lh + 4, lw + 4, 5);
+          else lf.roundRect(rn.x - lw / 2 - 2, rn.y - lh / 2 - 2, lw + 4, lh + 4, 5);
+          lf.stroke({ width: 2, color: 0xffffff, alpha: 0.9 });
+          state.world.addChild(lf);
+          pulse(lf, { period: 1100, min: 0.3, max: 1 });
+        }
       }
       var rivLen = per * stp, rivThick = rows * rowStep;
       if (F.isSide) box('river' + s, F.riverX - rivThick / 2, F.riverY - rivLen / 2, rivThick, rivLen);
@@ -47778,7 +47842,8 @@ ${parts.join("\n")}
     var improving = 0;
     if (!mustMiss && sh > 0) improving = CM.improvingTiles(my.hand, melds).length;
     return {
-      kind: 'live', sh: sh, shAfter: shAfter, myTurn: myTurn, mustMiss: mustMiss,
+      kind: 'live', sh: sh, shAfter: shAfter, shEff: (recInfo ? recInfo.shanten : sh),
+      myTurn: myTurn, mustMiss: mustMiss,
       waiting: waiting, waitLeft: waitLeft, improving: improving, rec: rec, recInfo: recInfo,
       // 诊断用（探针读取）
       diag: { need: need, total: total, melds: melds, canProbe: canProbe, waitingRaw: waitingRaw,
@@ -47808,10 +47873,11 @@ ${parts.join("\n")}
       msg = '⚠ ' + T0.teachMustMiss;
       col = '#ffc98a';
     } else if (teach) {
-      // 有效向听：轮到我时用「打完推荐牌之后」的向听，更贴近真实进度
-      var shEff = teach.myTurn && teach.rec >= 0 ? teach.shAfter : teach.sh;
+      // 有效距离：有推荐牌时，用「打完那张之后」的距离 —— 这才是你实际所处的进度。
+      // （手牌多一张时，原始向听会失真：可能算出 0 却一张都和不了）
+      var shEff = (typeof teach.shEff === 'number') ? teach.shEff : teach.sh;
       if (teach.waiting.length) {
-        msg = (teach.myTurn && teach.rec >= 0 ? '打这张就听牌 · ' : '✅ ') +
+        msg = (teach.myTurn && teach.rec >= 0 ? '打这张就下叫 · ' : '✅ ') +
           T0.teachReady + ' · ' + T0.teachWait(teach.waitLeft);
         col = '#9ff0bd';
       } else if (shEff <= 0) {
@@ -47888,13 +47954,24 @@ ${parts.join("\n")}
       state.boxes = [];
       state.world.removeChildren().forEach(function (c) { c.destroy({ children: true }); });
 
+      // 未开局：处于「开局设置」时只画桌面 + 提示，绝不发牌
+      if (!state.g) {
+        drawFelt(W, H);
+        drawIdle(W, H, M);
+        drawActionsDOM(W, H);
+        renderChrome(); renderOverlay(); renderLog();
+        window.__PIXI_TABLE__.layout = { W: W, H: H, boxes: state.boxes, overflow: 0, idle: true, phase: 'setup' };
+        window.__PIXI_TABLE__.fx = { deals: state.fxStats.deals, flights: state.fxStats.flights, rings: 0, bursts: 0, live: 0, tweens: 0 };
+        return;
+      }
+
       // 推荐弃牌（供手牌渲染高亮）
       var my = state.g.players[HUMAN];
       state.recTile = -1;
-      if (state.g.phase === 'playing' && state.g.turn === HUMAN && !my.won && !state.g.claim) {
+      if (state.teachOn && state.g.phase === 'playing' && state.g.turn === HUMAN && !my.won && !state.g.claim) {
         try { state.recTile = CM.botDiscardTile(state.g, HUMAN, 'normal'); } catch (e2) { state.recTile = -1; }
       }
-      state.teach = computeTeach();
+      state.teach = state.teachOn ? computeTeach() : null;
 
       if (state.pendingDeal) { state.pendingDeal = false; try { playDeal(W, H, M); } catch (e3) { state.hideHandsUntil = 0; } }
       processEvents(W, H, M); // 先登记「飞行中」的牌（flySkip），再绘制静态场景，避免同张牌画两次
@@ -47945,9 +48022,12 @@ ${parts.join("\n")}
       winCount: state.g.winCount,
       humanWon: state.g.players[HUMAN].won,
       diff: state.diff,
+      dealer: state.g.dealer,
+      turn: state.g.turn,
       netBySeat: state.g.settlement ? state.g.settlement.seats.map(function (x) { return x.net; }) : null,
       teach: state.teach ? {
         sh: state.teach.sh,
+        shEff: state.teach.shEff,
         shAfter: state.teach.shAfter,
         myTurn: state.teach.myTurn,
         mustMiss: state.teach.mustMiss,
@@ -47981,7 +48061,7 @@ ${parts.join("\n")}
     document.getElementById('hstat').innerHTML = G ? (
       '<span>' + t().wall + ' <b>' + G.wall.length + '</b></span>' +
       '<span>' + t().turn + ' <b>' + (G.phase === 'playing' ? seatName(G.turn) : '—') + '</b></span>' +
-      '<span>' + t().shanten + ' <b>' + CM.handShanten(G.players[HUMAN]) + '</b></span>' +
+      '<span>' + t().shanten + ' <b>' + CM.handShanten(G.players[HUMAN]) + '</b>' + (t().shantenUnit || '') + '</span>' +
       (G.settlement ? '<span>' + t().pts + ' <b>' + (G.settlement.seats[HUMAN].net > 0 ? '+' : '') + G.settlement.seats[HUMAN].net + '</b></span>' : '')
     ) : '';
     // 难度选择器
@@ -47998,7 +48078,10 @@ ${parts.join("\n")}
     if (d.dataset.status === 'ok') d.textContent = t().diagOk(state.rendererName, state.texCount, Math.round(state.app ? state.app.ticker.FPS : 0));
   }
   function drawActionsDOM(W, H) {
-    var G = state.g, my = G.players[HUMAN], box = document.getElementById('actions');
+    var G = state.g;
+    var box = document.getElementById('actions');
+    if (!G) { if (box) box.innerHTML = ''; return; }   // 未开局（开局设置阶段）无动作按钮
+    var my = G.players[HUMAN];
     if (!box) {
       box = document.createElement('div');
       box.id = 'actions';
@@ -48046,7 +48129,7 @@ ${parts.join("\n")}
     var rows = '';
     for (var i = 0; i < order.length; i++) {
       var s = order[i], p = G.players[s];
-      var status = p.won ? t().stWon + ' ' + p.winInfo.fans.total + ' 番' : (G.readyAtEnd[s] ? t().stReady : t().stNot);
+      var status = p.won ? t().stWon + ' ' + p.winInfo.fans.total + t().fanUnit : (G.readyAtEnd[s] ? t().stReady : t().stNot);
       var net = S ? S.seats[s].net : 0;
       var parts = [];
       if (S) {
@@ -48074,7 +48157,42 @@ ${parts.join("\n")}
       '<table class="res-table"><thead><tr><th>' + t().colSeat + '</th><th>' + t().status + '</th>' +
       '<th>' + t().winTile + '</th><th>' + t().colNet + '</th><th>' + t().colDetail + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
       '<div style="margin-top:8px;font-size:12px;color:#5b6470">' + t().scoreNote + '</div>' +
-      '<div style="margin-top:14px;display:flex;gap:10px"><button class="btn pri" id="againBtn">' + t().again + '</button><button class="btn" id="closeRes">' + t().close + '</button></div></div>';
+      '<div style="margin-top:14px;display:flex;gap:10px"><button class="btn pri" id="againBtn">' + t().again + '</button><button class="btn" id="settingsBtn">' + t().settings + '</button><button class="btn" id="closeRes">' + t().close + '</button></div></div>';
+  }
+  /** 开局设置：难度 / 起手位（庄）/ 教学提示 / 语言 */
+  function setupModal() {
+    function pills(k, opts, cur) {
+      var s = '<div class="pills">';
+      for (var i = 0; i < opts.length; i++) {
+        s += '<button class="pill' + (String(cur) === String(opts[i].v) ? ' on' : '') +
+          '" data-k="' + k + '" data-v="' + opts[i].v + '">' + opts[i].t + '</button>';
+      }
+      return s + '</div>';
+    }
+    var h = '<div class="modal"><h2>' + t().setupT + '</h2><p class="lead">' + t().setupSub + '</p>';
+    h += '<div class="sgroup"><div class="slbl">' + t().diffLbl + '</div>' +
+      pills('diff', [{ v: 'easy', t: t().dEasy }, { v: 'normal', t: t().dNormal }, { v: 'hard', t: t().dHard }], state.diff) + '</div>';
+    h += '<div class="sgroup"><div class="slbl">' + t().seatPick + '</div>' +
+      pills('dealer', [0, 1, 2, 3].map(function (s) { return { v: s, t: seatName(s) }; }), state.dealerSeat) +
+      '<div class="shint">' + t().seatHint + '</div></div>';
+    h += '<div class="sgroup"><div class="slbl">' + t().teachLbl + '</div>' +
+      pills('teach', [{ v: '1', t: t().optOn }, { v: '0', t: t().optOff }], state.teachOn ? '1' : '0') + '</div>';
+    h += '<div class="sgroup"><div class="slbl">' + t().langLbl + '</div>' +
+      pills('lang', [{ v: 'zh', t: '中文' }, { v: 'en', t: 'English' }], state.lang) + '</div>';
+    h += '<div style="margin-top:18px;display:flex;gap:10px">' +
+      '<button class="btn pri" id="startGameBtn">' + t().startGame + '</button>' +
+      '<button class="btn" id="helpBtn2">' + t().help + '</button></div></div>';
+    return h;
+  }
+  /** 未开局时的桌面提示（开局设置期间） */
+  function drawIdle(W, H, M) {
+    var cx = W / 2, cy = H / 2;
+    var ttl = label(t().idleT, 22, '#eaf5ee', '800');
+    ttl.anchor.set(0.5); ttl.position.set(cx, cy - 14);
+    state.world.addChild(ttl);
+    var sub = label(t().idleSub, 13, '#9dbfab', '600');
+    sub.anchor.set(0.5); sub.position.set(cx, cy + 20);
+    state.world.addChild(sub);
   }
   function helpModal() {
     return '<div class="modal"><h2>' + t().help + '</h2><div class="legendbox">' + t().helpBody + '</div>' +
@@ -48082,18 +48200,32 @@ ${parts.join("\n")}
   }
   function renderOverlay() {
     var G = state.g, ov = document.getElementById('overlay'), content = null;
-    if (!G) { ov.className = 'overlay'; ov.innerHTML = ''; return; }
-    if (state.overlay === 'help') content = helpModal();
+    if (state.overlay === 'setup') content = setupModal();
+    else if (!G) { ov.className = 'overlay'; ov.innerHTML = ''; return; }
+    else if (state.overlay === 'help') content = helpModal();
     else if (state.overlay === 'result') content = resultModal();
     else if (G.phase === 'finished') content = resultModal();
     else if (G.phase === 'declareMissing' && G.players[HUMAN].missing === -1) content = declareModal();
     if (!content) { ov.className = 'overlay'; ov.innerHTML = ''; return; }
     ov.className = 'overlay show'; ov.innerHTML = content;
     ov.querySelectorAll('.mp').forEach(function (el) { el.onclick = function () { humanDeclare(+el.dataset.suit); }; });
+    ov.querySelectorAll('.pill').forEach(function (el) {
+      el.onclick = function () {
+        var k = el.dataset.k, v = el.dataset.v;
+        if (k === 'diff') state.diff = v;
+        else if (k === 'dealer') state.dealerSeat = +v;
+        else if (k === 'teach') state.teachOn = v === '1';
+        else if (k === 'lang') state.lang = v;
+        render();
+      };
+    });
     var b;
-    if ((b = document.getElementById('againBtn'))) b.onclick = newGame;
+    if ((b = document.getElementById('startGameBtn'))) b.onclick = startGame;
+    if ((b = document.getElementById('againBtn'))) b.onclick = startGame;
+    if ((b = document.getElementById('settingsBtn'))) b.onclick = function () { openSetup(); render(); };
+    if ((b = document.getElementById('helpBtn2'))) b.onclick = function () { state.overlay = 'help'; render(); };
     if ((b = document.getElementById('closeRes'))) b.onclick = function () { state.overlay = 'none'; render(); };
-    if ((b = document.getElementById('helpClose'))) b.onclick = function () { state.overlay = null; render(); };
+    if ((b = document.getElementById('helpClose'))) b.onclick = function () { state.overlay = state.g ? null : 'setup'; render(); };
   }
   function renderLog() {
     var G = state.g; if (!G) return;
@@ -48138,12 +48270,13 @@ ${parts.join("\n")}
       d.dataset.status = 'ok';
       d.textContent = t().diagOk(state.rendererName, state.texCount, 0);
       window.__PIXI_TABLE__ = { ready: true, renderer: state.rendererName, textures: state.texCount };
-      newGame();
+      openSetup();
+      render();
       window.addEventListener('resize', function () { if (state.ready) render(); });
     } catch (e) { fail((e && e.message) || e); }
   }
 
-  document.getElementById('newBtn').onclick = function () { if (state.ready) newGame(); };
+  document.getElementById('newBtn').onclick = function () { if (state.ready) { openSetup(); render(); } };
   document.getElementById('demoBtn').onclick = function () {
     if (!state.ready) return;
     if (state.demo) {

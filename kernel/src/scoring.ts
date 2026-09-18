@@ -42,7 +42,7 @@ export interface ScoringConfig {
   flowerPigPay: number;
   fan: {
     pinghu: number; // 平胡基础番
-    pengpeng: number; // 碰碰胡
+    pengpeng: number; // 大对子（全刻子；通用名「碰碰胡」。键名沿用历史拼写）
     qingyise: number; // 清一色
     qidui: number; // 七对基础番
     longqidui: number; // 龙七对额外
@@ -51,7 +51,7 @@ export interface ScoringConfig {
     gangshanghua: number; // 杠上花
     gangshangpao: number; // 杠上炮
     haidi: number; // 海底捞月 / 海底炮
-    jingoudiao: number; // 金钩钓
+    jingoudiao: number; // 十八罗汉（4 副副露全为杠；键名沿用历史拼写）
   };
   kong: KongScoreConfig;
 }
@@ -115,7 +115,7 @@ export function isFlush(p: PlayerState): boolean {
   return gatherSuits(p).size === 1;
 }
 
-/** 是否全为刻子/杠（碰碰胡）：副露全是杠/碰，且手牌可拆成全刻子 + 将 */
+/** 是否全为刻子/杠（川麻称「大对子」，通用名「碰碰胡」）：副露全是杠/碰，且手牌可拆成全刻子 + 将 */
 export function isAllTriplets(c: Counts, kongs: number): boolean {
   let total = 0;
   let pairs = 0;
@@ -145,7 +145,13 @@ export function countRoots(p: PlayerState): number {
   return roots;
 }
 
-/** 金钩钓：4 副副露全为杠（无碰），单钓将（手牌仅余一对） */
+/**
+ * 十八罗汉（通用旧名「金钩钓」，键名沿用）：4 副副露全为杠 —— 18 张的全杠牌型。
+ *
+ * ⚠️ 命名说明：川麻通行义的「金钩钓」是「四副全副露、手牌只剩一对将单钓」，
+ * 与本函数的条件（四杠）**不是同一件事**。这里按实际条件如实命名为「十八罗汉」，
+ * 避免在教学页面教错术语。
+ */
 export function isJinGouDiao(p: PlayerState): boolean {
   if (p.melds.length < 4) return false;
   return p.melds.every((m) => m.type === 'kong');
@@ -175,9 +181,9 @@ export function scoringFor(g: GameStateLike, p: PlayerState, ctx: WinContext): F
     if (flush && hasQuad) add('qingqidui', '清龙七对', 0); // 已含清一色
   } else {
     add('pinghu', '平胡', cfg.fan.pinghu);
-    if (allTriplets) add('pengpeng', '碰碰胡', cfg.fan.pengpeng);
+    if (allTriplets) add('pengpeng', '大对子', cfg.fan.pengpeng);
     if (flush) add('qingyise', '清一色', cfg.fan.qingyise);
-    if (isJinGouDiao(p)) add('jingoudiao', '金钩钓', cfg.fan.jingoudiao);
+    if (isJinGouDiao(p)) add('jingoudiao', '十八罗汉', cfg.fan.jingoudiao);
   }
 
   if (roots > 0) add('gen', `根×${roots}`, cfg.fan.gen * roots);

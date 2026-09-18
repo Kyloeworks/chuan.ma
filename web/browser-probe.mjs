@@ -67,6 +67,7 @@ const AUDIT = `(function(){
   out.rots = L.rots; out.sepAtEnd = L.sepAtEnd;
   out.rivers = L.rivers; out.draws = L.draws; out.phase = L.phase;
   out.teach = L.teach; out.diff = L.diff; out.netBySeat = L.netBySeat;
+  out.idle = !!L.idle; out.dealer = L.dealer; out.turn = L.turn;
   out.handH = L.handH; out.riverH = L.riverH;
   return out;
 })()`;
@@ -103,15 +104,50 @@ try {
   ck('画布已创建', canvas !== 'no-canvas', canvas);
   ck('纹理全部生成（28）', /28 /.test(diag0 || ''), diag0);
 
-  // 发牌动画已触发
+  // ── ★ 开局流程：打开后绝不自动发牌，必须先过「开局设置」 ──
+  const idle = await ev(AUDIT);
+  ck('打开后停在「开局设置」，未自动发牌', idle && idle.idle === true, 'idle=' + (idle && idle.idle));
+  const setupShown = await ev("(function(){var o=document.getElementById('overlay');return o.className.indexOf('show')>=0 && !!document.getElementById('startGameBtn');})()");
+  ck('开局设置弹层可见（含「开始对局」按钮）', setupShown === true);
+  const fxIdle = await ev("JSON.stringify(window.__PIXI_TABLE__.fx)");
+  ck('开局前零发牌动作（deals=0）', JSON.parse(fxIdle || '{}').deals === 0, fxIdle);
+  const idleHstat = await ev("document.getElementById('hstat').textContent.trim()");
+  ck('未开局时顶栏不显示牌局数据', idleHstat === '', 'hstat="' + idleHstat + '"');
+
+  // 三个设置项都可点选并高亮
+  await ev("(function(){var b=document.querySelector('#overlay .pill[data-k=\"diff\"][data-v=\"hard\"]');if(b)b.click();})()");
+  await ev("(function(){var b=document.querySelector('#overlay .pill[data-k=\"dealer\"][data-v=\"2\"]');if(b)b.click();})()");
+  await ev("(function(){var b=document.querySelector('#overlay .pill[data-k=\"teach\"][data-v=\"1\"]');if(b)b.click();})()");
+  await sleep(260);
+  const chosen = await ev("JSON.stringify(Array.from(document.querySelectorAll('#overlay .pill.on')).map(function(e){return e.dataset.k+'='+e.dataset.v;}))");
+  ck('难度 / 起手位 / 教学提示可选且高亮', /diff=hard/.test(chosen) && /dealer=2/.test(chosen) && /teach=1/.test(chosen), chosen);
+
+  // 点「开始对局」之后才发牌
+  await ev("(function(){document.getElementById('startGameBtn').click();})()");
+  await sleep(360);
   const fx0 = await ev("JSON.stringify(window.__PIXI_TABLE__.fx)");
-  ck('发牌动画已触发（deals>=1, flights>=52）', /"deals":\d/.test(fx0) && JSON.parse(fx0).deals >= 1 && JSON.parse(fx0).flights >= 52, fx0);
+  ck('点「开始对局」后才触发发牌（deals>=1, flights>=52）',
+    /"deals":\d/.test(fx0) && JSON.parse(fx0).deals >= 1 && JSON.parse(fx0).flights >= 52, fx0);
+  await sleep(2000);
 
-  await sleep(2000); // 等发牌动画收尾
-
-  // 定缺 → 进入牌桌
+  // 定缺（第一次：验证「谁先起手」真的生效）
   await ev("(function(){var m=document.querySelectorAll('.mp');var r=document.querySelector('.mp.recommend')||m[0];if(r)r.click();})()");
-  await sleep(1200);
+  await sleep(900);
+  const aDealer = await ev(AUDIT);
+  ck('起手位选择已生效（庄 = 下家 / 座 2）', aDealer && aDealer.dealer === 2, 'dealer=' + (aDealer && aDealer.dealer));
+  ck('起手位生效后摸牌顺序随之改变（下家、对家先摸才轮到你）',
+    aDealer && aDealer.draws >= 3, 'wallPointer=' + (aDealer && aDealer.draws) + '（你先起手时为 1）');
+
+  // 回开局设置，改回「你」先起手，供后续 14 张布局断言使用
+  await ev("(function(){document.getElementById('newBtn').click();})()");
+  await sleep(300);
+  const backSetup = await ev("(function(){return !!(document.getElementById('startGameBtn') && document.getElementById('overlay').className.indexOf('show')>=0);})()");
+  ck('「新开一局」回到开局设置（不直接发牌）', backSetup === true);
+  await ev("(function(){var b=document.querySelector('#overlay .pill[data-k=\"dealer\"][data-v=\"0\"]');if(b)b.click();})()");
+  await ev("(function(){document.getElementById('startGameBtn').click();})()");
+  await sleep(2500);
+  await ev("(function(){var m=document.querySelectorAll('.mp');var r=document.querySelector('.mp.recommend')||m[0];if(r)r.click();})()");
+  await sleep(1000);
   const inTable = await ev("!!document.querySelector('#stage canvas') && document.getElementById('overlay').className.indexOf('show')<0");
   ck('定缺后进入牌桌', !!inTable);
 
@@ -154,7 +190,7 @@ try {
       tt && !tt.mustMiss && (!tt.myTurn || (tt.recTile >= 0 && tt.recImprove > 0)),
       JSON.stringify(tt));
     ck('教学状态自洽（向听数 / 已听牌+所听之牌 / 缺门 三选一）',
-      tt && (tt.sh > 0 || (tt.waitingKinds > 0 && tt.waitLeft > 0) || tt.mustMiss), JSON.stringify(tt));
+      tt && (tt.shEff > 0 || (tt.waitingKinds > 0 && tt.waitLeft > 0) || tt.mustMiss), JSON.stringify(tt));
     ck('教学状态不与「向听 0」自相矛盾', tt && !(tt.sh <= 0 && !tt.mustMiss && tt.waitingKinds === 0),
       JSON.stringify(tt));
   }
@@ -178,7 +214,7 @@ try {
     ck('対局中布局仍无越界', audit2.overflow === 0, 'overflow=' + audit2.overflow);
     ck('对局中牌河仍 ≤2 排', audit2.rows.every((r) => r <= 2), JSON.stringify(audit2.rows));
     const tt = audit2.teach;
-    ck('对局推进后教学条仍自洽', !tt || tt.sh > 0 || tt.waitingKinds > 0 || tt.mustMiss, JSON.stringify(tt));
+    ck('对局推进后教学条仍自洽', !tt || tt.shEff > 0 || tt.waitingKinds > 0 || tt.mustMiss, JSON.stringify(tt));
   }
 
   // 走完整局 → 必出胡牌粒子 + 终局亮牌 + 结算弹层

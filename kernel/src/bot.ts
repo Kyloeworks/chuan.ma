@@ -61,7 +61,7 @@ export function botMissingSuit(g: GameState, seat: Seat): number {
  * 用同一套「向听 + 进张」材料，按档位**少用或多用信息**，而不是做黑箱。
  * easy  : 只看向听数（并列随机）→ 打得出牌，但完全不懂进张效率
  * normal: 四级排序（最小向听 → 最大进张 → 孤张优先 → 编号稳定）
- * hard  : normal + 花色集中度（朝清一色/金钩钓等高分型收拢）
+ * hard  : normal + 花色集中度（朝清一色/大对子等高分型收拢）
  */
 export type Difficulty = 'easy' | 'normal' | 'hard';
 

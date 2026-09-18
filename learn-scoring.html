@@ -45,12 +45,12 @@
   <thead><tr><th>Pattern</th><th class="n">Chinese</th><th class="n">Fan</th><th>Condition</th></tr></thead>
   <tbody>
     <tr><td><b>Base win</b></td><td class="n">平胡</td><td class="n">+1</td><td>Any standard win — four sets plus a pair. The floor, always counted.</td></tr>
-    <tr><td><b>All triplets</b></td><td class="n">碰碰胡</td><td class="n">+2</td><td>All four sets are triplets (or kongs). No runs anywhere.</td></tr>
+    <tr><td><b>All triplets</b></td><td class="n">大对子 <span class="zh">碰碰胡</span></td><td class="n">+2</td><td>All four sets are triplets (or kongs). No runs anywhere.</td></tr>
     <tr><td><b>All one suit</b></td><td class="n">清一色</td><td class="n">+4</td><td>Every tile in the hand, melds included, is from a single suit. The big one.</td></tr>
     <tr><td><b>Four of a kind</b></td><td class="n">根</td><td class="n">+1 each</td><td>Per tile you hold four of. Counted in every hand shape, including seven pairs.</td></tr>
     <tr><td><b>Seven pairs</b></td><td class="n">七对</td><td class="n">+2</td><td>Seven distinct pairs, no melds exposed. <i>Replaces</i> the base win.</td></tr>
     <tr><td><b>Dragon seven pairs</b></td><td class="n">龙七对</td><td class="n">+2</td><td>Seven pairs that contain a four-of-a-kind. Added on top of 七对.</td></tr>
-    <tr><td><b>All kongs</b></td><td class="n">金钩钓</td><td class="n">+2</td><td>All four of your melds are kongs — a legendary shape most players never see.</td></tr>
+    <tr><td><b>All kongs</b></td><td class="n">十八罗汉</td><td class="n">+2</td><td>All four of your melds are kongs — a legendary shape most players never see.</td></tr>
   </tbody>
 </table>
 </div>
@@ -151,8 +151,8 @@
   <thead><tr><th>Settlement</th><th class="n">Chinese</th><th>What happens</th></tr></thead>
   <tbody>
     <tr>
-      <td><b>Ready check</b></td><td class="n">查大叫</td>
-      <td>Every player who is <b>not</b> tenpai pays each tenpai player the fan value of that player's <b>best wait</b> — so the better your wait, the more you collect.</td>
+      <td><b>Ready check</b></td><td class="n">查叫 <span class="zh">查大叫</span></td>
+      <td>Every player who is <b>not</b> ready (<span class="zh">下叫</span>) pays each ready player the fan value of that player's <b>best wait</b> — so the better your wait, the more you collect.</td>
     </tr>
     <tr>
       <td><b>Flower pig</b></td><td class="n">查花猪</td>
@@ -165,12 +165,13 @@
   </tbody>
 </table>
 </div>
-<p>Read those three together and the game's whole incentive structure appears: <b>clear your missing suit, reach tenpai, and keep your wait as fat as possible.</b> Almost every strategic idea in Sichuan mahjong is downstream of that sentence.</p>
+<p>Read those three together and the game's whole incentive structure appears: <b>clear your missing suit, get ready (<span class="zh">下叫</span>), and keep your wait as fat as possible.</b> Almost every strategic idea in Sichuan mahjong is downstream of that sentence.</p>
 
 <h2>7. Where these rules come from</h2>
 <div class="box good">
   <h4>One documented preset, not the only one</h4>
-  <p>Sichuan mahjong fan values genuinely differ from table to table and city to city — all-one-suit is worth 2 in some places and 4 in others, and rare fan <i>names</i> shift too. (Some tables use <span class="zh">金钩钓</span> for "every meld exposed, waiting on a single tile"; the engine behind this site records it for a hand whose four melds are all kongs.)</p>
+  <p>Sichuan mahjong fan values genuinely differ from table to table and city to city — all-one-suit is worth 2 in some places and 4 in others, and rare fan <i>names</i> shift too. All-triplets is normally <span class="zh">大对子</span> on a Sichuan table (the rest of China says <span class="zh">碰碰胡</span>), and the four-kong hand here is named <span class="zh">十八罗汉</span> — some tables reserve <span class="zh">金钩钓</span> for a different and far more common shape, every meld exposed with a single-tile wait.</p>
+  <p>Where a name is genuinely contested, this site uses the term its own engine computes and says so, rather than quietly teaching one region's vocabulary as if it were universal.</p>
   <p>Every number on this page is exactly what the <a href="play.html">table</a> and the <a href="calculator.html">calculator</a> on this site will compute, so the lesson and the scores can never disagree. Treat it as one clearly documented preset — then check your local table's house rules before you play for anything that matters.</p>
 </div>
 
