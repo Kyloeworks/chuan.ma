@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>川麻 UI 资产 · 牌面总览 · Chuanma Tile Set</title>
 <style>
-  :root{--bg:#f5f6f8;--card:#fff;--ink:#1a1d21;--sub:#5b6470;--line:#e4e8ed;
-    --accent:#1f6feb;--wan:#c0392b;--tiao:#1c7d4d;--tong:#2f6fb5;
-    --felt:#2f6b4f;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  /* 设计令牌集中维护在 tokens.js，由 build.mjs 在此展开 :root{...} —— 色值不要硬写 */
+  /*__TOKENS_CSS__*/
   *{box-sizing:border-box}
   html,body{margin:0}
   body{background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
@@ -24,7 +23,7 @@
   h2{font-size:15px;margin:26px 0 12px;padding-left:10px;border-left:4px solid var(--ink);
     display:flex;align-items:center;gap:10px}
   h2 .badge{font-size:12px;font-weight:800;color:#fff;padding:1px 9px;border-radius:20px}
-  h2 .b0{background:var(--wan)} h2 .b1{background:var(--tiao)} h2 .b2{background:var(--tong)}
+  h2 .b0{background:var(--wan)} h2 .b1{background:var(--cm-tiao-tile)} h2 .b2{background:var(--tong)}
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px}
   .cell{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 10px 8px;
     display:flex;flex-direction:column;align-items:center;gap:8px}

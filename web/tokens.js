@@ -5,7 +5,9 @@
  * 由三处共同消费：
  *   - 浏览器：<script src=tokens.js> → window.CMTokens（build.mjs 内联到每个页面）
  *   - Node   ：视觉回归脚本用 new Function('window', src) 取同一份值做断言
- *   - 样式   ：build.mjs 把 /*__TOKENS_CSS__*/ 替换为 CMTokens.css()，产出 :root{...}
+ *   - 样式   ：build.mjs 把模板里的 __TOKENS_CSS__ 占位注释替换为 CMTokens.css()，产出 :root{...}
+ *             （坑：别在注释里写出「注释结束符」的完整字符序列，那会提前闭合本注释，
+ *              导致 new Function(src) 直接语法报错 —— 2026-09-19 实际踩到过）
  *
  * 契约（改本文件会同时影响牌面 / 牌桌 / 页面样式，改动即全局生效）：
  *   CMTokens.geo      牌面几何（viewBox 单位，非像素）
@@ -112,7 +114,8 @@
       rimGold: '#d9b45c',
       rimGoldHi: 'rgba(255,232,168,.55)',
       rimInner: '#6fae8c',
-      ui: '#2f6b4f'       // 页面用绒布色（.stage 背景兜底）
+      ui: '#2f6b4f',      // 页面用绒布色（.stage 背景兜底）
+      stage: '#0b2a1c'    // canvas 清屏色（PixiJS background）
     },
 
     /* ── 2.5D 牌体厚度侧边（顶亮 → 底暗，不再是纯色平涂） ── */
@@ -142,12 +145,36 @@
       gold: '#c9971f',
       wan: '#c0392b',
       tiao: '#1e8e5a',
+      tiaoTile: '#1c7d4d',   // 牌面竹绿（比文字绿深一档，用于色块/徽章）
       tong: '#2b6cb0',
       // 牌桌深色外壳
       shellBg: '#0f1418',
       shellHead: '#161c22',
       shellLine: '#232b33',
       mono: 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'
+    },
+
+    /* ── 牌桌外壳（深色 HUD）细色板 ── */
+    shell: {
+      headInk: '#e9edf2',
+      dim: '#93a1b0',
+      faint: '#6b7784',
+      panel: '#1b2229',
+      panelLine: '#2c353f',
+      panelInk: '#dfe6ee',
+      link: '#4b9bff',
+      linkHi: '#8ec2ff',
+      btnHi: '#cfe0f0',
+      accentEdge: '#7ab2ff',
+      okBg: '#14351f', okInk: '#7fd8a5',
+      failBg: '#3b1717', failInk: '#f19a90',
+      easy: '#0f6e56',
+      hard: '#a32d2d',
+      me: '#f6f9ff',
+      drawerBg: 'rgba(14,20,26,.95)',
+      drawerLine: '#2b343d',
+      drawerInk: '#c3cdd8',
+      overlay: 'rgba(8,12,16,.72)'
     },
 
     /* ── 质感开关与强度（想降噪/回退时只改这里，不用翻绘制代码） ── */
@@ -164,19 +191,32 @@
 
   /* ── 产出 :root{...}：由 build.mjs 注入模板与 site.css ── */
   T.css = function () {
-    var u = T.ui, f = T.felt, t = T.tile;
+    var u = T.ui, f = T.felt, t = T.tile, s = T.shell;
     var v = [
+      // UI 层：沿用既有变量名，样式表可平滑迁移
       ['--bg', u.bg], ['--card', u.card], ['--ink', u.ink], ['--sub', u.sub],
       ['--line', u.line], ['--accent', u.accent], ['--gold', u.gold],
       ['--felt', f.ui], ['--wan', u.wan], ['--tiao', u.tiao], ['--tong', u.tong],
       ['--mono', u.mono],
+      // 质感层
+      ['--cm-tiao-tile', u.tiaoTile],
       ['--cm-accent-hi', u.accentHi], ['--cm-accent-lo', u.accentLo],
-      ['--cm-shell-bg', u.shellBg], ['--cm-shell-head', u.shellHead], ['--cm-shell-line', u.shellLine],
       ['--cm-tile-top', t.top], ['--cm-tile-mid', t.mid], ['--cm-tile-bot', t.bot],
       ['--cm-tile-edge', t.edge], ['--cm-panel-top', t.pTop], ['--cm-panel-bot', t.pBot],
       ['--cm-panel-edge', t.pEdge],
       ['--cm-felt-hot', f.hot], ['--cm-felt-deep', f.deep],
-      ['--cm-rim-gold', f.rimGold], ['--cm-rim-outer', f.rimOuter]
+      ['--cm-rim-gold', f.rimGold], ['--cm-rim-outer', f.rimOuter],
+      // 牌桌外壳
+      ['--cm-shell-bg', u.shellBg], ['--cm-shell-head', u.shellHead], ['--cm-shell-line', u.shellLine],
+      ['--cm-head-ink', s.headInk], ['--cm-dim', s.dim], ['--cm-faint', s.faint],
+      ['--cm-panel', s.panel], ['--cm-panel-line', s.panelLine], ['--cm-panel-ink', s.panelInk],
+      ['--cm-link', s.link], ['--cm-link-hi', s.linkHi],
+      ['--cm-btn-hi', s.btnHi], ['--cm-accent-edge', s.accentEdge],
+      ['--cm-ok-bg', s.okBg], ['--cm-ok-ink', s.okInk],
+      ['--cm-fail-bg', s.failBg], ['--cm-fail-ink', s.failInk],
+      ['--cm-easy', s.easy], ['--cm-hard', s.hard], ['--cm-me', s.me],
+      ['--cm-drawer-bg', s.drawerBg], ['--cm-drawer-line', s.drawerLine], ['--cm-drawer-ink', s.drawerInk],
+      ['--cm-overlay', s.overlay], ['--cm-stage', f.stage]
     ];
     var out = ':root{\n';
     for (var i = 0; i < v.length; i++) out += '  ' + v[i][0] + ':' + v[i][1] + ';\n';

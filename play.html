@@ -5,10 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>川麻 2.5D · 血战到底 · Chuanma GPU Table</title>
 <style>
+  /* 设计令牌集中维护在 tokens.js，由 build.mjs 在此展开 :root{...} —— 色值不要硬写 */
   :root{
-    --bg:#0f1418;--card:#fff;--ink:#1a1d21;--sub:#5b6470;--line:#dfe3e9;
-    --accent:#1f6feb;--gold:#c9971f;--felt:#2f6b4f;
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --bg:#f5f6f8;
+  --card:#ffffff;
+  --ink:#1a1d21;
+  --sub:#5b6470;
+  --line:#e4e8ed;
+  --accent:#1f6feb;
+  --gold:#c9971f;
+  --felt:#2f6b4f;
+  --wan:#c0392b;
+  --tiao:#1e8e5a;
+  --tong:#2b6cb0;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --cm-tiao-tile:#1c7d4d;
+  --cm-accent-hi:#3d8ef8;
+  --cm-accent-lo:#1a5fd0;
+  --cm-tile-top:#fdf9ee;
+  --cm-tile-mid:#f6efdd;
+  --cm-tile-bot:#e7dcc3;
+  --cm-tile-edge:#c6b99c;
+  --cm-panel-top:#fffefa;
+  --cm-panel-bot:#f7f2e5;
+  --cm-panel-edge:#e2dac5;
+  --cm-felt-hot:#2e7f5b;
+  --cm-felt-deep:#0a2c1e;
+  --cm-rim-gold:#d9b45c;
+  --cm-rim-outer:#061c12;
+  --cm-shell-bg:#0f1418;
+  --cm-shell-head:#161c22;
+  --cm-shell-line:#232b33;
+  --cm-head-ink:#e9edf2;
+  --cm-dim:#93a1b0;
+  --cm-faint:#6b7784;
+  --cm-panel:#1b2229;
+  --cm-panel-line:#2c353f;
+  --cm-panel-ink:#dfe6ee;
+  --cm-link:#4b9bff;
+  --cm-link-hi:#8ec2ff;
+  --cm-btn-hi:#cfe0f0;
+  --cm-accent-edge:#7ab2ff;
+  --cm-ok-bg:#14351f;
+  --cm-ok-ink:#7fd8a5;
+  --cm-fail-bg:#3b1717;
+  --cm-fail-ink:#f19a90;
+  --cm-easy:#0f6e56;
+  --cm-hard:#a32d2d;
+  --cm-me:#f6f9ff;
+  --cm-drawer-bg:rgba(14,20,26,.95);
+  --cm-drawer-line:#2b343d;
+  --cm-drawer-ink:#c3cdd8;
+  --cm-overlay:rgba(8,12,16,.72);
+  --cm-stage:#0b2a1c;
+}
+
+  :root{
+    --bg:var(--cm-shell-bg);   /* 牌桌外壳用深色，覆盖 UI 默认浅底 */
     --k:1;   /* UI 缩放档：由 JS 按视口大小设置（xs/sm/md/lg/xl/xxl/4k 七档） */
   }
   *{box-sizing:border-box}
@@ -18,63 +71,63 @@
     -webkit-font-smoothing:antialiased}
   .app{height:100%;display:flex;flex-direction:column;overflow:hidden}
   header{flex:0 0 auto;display:flex;align-items:center;gap:calc(14px * var(--k));
-    padding:calc(8px * var(--k)) calc(16px * var(--k));background:#161c22;color:#e9edf2;
-    border-bottom:1px solid #232b33;min-height:0}
+    padding:calc(8px * var(--k)) calc(16px * var(--k));background:var(--cm-shell-head);color:var(--cm-head-ink);
+    border-bottom:1px solid var(--cm-shell-line);min-height:0}
   h1{font-size:calc(16px * var(--k));margin:0;white-space:nowrap;color:#fff}
   .hstat{display:flex;gap:calc(14px * var(--k));align-items:center;font-size:calc(13px * var(--k));
-    color:#93a1b0;white-space:nowrap;overflow:hidden}
+    color:var(--cm-dim);white-space:nowrap;overflow:hidden}
   .hstat b{color:#fff;font-variant-numeric:tabular-nums}
   .diag{font-size:calc(11.5px * var(--k));font-family:var(--mono);padding:calc(2px * var(--k)) calc(9px * var(--k));
-    border-radius:20px;background:#232b33;color:#93a1b0;white-space:nowrap;
+    border-radius:20px;background:var(--cm-shell-line);color:var(--cm-dim);white-space:nowrap;
     max-width:calc(240px * var(--k));overflow:hidden;text-overflow:ellipsis}
-  .diag[data-status=ok]{background:#14351f;color:#7fd8a5}
-  .diag[data-status=fail]{background:#3b1717;color:#f19a90}
+  .diag[data-status=ok]{background:var(--cm-ok-bg);color:var(--cm-ok-ink)}
+  .diag[data-status=fail]{background:var(--cm-fail-bg);color:var(--cm-fail-ink)}
   .spacer{flex:1;min-width:0}
   .diffs{display:flex;align-items:center;gap:calc(6px * var(--k));padding:calc(2px * var(--k)) calc(8px * var(--k));
-    border-radius:20px;background:#1b2229;white-space:nowrap}
-  .dlbl{font-size:calc(11.5px * var(--k));color:#6b7784}
-  .dbtn{border:1px solid transparent;background:transparent;color:#93a1b0;font-size:calc(12px * var(--k));
+    border-radius:20px;background:var(--cm-panel);white-space:nowrap}
+  .dlbl{font-size:calc(11.5px * var(--k));color:var(--cm-faint)}
+  .dbtn{border:1px solid transparent;background:transparent;color:var(--cm-dim);font-size:calc(12px * var(--k));
     padding:calc(3px * var(--k)) calc(10px * var(--k));border-radius:14px;cursor:pointer;font-weight:600}
-  .dbtn:hover{color:#cfe0f0}
-  .dbtn.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
-  .dbtn.on[data-d=easy]{background:#0f6e56;border-color:#0f6e56}
-  .dbtn.on[data-d=hard]{background:#a32d2d;border-color:#a32d2d}
-  .res-table tr.me td{background:#f6f9ff}
+  .dbtn:hover{color:var(--cm-btn-hi)}
+  .dbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .dbtn.on[data-d=easy]{background:var(--cm-easy);border-color:var(--cm-easy)}
+  .dbtn.on[data-d=hard]{background:var(--cm-hard);border-color:var(--cm-hard)}
+  .res-table tr.me td{background:var(--cm-me)}
   .res-table tr.me td:first-child{font-weight:800}
-  .btn{border:1px solid #2c353f;background:#1b2229;border-radius:calc(9px * var(--k));
+  .btn{border:1px solid var(--cm-panel-line);background:var(--cm-panel);border-radius:calc(9px * var(--k));
     padding:calc(5px * var(--k)) calc(12px * var(--k));font-size:calc(12.5px * var(--k));
-    cursor:pointer;color:#dfe6ee;font-weight:600;white-space:nowrap}
-  .btn:hover{border-color:#4b9bff;color:#8ec2ff}
+    cursor:pointer;color:var(--cm-panel-ink);font-weight:600;white-space:nowrap}
+  .btn:hover{border-color:var(--cm-link);color:var(--cm-link-hi)}
   .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .btn.pri:hover{background:#1a5fd0;color:#fff}
-  a.btn{text-decoration:none;display:inline-block;color:#dfe6ee}
+  .btn.pri:hover{background:var(--cm-accent-lo);color:#fff}
+  a.btn{text-decoration:none;display:inline-block;color:var(--cm-panel-ink)}
   /* 桌面动作按钮（胡 / 碰 / 杠 / 过）：随档放大，胡牌额外强调 */
   #actions{display:flex;gap:calc(14px * var(--k));justify-content:center;align-items:center}
   #actions .btn{font-size:calc(20px * var(--k));font-weight:900;letter-spacing:.08em;
     padding:calc(13px * var(--k)) calc(34px * var(--k));border-radius:calc(14px * var(--k));
     min-width:calc(104px * var(--k));border-width:2px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-  #actions .btn.pri{background:linear-gradient(180deg,#3d8ef8,#1a5fd0);border-color:#7ab2ff}
+  #actions .btn.pri{background:linear-gradient(180deg,var(--cm-accent-hi),var(--cm-accent-lo));border-color:var(--cm-accent-edge)}
   #actions .btn.hu{font-size:calc(27px * var(--k));min-width:calc(140px * var(--k));
     padding:calc(13px * var(--k)) calc(42px * var(--k));color:#3a2600;
     background:linear-gradient(180deg,#ffdd72,#e0a418);border-color:#fff3c4;
     animation:hupulse 1s ease-in-out infinite}
   @keyframes hupulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
   /* 牌桌：吃满剩余高度，绝不给页面留滚动条 */
-  .stage{flex:1 1 auto;min-height:0;position:relative;background:#0b2a1c;overflow:hidden}
+  .stage{flex:1 1 auto;min-height:0;position:relative;background:var(--cm-stage);overflow:hidden}
   .stage canvas{display:block;position:absolute;inset:0}
   /* 对局记录：浮动抽屉（不再占用牌桌高度） */
   .drawer{position:fixed;right:0;bottom:0;z-index:15;display:flex;flex-direction:column;
     align-items:flex-end;gap:calc(8px * var(--k));padding:0 calc(12px * var(--k)) calc(12px * var(--k)) 0}
   .drawer .panel{display:none;width:min(calc(560px * var(--k)),44vw);max-height:44vh;overflow:auto;
-    background:rgba(14,20,26,.95);border:1px solid #2b343d;border-radius:calc(12px * var(--k));
-    padding:calc(10px * var(--k)) calc(12px * var(--k));color:#c3cdd8;
+    background:var(--cm-drawer-bg);border:1px solid var(--cm-drawer-line);border-radius:calc(12px * var(--k));
+    padding:calc(10px * var(--k)) calc(12px * var(--k));color:var(--cm-drawer-ink);
     box-shadow:0 14px 40px rgba(0,0,0,.55);font-size:calc(12.5px * var(--k))}
   .drawer.open .panel{display:block}
   .drawer .panel .logcap{font-size:calc(10.5px * var(--k));font-weight:800;letter-spacing:.06em;
-    text-transform:uppercase;color:#6b7784;margin-bottom:calc(6px * var(--k))}
-  .log .n{color:#6b7784;font-family:var(--mono);font-size:calc(11px * var(--k));margin-right:6px}
+    text-transform:uppercase;color:var(--cm-faint);margin-bottom:calc(6px * var(--k))}
+  .log .n{color:var(--cm-faint);font-family:var(--mono);font-size:calc(11px * var(--k));margin-right:6px}
   .log div{padding:1px 0}
-  .overlay{position:fixed;inset:0;background:rgba(8,12,16,.72);display:none;align-items:center;
+  .overlay{position:fixed;inset:0;background:var(--cm-overlay);display:none;align-items:center;
     justify-content:center;padding:calc(20px * var(--k));z-index:20}
   .overlay.show{display:flex}
   .modal{background:var(--card);border-radius:calc(16px * var(--k));padding:calc(22px * var(--k)) calc(24px * var(--k));
@@ -46764,7 +46817,237 @@ ${parts.join("\n")}
   return __toCommonJS(pixi_entry_exports);
 })();
 </script>
-<script>/* 川麻麻将牌面资产 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背 + 万/条/筒 花色牌）
+<script>/* 川麻视觉设计令牌 · 单一源 (single source of truth)
+ * ---------------------------------------------------------------------------
+ * 为什么存在：牌面（tiles-ui.js）、GPU 牌桌（pixi-table.js）、三处页面样式
+ * 原先各写一份色值，改一处必漂移。本文件把「色板 + 质感参数」集中定义，
+ * 由三处共同消费：
+ *   - 浏览器：<script src=tokens.js> → window.CMTokens（build.mjs 内联到每个页面）
+ *   - Node   ：视觉回归脚本用 new Function('window', src) 取同一份值做断言
+ *   - 样式   ：build.mjs 把模板里的 __TOKENS_CSS__ 占位注释替换为 CMTokens.css()，产出 :root{...}
+ *             （坑：别在注释里写出「注释结束符」的完整字符序列，那会提前闭合本注释，
+ *              导致 new Function(src) 直接语法报错 —— 2026-09-19 实际踩到过）
+ *
+ * 契约（改本文件会同时影响牌面 / 牌桌 / 页面样式，改动即全局生效）：
+ *   CMTokens.geo      牌面几何（viewBox 单位，非像素）
+ *   CMTokens.tile     牌身与内凹面板
+ *   CMTokens.wan/tiao/tong/back   各花色墨色
+ *   CMTokens.felt     桌面绒布与桌边
+ *   CMTokens.side     2.5D 牌体厚度侧边
+ *   CMTokens.ui       UI 层（与既有 --accent 等变量名对齐，便于样式平滑迁移）
+ *   CMTokens.fx       质感开关与强度（高光 / 内阴影 / 纹理密度 / 暗角）
+ *   CMTokens.css()    产出 :root{...} 字符串
+ * ---------------------------------------------------------------------------
+ */
+(function (root) {
+  'use strict';
+
+  var T = {
+    version: '1.0.0',
+
+    /* ── 牌面几何（viewBox 60×84，接近真实牌 0.714 比例） ── */
+    geo: {
+      vbW: 60, vbH: 84,
+      rOuter: 8,      // 牌身外圆角
+      rPanel: 5,      // 内凹面板圆角
+      edge: 1.2,      // 牌身描边宽
+      panelInset: 5,  // 面板相对牌身内缩
+      panelEdgeW: 0.9
+    },
+
+    /* ── 牌身：象牙白实体感（顶亮 → 底暗 + 顶部高光 + 底部内阴影） ── */
+    tile: {
+      top: '#fdf9ee',
+      mid: '#f6efdd',
+      bot: '#e7dcc3',
+      edge: '#c6b99c',
+      edgeHi: 'rgba(255,255,255,.55)',   // 顶部 1px 高光线
+      innerLo: 'rgba(138,118,84,.16)',   // 底部内阴影
+      innerHi: 'rgba(255,255,255,.7)',   // 顶部内高光
+      // 内凹面板（刻面）：比牌身略亮，四周有内阴影制造凹陷
+      pTop: '#fffefa',
+      pBot: '#f7f2e5',
+      pEdge: '#e2dac5',
+      pInHi: 'rgba(255,255,255,.95)',
+      pInLo: 'rgba(150,132,96,.12)'
+    },
+
+    /* ── 万：靛黑汉字 + 朱红「萬」，带刻字高光/暗影 ── */
+    wan: {
+      ink: '#1e2b45',
+      inkHi: 'rgba(255,255,255,.42)',   // 刻字顶部高光
+      inkLo: 'rgba(24,34,54,.30)',      // 刻字底部暗影
+      char: '#bf3626',
+      charHi: 'rgba(255,255,255,.34)',
+      charLo: 'rgba(110,32,20,.34)'
+    },
+
+    /* ── 条：竹节绿（三段渐变 = 暗 / 亮 / 暗，模拟圆柱） ── */
+    tiao: {
+      dark: '#0f5233',
+      mid: '#1c7d4d',
+      lit: '#22995e',
+      hi: '#6cc896',
+      nodeDark: '#0b3d26',
+      birdBody: '#1c7d4d',
+      birdDark: '#0f5233',
+      birdWing: '#6cc896',
+      beak: '#d99a2b',
+      comb: '#c0392b',
+      eye: '#0d2e1c'
+    },
+
+    /* ── 筒：蓝环 + 朱红靶心（环面径向渐变 + 高光弧） ── */
+    tong: {
+      rimDark: '#24569a',
+      face: '#3f86cf',
+      faceHi: '#8fbdec',
+      core: '#c0392b',
+      coreDark: '#8f2a1f',
+      coreHi: 'rgba(255,255,255,.5)',
+      white: '#fffdf6'
+    },
+
+    /* ── 牌背：织物蓝 + 斜织纹 + 边框高光 ── */
+    back: {
+      top: '#3a7cc4',
+      bot: '#1e4d84',
+      edge: '#173e6d',
+      inner: '#e8eef7',
+      weave: 'rgba(232,238,247,.13)',
+      weft: 'rgba(12,36,66,.20)',
+      hi: 'rgba(255,255,255,.32)'
+    },
+
+    /* ── 桌面绒布：中央柔和光斑 → 边缘深绿 + 定向拉丝 + 暗角 ── */
+    felt: {
+      hot: '#2e7f5b',     // 光斑中心（0）
+      m1: '#1f6847',      // 0.4
+      m2: '#14503a',      // 0.72
+      deep: '#0a2c1e',    // 1
+      slubHi: 'rgba(255,255,255,.055)',  // 拉丝亮丝
+      slubLo: 'rgba(0,0,0,.075)',        // 拉丝暗丝
+      vign: 'rgba(3,16,10,.72)',         // 四角暗角
+      // 桌边三环
+      rimOuter: '#061c12',
+      rimGold: '#d9b45c',
+      rimGoldHi: 'rgba(255,232,168,.55)',
+      rimInner: '#6fae8c',
+      ui: '#2f6b4f',      // 页面用绒布色（.stage 背景兜底）
+      stage: '#0b2a1c'    // canvas 清屏色（PixiJS background）
+    },
+
+    /* ── 2.5D 牌体厚度侧边（顶亮 → 底暗，不再是纯色平涂） ── */
+    side: {
+      top: '#e8dcbc',
+      bot: '#a8956e',
+      edge: '#8d7b5a'
+    },
+
+    /* ── 落地阴影分层（近影紧而深 / 远影散而淡） ── */
+    shadow: {
+      nearA: 0.30, nearDy: 2, nearBlur: 3,
+      farA: 0.14, farDy: 6, farBlur: 10,
+      color: 0x000000
+    },
+
+    /* ── UI 层：与既有 CSS 变量名对齐（--accent / --gold / --felt ...） ── */
+    ui: {
+      bg: '#f5f6f8',
+      card: '#ffffff',
+      ink: '#1a1d21',
+      sub: '#5b6470',
+      line: '#e4e8ed',
+      accent: '#1f6feb',
+      accentHi: '#3d8ef8',
+      accentLo: '#1a5fd0',
+      gold: '#c9971f',
+      wan: '#c0392b',
+      tiao: '#1e8e5a',
+      tiaoTile: '#1c7d4d',   // 牌面竹绿（比文字绿深一档，用于色块/徽章）
+      tong: '#2b6cb0',
+      // 牌桌深色外壳
+      shellBg: '#0f1418',
+      shellHead: '#161c22',
+      shellLine: '#232b33',
+      mono: 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'
+    },
+
+    /* ── 牌桌外壳（深色 HUD）细色板 ── */
+    shell: {
+      headInk: '#e9edf2',
+      dim: '#93a1b0',
+      faint: '#6b7784',
+      panel: '#1b2229',
+      panelLine: '#2c353f',
+      panelInk: '#dfe6ee',
+      link: '#4b9bff',
+      linkHi: '#8ec2ff',
+      btnHi: '#cfe0f0',
+      accentEdge: '#7ab2ff',
+      okBg: '#14351f', okInk: '#7fd8a5',
+      failBg: '#3b1717', failInk: '#f19a90',
+      easy: '#0f6e56',
+      hard: '#a32d2d',
+      me: '#f6f9ff',
+      drawerBg: 'rgba(14,20,26,.95)',
+      drawerLine: '#2b343d',
+      drawerInk: '#c3cdd8',
+      overlay: 'rgba(8,12,16,.72)'
+    },
+
+    /* ── 质感开关与强度（想降噪/回退时只改这里，不用翻绘制代码） ── */
+    fx: {
+      tileGloss: 1,      // 牌身高光/内阴影总开关系数 0~1
+      panelDepth: 1,     // 内凹面板的凹陷强度
+      weave: 1,          // 牌背织纹强度
+      feltSlub: 2600,    // 绒布拉丝根数
+      feltWeave: 1400,   // 绒布斜织纹根数
+      feltVignette: true,
+      shadowLayers: 2
+    }
+  };
+
+  /* ── 产出 :root{...}：由 build.mjs 注入模板与 site.css ── */
+  T.css = function () {
+    var u = T.ui, f = T.felt, t = T.tile, s = T.shell;
+    var v = [
+      // UI 层：沿用既有变量名，样式表可平滑迁移
+      ['--bg', u.bg], ['--card', u.card], ['--ink', u.ink], ['--sub', u.sub],
+      ['--line', u.line], ['--accent', u.accent], ['--gold', u.gold],
+      ['--felt', f.ui], ['--wan', u.wan], ['--tiao', u.tiao], ['--tong', u.tong],
+      ['--mono', u.mono],
+      // 质感层
+      ['--cm-tiao-tile', u.tiaoTile],
+      ['--cm-accent-hi', u.accentHi], ['--cm-accent-lo', u.accentLo],
+      ['--cm-tile-top', t.top], ['--cm-tile-mid', t.mid], ['--cm-tile-bot', t.bot],
+      ['--cm-tile-edge', t.edge], ['--cm-panel-top', t.pTop], ['--cm-panel-bot', t.pBot],
+      ['--cm-panel-edge', t.pEdge],
+      ['--cm-felt-hot', f.hot], ['--cm-felt-deep', f.deep],
+      ['--cm-rim-gold', f.rimGold], ['--cm-rim-outer', f.rimOuter],
+      // 牌桌外壳
+      ['--cm-shell-bg', u.shellBg], ['--cm-shell-head', u.shellHead], ['--cm-shell-line', u.shellLine],
+      ['--cm-head-ink', s.headInk], ['--cm-dim', s.dim], ['--cm-faint', s.faint],
+      ['--cm-panel', s.panel], ['--cm-panel-line', s.panelLine], ['--cm-panel-ink', s.panelInk],
+      ['--cm-link', s.link], ['--cm-link-hi', s.linkHi],
+      ['--cm-btn-hi', s.btnHi], ['--cm-accent-edge', s.accentEdge],
+      ['--cm-ok-bg', s.okBg], ['--cm-ok-ink', s.okInk],
+      ['--cm-fail-bg', s.failBg], ['--cm-fail-ink', s.failInk],
+      ['--cm-easy', s.easy], ['--cm-hard', s.hard], ['--cm-me', s.me],
+      ['--cm-drawer-bg', s.drawerBg], ['--cm-drawer-line', s.drawerLine], ['--cm-drawer-ink', s.drawerInk],
+      ['--cm-overlay', s.overlay], ['--cm-stage', f.stage]
+    ];
+    var out = ':root{\n';
+    for (var i = 0; i < v.length; i++) out += '  ' + v[i][0] + ':' + v[i][1] + ';\n';
+    return out + '}\n';
+  };
+
+  root.CMTokens = T;
+})(typeof window !== 'undefined' ? window
+  : (typeof globalThis !== 'undefined' ? globalThis : this));
+
+;
+/* 川麻麻将牌面资产 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背 + 万/条/筒 花色牌）
  * 用法：MJTiles.face(tileId) / MJTiles.back()
  *   tileId 0..26  =>  suit = floor(id/9)  rank = id%9+1
  * 设计：viewBox 0 0 60 84（接近真实牌比例），width/height 100% 随容器缩放。

@@ -1,11 +1,62 @@
 /* chuan.ma — 学习内容页共享样式
    工具页（play.html / calculator.html / tiles.html）仍各自内联样式、保持单文件自包含；
-   学习内容页共用本文件，便于统一演进设计。 */
+   学习内容页共用本文件，便于统一演进设计。
+   色板与质感参数集中维护在 web/tokens.js —— build.mjs 会把下面的占位展开成 :root{...}。
+   （本文件单独打开时没有变量定义，属预期：它是构建源，产物是 web/dist/site.css） */
 :root{
-  --bg:#f5f6f8;--card:#fff;--ink:#1a1d21;--sub:#5b6470;--line:#e4e8ed;
-  --accent:#1f6feb;--wan:#c0392b;--tiao:#1e8e5a;--tong:#2b6cb0;--gold:#c9971f;
+  --bg:#f5f6f8;
+  --card:#ffffff;
+  --ink:#1a1d21;
+  --sub:#5b6470;
+  --line:#e4e8ed;
+  --accent:#1f6feb;
+  --gold:#c9971f;
+  --felt:#2f6b4f;
+  --wan:#c0392b;
+  --tiao:#1e8e5a;
+  --tong:#2b6cb0;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  --cm-tiao-tile:#1c7d4d;
+  --cm-accent-hi:#3d8ef8;
+  --cm-accent-lo:#1a5fd0;
+  --cm-tile-top:#fdf9ee;
+  --cm-tile-mid:#f6efdd;
+  --cm-tile-bot:#e7dcc3;
+  --cm-tile-edge:#c6b99c;
+  --cm-panel-top:#fffefa;
+  --cm-panel-bot:#f7f2e5;
+  --cm-panel-edge:#e2dac5;
+  --cm-felt-hot:#2e7f5b;
+  --cm-felt-deep:#0a2c1e;
+  --cm-rim-gold:#d9b45c;
+  --cm-rim-outer:#061c12;
+  --cm-shell-bg:#0f1418;
+  --cm-shell-head:#161c22;
+  --cm-shell-line:#232b33;
+  --cm-head-ink:#e9edf2;
+  --cm-dim:#93a1b0;
+  --cm-faint:#6b7784;
+  --cm-panel:#1b2229;
+  --cm-panel-line:#2c353f;
+  --cm-panel-ink:#dfe6ee;
+  --cm-link:#4b9bff;
+  --cm-link-hi:#8ec2ff;
+  --cm-btn-hi:#cfe0f0;
+  --cm-accent-edge:#7ab2ff;
+  --cm-ok-bg:#14351f;
+  --cm-ok-ink:#7fd8a5;
+  --cm-fail-bg:#3b1717;
+  --cm-fail-ink:#f19a90;
+  --cm-easy:#0f6e56;
+  --cm-hard:#a32d2d;
+  --cm-me:#f6f9ff;
+  --cm-drawer-bg:rgba(14,20,26,.95);
+  --cm-drawer-line:#2b343d;
+  --cm-drawer-ink:#c3cdd8;
+  --cm-overlay:rgba(8,12,16,.72);
+  --cm-stage:#0b2a1c;
 }
+
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.72;

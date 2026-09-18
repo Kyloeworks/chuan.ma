@@ -1,11 +1,9 @@
 /* chuan.ma — 学习内容页共享样式
    工具页（play.html / calculator.html / tiles.html）仍各自内联样式、保持单文件自包含；
-   学习内容页共用本文件，便于统一演进设计。 */
-:root{
-  --bg:#f5f6f8;--card:#fff;--ink:#1a1d21;--sub:#5b6470;--line:#e4e8ed;
-  --accent:#1f6feb;--wan:#c0392b;--tiao:#1e8e5a;--tong:#2b6cb0;--gold:#c9971f;
-  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
+   学习内容页共用本文件，便于统一演进设计。
+   色板与质感参数集中维护在 web/tokens.js —— build.mjs 会把下面的占位展开成 :root{...}。
+   （本文件单独打开时没有变量定义，属预期：它是构建源，产物是 web/dist/site.css） */
+/*__TOKENS_CSS__*/
 *{box-sizing:border-box}
 html,body{margin:0}
 body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.72;

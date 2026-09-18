@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>川麻 2.5D · 血战到底 · Chuanma GPU Table</title>
 <style>
+  /* 设计令牌集中维护在 tokens.js，由 build.mjs 在此展开 :root{...} —— 色值不要硬写 */
+  /*__TOKENS_CSS__*/
   :root{
-    --bg:#0f1418;--card:#fff;--ink:#1a1d21;--sub:#5b6470;--line:#dfe3e9;
-    --accent:#1f6feb;--gold:#c9971f;--felt:#2f6b4f;
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    --bg:var(--cm-shell-bg);   /* 牌桌外壳用深色，覆盖 UI 默认浅底 */
     --k:1;   /* UI 缩放档：由 JS 按视口大小设置（xs/sm/md/lg/xl/xxl/4k 七档） */
   }
   *{box-sizing:border-box}
@@ -18,63 +18,63 @@
     -webkit-font-smoothing:antialiased}
   .app{height:100%;display:flex;flex-direction:column;overflow:hidden}
   header{flex:0 0 auto;display:flex;align-items:center;gap:calc(14px * var(--k));
-    padding:calc(8px * var(--k)) calc(16px * var(--k));background:#161c22;color:#e9edf2;
-    border-bottom:1px solid #232b33;min-height:0}
+    padding:calc(8px * var(--k)) calc(16px * var(--k));background:var(--cm-shell-head);color:var(--cm-head-ink);
+    border-bottom:1px solid var(--cm-shell-line);min-height:0}
   h1{font-size:calc(16px * var(--k));margin:0;white-space:nowrap;color:#fff}
   .hstat{display:flex;gap:calc(14px * var(--k));align-items:center;font-size:calc(13px * var(--k));
-    color:#93a1b0;white-space:nowrap;overflow:hidden}
+    color:var(--cm-dim);white-space:nowrap;overflow:hidden}
   .hstat b{color:#fff;font-variant-numeric:tabular-nums}
   .diag{font-size:calc(11.5px * var(--k));font-family:var(--mono);padding:calc(2px * var(--k)) calc(9px * var(--k));
-    border-radius:20px;background:#232b33;color:#93a1b0;white-space:nowrap;
+    border-radius:20px;background:var(--cm-shell-line);color:var(--cm-dim);white-space:nowrap;
     max-width:calc(240px * var(--k));overflow:hidden;text-overflow:ellipsis}
-  .diag[data-status=ok]{background:#14351f;color:#7fd8a5}
-  .diag[data-status=fail]{background:#3b1717;color:#f19a90}
+  .diag[data-status=ok]{background:var(--cm-ok-bg);color:var(--cm-ok-ink)}
+  .diag[data-status=fail]{background:var(--cm-fail-bg);color:var(--cm-fail-ink)}
   .spacer{flex:1;min-width:0}
   .diffs{display:flex;align-items:center;gap:calc(6px * var(--k));padding:calc(2px * var(--k)) calc(8px * var(--k));
-    border-radius:20px;background:#1b2229;white-space:nowrap}
-  .dlbl{font-size:calc(11.5px * var(--k));color:#6b7784}
-  .dbtn{border:1px solid transparent;background:transparent;color:#93a1b0;font-size:calc(12px * var(--k));
+    border-radius:20px;background:var(--cm-panel);white-space:nowrap}
+  .dlbl{font-size:calc(11.5px * var(--k));color:var(--cm-faint)}
+  .dbtn{border:1px solid transparent;background:transparent;color:var(--cm-dim);font-size:calc(12px * var(--k));
     padding:calc(3px * var(--k)) calc(10px * var(--k));border-radius:14px;cursor:pointer;font-weight:600}
-  .dbtn:hover{color:#cfe0f0}
-  .dbtn.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
-  .dbtn.on[data-d=easy]{background:#0f6e56;border-color:#0f6e56}
-  .dbtn.on[data-d=hard]{background:#a32d2d;border-color:#a32d2d}
-  .res-table tr.me td{background:#f6f9ff}
+  .dbtn:hover{color:var(--cm-btn-hi)}
+  .dbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .dbtn.on[data-d=easy]{background:var(--cm-easy);border-color:var(--cm-easy)}
+  .dbtn.on[data-d=hard]{background:var(--cm-hard);border-color:var(--cm-hard)}
+  .res-table tr.me td{background:var(--cm-me)}
   .res-table tr.me td:first-child{font-weight:800}
-  .btn{border:1px solid #2c353f;background:#1b2229;border-radius:calc(9px * var(--k));
+  .btn{border:1px solid var(--cm-panel-line);background:var(--cm-panel);border-radius:calc(9px * var(--k));
     padding:calc(5px * var(--k)) calc(12px * var(--k));font-size:calc(12.5px * var(--k));
-    cursor:pointer;color:#dfe6ee;font-weight:600;white-space:nowrap}
-  .btn:hover{border-color:#4b9bff;color:#8ec2ff}
+    cursor:pointer;color:var(--cm-panel-ink);font-weight:600;white-space:nowrap}
+  .btn:hover{border-color:var(--cm-link);color:var(--cm-link-hi)}
   .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .btn.pri:hover{background:#1a5fd0;color:#fff}
-  a.btn{text-decoration:none;display:inline-block;color:#dfe6ee}
+  .btn.pri:hover{background:var(--cm-accent-lo);color:#fff}
+  a.btn{text-decoration:none;display:inline-block;color:var(--cm-panel-ink)}
   /* 桌面动作按钮（胡 / 碰 / 杠 / 过）：随档放大，胡牌额外强调 */
   #actions{display:flex;gap:calc(14px * var(--k));justify-content:center;align-items:center}
   #actions .btn{font-size:calc(20px * var(--k));font-weight:900;letter-spacing:.08em;
     padding:calc(13px * var(--k)) calc(34px * var(--k));border-radius:calc(14px * var(--k));
     min-width:calc(104px * var(--k));border-width:2px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
-  #actions .btn.pri{background:linear-gradient(180deg,#3d8ef8,#1a5fd0);border-color:#7ab2ff}
+  #actions .btn.pri{background:linear-gradient(180deg,var(--cm-accent-hi),var(--cm-accent-lo));border-color:var(--cm-accent-edge)}
   #actions .btn.hu{font-size:calc(27px * var(--k));min-width:calc(140px * var(--k));
     padding:calc(13px * var(--k)) calc(42px * var(--k));color:#3a2600;
     background:linear-gradient(180deg,#ffdd72,#e0a418);border-color:#fff3c4;
     animation:hupulse 1s ease-in-out infinite}
   @keyframes hupulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
   /* 牌桌：吃满剩余高度，绝不给页面留滚动条 */
-  .stage{flex:1 1 auto;min-height:0;position:relative;background:#0b2a1c;overflow:hidden}
+  .stage{flex:1 1 auto;min-height:0;position:relative;background:var(--cm-stage);overflow:hidden}
   .stage canvas{display:block;position:absolute;inset:0}
   /* 对局记录：浮动抽屉（不再占用牌桌高度） */
   .drawer{position:fixed;right:0;bottom:0;z-index:15;display:flex;flex-direction:column;
     align-items:flex-end;gap:calc(8px * var(--k));padding:0 calc(12px * var(--k)) calc(12px * var(--k)) 0}
   .drawer .panel{display:none;width:min(calc(560px * var(--k)),44vw);max-height:44vh;overflow:auto;
-    background:rgba(14,20,26,.95);border:1px solid #2b343d;border-radius:calc(12px * var(--k));
-    padding:calc(10px * var(--k)) calc(12px * var(--k));color:#c3cdd8;
+    background:var(--cm-drawer-bg);border:1px solid var(--cm-drawer-line);border-radius:calc(12px * var(--k));
+    padding:calc(10px * var(--k)) calc(12px * var(--k));color:var(--cm-drawer-ink);
     box-shadow:0 14px 40px rgba(0,0,0,.55);font-size:calc(12.5px * var(--k))}
   .drawer.open .panel{display:block}
   .drawer .panel .logcap{font-size:calc(10.5px * var(--k));font-weight:800;letter-spacing:.06em;
-    text-transform:uppercase;color:#6b7784;margin-bottom:calc(6px * var(--k))}
-  .log .n{color:#6b7784;font-family:var(--mono);font-size:calc(11px * var(--k));margin-right:6px}
+    text-transform:uppercase;color:var(--cm-faint);margin-bottom:calc(6px * var(--k))}
+  .log .n{color:var(--cm-faint);font-family:var(--mono);font-size:calc(11px * var(--k));margin-right:6px}
   .log div{padding:1px 0}
-  .overlay{position:fixed;inset:0;background:rgba(8,12,16,.72);display:none;align-items:center;
+  .overlay{position:fixed;inset:0;background:var(--cm-overlay);display:none;align-items:center;
     justify-content:center;padding:calc(20px * var(--k));z-index:20}
   .overlay.show{display:flex}
   .modal{background:var(--card);border-radius:calc(16px * var(--k));padding:calc(22px * var(--k)) calc(24px * var(--k));

@@ -5,12 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>川麻算牌器 · Chuanma Mahjong Hand Calculator</title>
 <style>
+  /* 设计令牌集中维护在 tokens.js，由 build.mjs 在此展开 :root{...} —— 色值不要硬写 */
+  /*__TOKENS_CSS__*/
   :root{
-    --bg:#f5f6f8; --card:#fff; --ink:#1a1d21; --sub:#5b6470; --line:#e4e8ed;
-    --accent:#1f6feb; --accent-soft:#eef4fd;
-    --wan:#c0392b; --tiao:#1e8e5a; --tong:#2b6cb0;
+    /* 本页专属：结果语义色（仅算牌器使用，不进全局令牌） */
+    --accent-soft:#eef4fd;
     --good:#1e8e5a; --goodbg:#eef8f2; --warn:#b7791f; --warnbg:#fdf6e8;
-    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
