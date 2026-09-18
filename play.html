@@ -47455,6 +47455,59 @@ ${parts.join("\n")}
   var SEAT_C = [0x74c2ff, 0x6fe3a6, 0xffd06a, 0xff9ec8];
   var GOLD = 0xf2c14e;
 
+  /* ================= 视觉令牌（web/tokens.js） =================
+     色值与质感强度不在这里硬写：改材质只改 tokens.js 一处。
+     取不到 CMTokens 时用与 tokens.js 完全一致的兜底值。 */
+  var TOK = (typeof window !== 'undefined' && window.CMTokens) || null;
+  function tk(pathStr, fb) {
+    if (!TOK) return fb;
+    var o = TOK, ps = pathStr.split('.');
+    for (var i = 0; i < ps.length; i++) {
+      if (o === null || o === undefined || o[ps[i]] === undefined) return fb;
+      o = o[ps[i]];
+    }
+    return o;
+  }
+  var V = {
+    feltHot: tk('felt.hot', '#2e7f5b'),
+    feltM1: tk('felt.m1', '#1f6847'),
+    feltM2: tk('felt.m2', '#14503a'),
+    feltDeep: tk('felt.deep', '#0a2c1e'),
+    slubHi: tk('felt.slubHi', 'rgba(255,255,255,.055)'),
+    slubLo: tk('felt.slubLo', 'rgba(0,0,0,.075)'),
+    vign: tk('felt.vign', 'rgba(3,16,10,.72)'),
+    rimOuter: tk('felt.rimOuter', '#061c12'),
+    rimGold: tk('felt.rimGold', '#d9b45c'),
+    rimGoldHi: tk('felt.rimGoldHi', 'rgba(255,232,168,.55)'),
+    rimInner: tk('felt.rimInner', '#6fae8c'),
+    stage: tk('felt.stage', '#0b2a1c'),
+    sideTop: tk('side.top', '#e8dcbc'),
+    sideBot: tk('side.bot', '#a8956e'),
+    sideEdge: tk('side.edge', '#8d7b5a'),
+    shNearA: tk('shadow.nearA', 0.30),
+    shFarA: tk('shadow.farA', 0.14),
+    shadowLayers: tk('fx.shadowLayers', 2)
+  };
+  var FXN = {
+    slub: tk('fx.feltSlub', 2600),
+    weave: tk('fx.feltWeave', 1400),
+    vignette: tk('fx.feltVignette', true) !== false
+  };
+
+  /* 确定性伪随机：桌面绒布纹理必须可复现 ——
+     原来用 Math.random()，同一尺寸的纹理每次重建都不一样，
+     截图指纹每次都变，回归基线就永远比不出「真变化」还是「噪声」。 */
+  var _seed = 20260919;
+  function rnd() { _seed = (_seed * 1664525 + 1013904223) >>> 0; return _seed / 4294967296; }
+  /** 0xRRGGBB 线性插值（牌厚渐变分段用） */
+  function mixHex(a, b, t) {
+    var ar = (a >> 16) & 255, ag = (a >> 8) & 255, ab = a & 255;
+    var br = (b >> 16) & 255, bg = (b >> 8) & 255, bb = b & 255;
+    var r = Math.round(ar + (br - ar) * t), g = Math.round(ag + (bg - ag) * t), bl = Math.round(ab + (bb - ab) * t);
+    return (r << 16) | (g << 8) | bl;
+  }
+  function hex2num(h) { return parseInt(String(h).replace('#', ''), 16); }
+
   var T = {
     zh: {
       title: '川麻 2.5D · 血战到底',
@@ -47839,7 +47892,7 @@ ${parts.join("\n")}
   async function initPixi() {
     var app = new PIXI.Application();
     await app.init({
-      background: '#0b2a1c',
+      background: V.stage,
       resizeTo: document.getElementById('stage'),
       antialias: true,
       resolution: Math.min(window.devicePixelRatio || 1, 2),
@@ -47922,7 +47975,13 @@ ${parts.join("\n")}
     if (state.fx) state.fx.removeChildren().forEach(function (c) { c.destroy({ children: true }); });
   }
 
-  /* ================= 牌节点（2.5D：世界对齐阴影 + 旋转牌面） ================= */
+  /* ================= 牌节点（2.5D：世界对齐阴影 + 旋转牌面） =================
+   * 牌体 = 三层：落地阴影（分层）→ 厚度侧壁（明暗渐变）→ 旋转牌面。
+   *
+   * ⚠ 牌厚渐变的可见范围只有**最下方 depth 高**的一条带（上方被牌面完全盖住），
+   *   所以渐变必须映射到「可见带」上（visTop..visTop+depth），
+   *   若按整个牌高 fh 铺渐变，可见带只落在渐变末尾 12% 内 —— 等于看不出渐变。
+   */
   function tileNode(id, w, h, opts) {
     opts = opts || {};
     var rot = opts.rot || 0;
@@ -47931,16 +47990,35 @@ ${parts.join("\n")}
     var rad = Math.max(3, Math.min(w, h) * 0.14);
     var swap = Math.abs(Math.sin(rot)) > 0.5;      // 旋转 90° → 脚印宽高互换
     var fw = swap ? h : w, fh = swap ? w : h;
-    // 落地阴影（始终向下，统一光源）
+    var sideTop = -fh / 2 + depth;                 // 厚度侧壁矩形顶部
+    var visTop = fh / 2;                           // 牌面下沿 = 可见带起点
+    // ① 落地阴影：分层（近影紧而深 + 远影散而淡）＝ 有重量感的接触阴影
     var sh = gfx();
-    sh.roundRect(-fw / 2 + 2, -fh / 2 + depth + 3, fw, fh, rad).fill({ color: 0x000000, alpha: 0.26 });
+    if (V.shadowLayers > 1) {
+      sh.roundRect(-fw / 2 + 4, -fh / 2 + depth + 8, fw, fh, rad).fill({ color: 0x000000, alpha: V.shFarA * 0.55 });
+    }
+    sh.roundRect(-fw / 2 + 2, -fh / 2 + depth + 3, fw, fh, rad).fill({ color: 0x000000, alpha: V.shNearA });
     c.addChild(sh);
-    // 厚度侧边
+    // ② 厚度侧壁：圆角遮罩 + 分段渐变（顶亮 → 底暗）
+    var sideMask = gfx();
+    sideMask.roundRect(-fw / 2, sideTop, fw, fh, rad).fill({ color: 0xffffff });
+    c.addChild(sideMask);
     var side = gfx();
-    side.roundRect(-fw / 2, -fh / 2 + depth, fw, fh, rad).fill({ color: 0xd8cba9 });
-    side.roundRect(-fw / 2, -fh / 2 + depth, fw, fh, rad).stroke({ width: 1, color: 0xa89874, alpha: 0.7 });
+    var steps = 6, cTop = hex2num(V.sideTop), cBot = hex2num(V.sideBot);
+    for (var i = 0; i < steps; i++) {
+      var t0 = i / steps, t1 = (i + 1) / steps;
+      // 可见带 [visTop, visTop+depth] ← 完整渐变；带以上填暗端（反正被牌面盖住）
+      var y0 = visTop + depth * t0, hh = depth * (t1 - t0) + 0.9;
+      side.rect(-fw / 2, y0, fw, hh).fill({ color: mixHex(cTop, cBot, (t0 + t1) / 2) });
+    }
+    side.rect(-fw / 2, sideTop, fw, Math.max(0, visTop - sideTop)).fill({ color: cTop });
+    side.mask = sideMask;
     c.addChild(side);
-    // 牌面（旋转到朝桌心）
+    // 侧壁轮廓（下沿圆角靠它勾出来）
+    var edge = gfx();
+    edge.roundRect(-fw / 2, sideTop, fw, fh, rad).stroke({ width: 1, color: hex2num(V.sideEdge), alpha: 0.7 });
+    c.addChild(edge);
+    // ③ 牌面（旋转到朝桌心）
     var face = new PIXI.Container();
     face.rotation = rot;
     if (opts.glow) {
@@ -48078,7 +48156,13 @@ ${parts.join("\n")}
     else box(name, cx - len / 2, cy - thick / 2, len, thick);
   }
 
-  /* ================= 场景绘制 ================= */
+  /* ================= 场景绘制 =================
+   * 绒布（毛毡）质感四层，缺一层就会退化成「均匀噪点＝塑料」：
+   *   ① 中央柔和光斑（径向渐变：桌面中段受顶灯，四周落暗）
+   *   ② 定向拉丝：短横线段而非方点 —— 噪点无方向性是塑料感的主因，绒布绒毛有走向
+   *   ③ 斜织纹：±40° 细密交叉网，是毛毡底布的结构
+   *   ④ 暗角：径向遮罩把四角压暗，画面重心落到中央
+   */
   function feltTexture(W, H) {
     var cw = Math.max(2, Math.round(W)), ch = Math.max(2, Math.round(H));
     var key = cw + 'x' + ch;
@@ -48086,20 +48170,47 @@ ${parts.join("\n")}
     if (state.feltTex) { try { state.feltTex.destroy(true); } catch (e) { /* noop */ } state.feltTex = null; }
     var c = document.createElement('canvas'); c.width = cw; c.height = ch;
     var x = c.getContext('2d');
-    var grd = x.createRadialGradient(cw / 2, ch * 0.86, Math.min(cw, ch) * 0.05, cw / 2, ch / 2, Math.max(cw, ch) * 0.78);
-    grd.addColorStop(0, '#2a7a56');
-    grd.addColorStop(0.4, '#1c6042');
-    grd.addColorStop(0.72, '#134a32');
-    grd.addColorStop(1, '#082416');
+
+    // ① 中央光斑：光源略偏下（观察者这一侧），中心到边缘四段过渡
+    var grd = x.createRadialGradient(cw * 0.5, ch * 0.6, Math.min(cw, ch) * 0.04,
+      cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.78);
+    grd.addColorStop(0, V.feltHot);
+    grd.addColorStop(0.4, V.feltM1);
+    grd.addColorStop(0.72, V.feltM2);
+    grd.addColorStop(1, V.feltDeep);
     x.fillStyle = grd; x.fillRect(0, 0, cw, ch);
-    for (var i = 0; i < 2600; i++) {
-      x.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.035).toFixed(3) + ')';
-      x.fillRect(Math.random() * cw, Math.random() * ch, 1.4, 1.4);
+
+    // ② 定向拉丝：短横线段，长度/粗细/透明度微抖 —— 这是「绒毛」而不是「噪点」
+    x.lineCap = 'round';
+    for (var i = 0; i < FXN.slub; i++) {
+      var px = rnd() * cw, py = rnd() * ch, len = 2.5 + rnd() * 8;
+      x.strokeStyle = rnd() < 0.52 ? V.slubHi : V.slubLo;
+      x.lineWidth = 0.7 + rnd() * 0.6;
+      x.beginPath();
+      x.moveTo(px, py);
+      x.lineTo(px + len, py + (rnd() - 0.5) * 1.1);
+      x.stroke();
     }
-    for (var j = 0; j < 1600; j++) {
-      x.fillStyle = 'rgba(0,0,0,' + (Math.random() * 0.05).toFixed(3) + ')';
-      x.fillRect(Math.random() * cw, Math.random() * ch, 1.6, 1.6);
+    // ③ 斜织纹：两组交叉斜线（毛毡底布的经纬）
+    for (var j = 0; j < FXN.weave; j++) {
+      var wx = rnd() * cw, wy = rnd() * ch, wl = 3 + rnd() * 5;
+      x.strokeStyle = rnd() < 0.5 ? 'rgba(255,255,255,.028)' : 'rgba(0,0,0,.045)';
+      x.lineWidth = 0.6;
+      x.beginPath();
+      if (j % 2) { x.moveTo(wx, wy); x.lineTo(wx + wl * 0.77, wy + wl * 0.64); }
+      else { x.moveTo(wx, wy); x.lineTo(wx + wl * 0.77, wy - wl * 0.64); }
+      x.stroke();
     }
+    // ④ 暗角
+    if (FXN.vignette) {
+      var vg = x.createRadialGradient(cw * 0.5, ch * 0.5, Math.min(cw, ch) * 0.34,
+        cw * 0.5, ch * 0.5, Math.max(cw, ch) * 0.76);
+      vg.addColorStop(0, 'rgba(3,16,10,0)');
+      vg.addColorStop(0.72, 'rgba(3,16,10,.34)');
+      vg.addColorStop(1, V.vign);
+      x.fillStyle = vg; x.fillRect(0, 0, cw, ch);
+    }
+
     var tex = PIXI.Texture.from(c);
     state.feltTex = tex; state.feltKey = key;
     return tex;
@@ -48108,10 +48219,12 @@ ${parts.join("\n")}
     var sp = new PIXI.Sprite(feltTexture(W, H));
     sp.width = W; sp.height = H;
     state.world.addChild(sp);
+    // 桌边四环：外框暗边 → 金线 → 金线内高光（内发光感）→ 内侧绒倒角
     var rim = gfx();
-    rim.roundRect(5, 5, W - 10, H - 10, 20).stroke({ width: 4, color: 0x061c12, alpha: 0.85 });
-    rim.roundRect(9, 9, W - 18, H - 18, 17).stroke({ width: 2, color: 0xd9b45c, alpha: 0.45 });
-    rim.roundRect(13, 13, W - 26, H - 26, 15).stroke({ width: 1, color: 0x6fae8c, alpha: 0.25 });
+    rim.roundRect(5, 5, W - 10, H - 10, 20).stroke({ width: 4, color: hex2num(V.rimOuter), alpha: 0.85 });
+    rim.roundRect(9, 9, W - 18, H - 18, 17).stroke({ width: 2, color: hex2num(V.rimGold), alpha: 0.45 });
+    rim.roundRect(11, 11, W - 22, H - 22, 16).stroke({ width: 1, color: hex2num(V.rimGold), alpha: 0.22 });
+    rim.roundRect(13, 13, W - 26, H - 26, 15).stroke({ width: 1, color: hex2num(V.rimInner), alpha: 0.25 });
     state.world.addChild(rim);
   }
 

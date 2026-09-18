@@ -15,3 +15,10 @@ npm-debug.log*
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# 调试 / 备份残留（本机环境偶尔会把这类文件写回来，一律不入库）
+.old-*
+_dbg*
+*~
+*.orig
+_compare_out.txt
