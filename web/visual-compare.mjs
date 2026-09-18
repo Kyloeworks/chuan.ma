@@ -31,16 +31,18 @@ const { PNG } = require('pngjs');
 
 const ARGV = process.argv.slice(2);
 const oldArg = ARGV.indexOf('--old');
-const tmpOld = path.join(here, '.old-tiles-ui.js');
+// before 基准取**仓库内固化快照**，不取 git HEAD ——
+// 仓库有自动化会推进 HEAD 并清理临时文件，靠 HEAD/临时文件取旧版会取到新版，
+// 对照图会变成「自己跟自己比」（实测两版 detail 完全一致 0.0%，白忙一轮）。
+const v1Path = path.resolve(here, 'baseline', 'tiles-ui-v1.js');
 let oldFile;
 if (oldArg >= 0 && ARGV[oldArg + 1]) oldFile = path.resolve(here, ARGV[oldArg + 1]);
-else if (existsSync(tmpOld)) oldFile = tmpOld;
+else if (existsSync(v1Path)) oldFile = v1Path;
 else {
-  // 从 git HEAD 现取一份（二进制安全：execFileSync 拿 Buffer 直接落盘）
-  const buf = execFileSync('git', ['show', 'HEAD:web/tiles-ui.js'], { cwd: path.join(here, '..'), maxBuffer: 1 << 28 });
-  writeFileSync(tmpOld, buf);
-  oldFile = tmpOld;
+  console.error('缺少 before 基准：' + v1Path + '\n请先运行 node web/_fix_baseline.cjs 从 git 固化 v1 快照。');
+  process.exit(1);
 }
+if (!existsSync(oldFile)) { console.error('before 资产不存在：' + oldFile); process.exit(1); }
 
 const tokensSrc = readFileSync(path.resolve(here, 'tokens.js'), 'utf8');
 function loadMJ(file) {
