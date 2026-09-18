@@ -1,0 +1,2209 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川麻实战 · 血战到底 · Chuanma Trainer</title>
+<style>
+  :root{
+    --bg:#e7eaee; --card:#fff; --ink:#1a1d21; --sub:#5b6470; --line:#dfe3e9;
+    --accent:#1f6feb; --accent-soft:#eef4fd;
+    --wan:#c0392b; --tiao:#1c7d4d; --tong:#2f6fb5;
+    --good:#1e8e5a; --goodbg:#eef8f2; --warn:#b7791f; --warnbg:#fdf6e8;
+    --gold:#c9971f; --turn:#1f6feb;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased;min-height:100vh}
+  /* 用 min-height 而非 height:100%：预览面板若按内容自适应高度，height:100% 会塌成 0 导致整页空白 */
+  .app{min-height:100vh;display:flex;flex-direction:column}
+
+  /* ---------- 顶栏 ---------- */
+  header{flex:0 0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:8px 16px;background:var(--card);border-bottom:1px solid var(--line)}
+  h1{font-size:16px;margin:0;white-space:nowrap}
+  .hstat{display:flex;gap:14px;align-items:center;font-size:13px;color:var(--sub);flex-wrap:wrap}
+  .hstat b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .hstat .turnlbl{color:var(--accent);font-weight:800}
+  .spacer{flex:1}
+  .btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:5px 12px;
+    font-size:12.5px;cursor:pointer;color:var(--ink);font-weight:600}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.pri:hover{background:#1a5fd0;color:#fff}
+  .btn.ghost{font-weight:500;color:var(--sub)}
+
+  /* ---------- 圆桌 ---------- */
+  .board{flex:1;min-height:0;display:grid;gap:8px;padding:8px;
+    grid-template-areas:". top ." "left center right" "me me me";
+    grid-template-columns:minmax(120px,17%) minmax(0,1fr) minmax(120px,17%);
+    grid-template-rows:auto minmax(0,1fr) auto}
+  .b-top{grid-area:top} .b-left{grid-area:left} .b-center{grid-area:center}
+  .b-right{grid-area:right} .b-me{grid-area:me}
+  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;
+    min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column}
+  .panel.turn{border-color:var(--turn);box-shadow:0 0 0 2px rgba(31,111,235,.28),0 0 14px rgba(31,111,235,.18)}
+  .panel.won{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,151,31,.3)}
+  .phead{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
+  .pname{font-weight:800;font-size:13.5px}
+  .ptag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;background:#eef1f5;color:var(--sub);white-space:nowrap}
+  .ptag.miss{background:var(--warnbg);color:var(--warn)}
+  .ptag.won{background:#fbf3df;color:var(--gold)}
+  .ptag.turn{background:var(--accent-soft);color:var(--accent)}
+  .ptag.dir{background:#e8f5ee;color:var(--good)}
+  .rowlbl{font-size:10.5px;color:var(--sub);margin:5px 0 3px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
+  .tiles{display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start;min-height:0}
+  .tile{width:26px;height:36px;line-height:0;position:relative;flex:none;user-select:none;border-radius:6px}
+  .tile svg{display:block;width:100%;height:100%}
+  .tile.sm{width:18px;height:25px;border-radius:4px}
+  .tile.xs{width:20px;height:28px;border-radius:5px}
+  .tile.click{cursor:pointer;transition:.1s}
+  .tile.click:hover{transform:translateY(-4px);box-shadow:0 5px 12px rgba(0,0,0,.16)}
+  .tile.dim{opacity:.28;cursor:not-allowed}
+  .tile.rec{border-radius:7px;box-shadow:0 0 0 2px var(--gold),0 0 10px rgba(201,151,31,.55)}
+  .tile.rec::after{content:'推荐';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:9px;
+    background:var(--gold);color:#fff;padding:0 4px;border-radius:4px;font-weight:700;line-height:13px;white-space:nowrap}
+  .tile.wintile{box-shadow:0 0 0 2px var(--gold),0 0 10px rgba(201,151,31,.6);border-radius:7px}
+  .river{display:flex;flex-direction:column;gap:2px;min-height:0}
+  .river-row{display:flex;gap:2px;justify-content:center}
+  .handsep{flex:none;width:12px;align-self:stretch}
+  .tile.justdrawn,.tile.wintile{box-shadow:0 0 0 2px var(--gold)}
+  .melds{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
+  .meld{display:flex;gap:1px;padding:1px;border:1px dashed var(--line);border-radius:5px}
+
+  /* 中央 */
+  .b-center{align-items:center;justify-content:center;text-align:center;gap:6px}
+  .wallbig{font-size:40px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
+  .wallcap{font-size:11px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
+  .turnrow{font-size:17px;font-weight:900;color:var(--accent)}
+  .orderline{font-size:12.5px;color:var(--sub);display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center}
+  .orderline .chip{padding:1px 8px;border-radius:20px;background:#eef1f5;font-weight:700;color:#48505b}
+  .orderline .chip.you{background:var(--accent-soft);color:var(--accent)}
+  .orderline .chip.next{background:#e8f5ee;color:var(--good)}
+  .orderline .chip.prev{background:#fdf6e8;color:var(--warn)}
+  .lastrow{font-size:12.5px;color:var(--sub)}
+  .lastrow .tile{display:inline-block;vertical-align:middle;margin-left:5px}
+
+  /* 我的区 */
+  .b-me{gap:4px}
+  .handrow{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;justify-content:center;padding:14px 0 6px;min-height:78px}
+  .handrow .tile{width:46px;height:64px;border-radius:9px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;min-height:0;align-items:center;padding-bottom:2px}
+  .act{border:none;border-radius:10px;padding:9px 24px;font-size:15px;font-weight:800;cursor:pointer;
+    color:#fff;background:var(--accent);letter-spacing:.05em}
+  .act.hu{background:var(--wan)} .act.pong{background:var(--tiao)} .act.kong{background:var(--tong)}
+  .act.pass{background:#8a94a0}
+  .act:hover{filter:brightness(1.08)}
+  .hintbar{font-size:12.5px;color:var(--sub);text-align:center;min-height:18px}
+  .metarow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:12.5px;color:var(--sub)}
+  .metarow b{color:var(--ink);font-variant-numeric:tabular-nums}
+  .teach{margin:8px auto 0;max-width:640px;background:#f4f8f6;border:1px solid #cfe3d8;border-radius:12px;padding:8px 12px;text-align:center}
+  .teach .tbig{font-size:15px;font-weight:800;color:var(--ink)}
+  .teach .tbig.ok{color:#0f6e56}
+  .teach .tbig.warn{color:#ba7517}
+  .teach .tbig.win{color:var(--gold)}
+  .teach .twait{font-size:12.5px;color:#0f6e56;font-weight:700;margin-top:3px}
+  .teach .treason{font-size:12.5px;color:var(--gold);font-weight:700;margin-top:3px}
+  .diffs{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sub)}
+  .dbtn{border:1px solid var(--line);background:#fff;color:var(--sub);font-size:12px;padding:3px 9px;border-radius:12px;cursor:pointer;font-weight:600}
+  .dbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .dbtn.on[data-d=easy]{background:#0f6e56;border-color:#0f6e56}
+  .dbtn.on[data-d=hard]{background:#a32d2d;border-color:#a32d2d}
+  .res-table tr.me td{background:#f6f9ff}
+  .res-table tr.me td:first-child{font-weight:800}
+
+  /* ---------- 底部记录 ---------- */
+  .bottom{flex:0 0 auto;background:var(--card);border-top:1px solid var(--line);padding:6px 14px;
+    display:flex;gap:12px;align-items:flex-start;max-height:82px}
+  .bottom .logcap{font-size:10.5px;font-weight:800;color:var(--sub);letter-spacing:.06em;
+    text-transform:uppercase;padding-top:3px;white-space:nowrap}
+  .log{flex:1;overflow-y:auto;font-size:12.5px;max-height:70px}
+  .log div{padding:1px 0}
+  .log .n{color:var(--sub);font-family:var(--mono);font-size:11px;margin-right:6px}
+
+  /* ---------- 覆盖层（定缺 / 结算 / 帮助） ---------- */
+  .overlay{position:fixed;inset:0;background:rgba(20,26,34,.5);display:none;align-items:center;
+    justify-content:center;padding:20px;z-index:20}
+  .overlay.show{display:flex}
+  .modal{background:var(--card);border-radius:16px;padding:22px 24px;max-width:760px;width:100%;
+    max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal h2{font-size:18px;margin:0 0 6px}
+  .modal .lead{color:var(--sub);font-size:13.5px;margin:0 0 14px}
+  .miss-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .mp{border:2px solid var(--line);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:#fff;transition:.12s}
+  .mp:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .mp .big{font-size:28px;font-weight:900}
+  .mp .cnt{font-size:13px;color:var(--sub);margin-top:4px}
+  .mp .recs{font-size:11.5px;font-weight:800;color:var(--gold);margin-top:5px}
+  .mp.recommend{border-color:var(--gold);background:#fffdf6}
+  .res-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+  .res-table th,.res-table td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left}
+  .res-table th{font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.03em}
+  .fanlist{font-size:12.5px;color:var(--sub)}
+  .legendbox{font-size:13px;color:#3a4149;line-height:1.9}
+  @media(max-width:900px){
+    .board{grid-template-columns:minmax(92px,15%) minmax(0,1fr) minmax(92px,15%)}
+    .handrow .tile{width:38px;height:53px}
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1 id="ttl"></h1>
+    <div class="hstat" id="hstat"></div>
+    <div class="spacer"></div>
+    <div class="diffs" id="diffs">
+      <span id="diffLbl"></span>
+      <button class="dbtn" data-d="easy"></button>
+      <button class="dbtn" data-d="normal"></button>
+      <button class="dbtn" data-d="hard"></button>
+    </div>
+    <button class="btn" id="helpBtn"></button>
+    <button class="btn" id="demoBtn"></button>
+    <button class="btn" id="newBtn"></button>
+    <button class="btn ghost" id="langBtn">EN</button>
+  </header>
+  <div class="board" id="board"></div>
+  <div class="bottom">
+    <div class="logcap" id="logcap"></div>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+<div class="overlay" id="overlay"></div>
+<script>var ChuanMa = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // chuanma/kernel/src/index.ts
+  var index_exports = {};
+  __export(index_exports, {
+    COPIES: () => COPIES,
+    DIFFICULTIES: () => DIFFICULTIES,
+    RANKS: () => RANKS,
+    SEATS: () => SEATS,
+    SUITS: () => SUITS,
+    SUIT_LABELS: () => SUIT_LABELS,
+    SUIT_NAMES: () => SUIT_NAMES,
+    TIAO: () => TIAO,
+    TILE_KINDS: () => TILE_KINDS,
+    TONG: () => TONG,
+    WALL_SIZE: () => WALL_SIZE,
+    WAN: () => WAN,
+    addTile: () => addTile,
+    analyzeDiscards: () => analyzeDiscards,
+    applyAddedKong: () => applyAddedKong,
+    applyConcealedKong: () => applyConcealedKong,
+    applyKong: () => applyKong,
+    applyPong: () => applyPong,
+    applyRon: () => applyRon,
+    applySelfWin: () => applySelfWin,
+    bigCallFan: () => bigCallFan,
+    botAddedKongTile: () => botAddedKongTile,
+    botConcealedKongTile: () => botConcealedKongTile,
+    botDiscardTile: () => botDiscardTile,
+    botMissingSuit: () => botMissingSuit,
+    botShouldPong: () => botShouldPong,
+    canRon: () => canRon,
+    canSelfWin: () => canSelfWin,
+    canWin: () => canWin,
+    canWinSevenPairs: () => canWinSevenPairs,
+    canWinStandard: () => canWinStandard,
+    cloneCounts: () => cloneCounts,
+    concealedTiles: () => concealedTiles,
+    countRoots: () => countRoots,
+    countsFrom: () => countsFrom,
+    createGame: () => createGame,
+    createWall: () => createWall,
+    declareMissing: () => declareMissing,
+    defaultRules: () => defaultRules,
+    defaultScoring: () => defaultScoring,
+    discard: () => discard,
+    draw: () => draw,
+    emptyCounts: () => emptyCounts,
+    fanToPoints: () => fanToPoints,
+    findPairs: () => findPairs,
+    handShanten: () => handShanten,
+    hasClearedMissing: () => hasClearedMissing,
+    hasNoMissing: () => hasNoMissing,
+    holdsMissingSuit: () => holdsMissingSuit,
+    improvingTiles: () => improvingTiles,
+    isAllTriplets: () => isAllTriplets,
+    isFlowerPig: () => isFlowerPig,
+    isFlush: () => isFlush,
+    isGameOver: () => isGameOver,
+    isJinGouDiao: () => isJinGouDiao,
+    isReadyHand: () => isReadyHand,
+    isSettlementBalanced: () => isSettlementBalanced,
+    isTenpai: () => isTenpai,
+    isolationScore: () => isolationScore,
+    makeRng: () => makeRng,
+    nextActiveSeat: () => nextActiveSeat,
+    passClaim: () => passClaim,
+    rankOf: () => rankOf,
+    recommendDiscard: () => recommendDiscard,
+    recordKong: () => recordKong,
+    remainingOf: () => remainingOf,
+    removeTile: () => removeTile,
+    scoringFor: () => scoringFor,
+    settleRound: () => settleRound,
+    settleRoundImpl: () => settleRoundImpl,
+    shanten: () => shanten,
+    shantenSevenPairs: () => shantenSevenPairs,
+    shantenStandard: () => shantenStandard,
+    shuffleInPlace: () => shuffleInPlace,
+    simulateGame: () => simulateGame,
+    simulateGameOpts: () => simulateGameOpts,
+    suitCount: () => suitCount,
+    suitOf: () => suitOf,
+    suitsPresent: () => suitsPresent,
+    tileId: () => tileId,
+    tileLabel: () => tileLabel,
+    tileLabelEn: () => tileLabelEn,
+    toTiles: () => toTiles,
+    totalOf: () => totalOf,
+    ukeire: () => ukeire,
+    winningTiles: () => winningTiles
+  });
+
+  // chuanma/kernel/src/tiles.ts
+  var SUITS = 3;
+  var RANKS = 9;
+  var TILE_KINDS = 27;
+  var COPIES = 4;
+  var WALL_SIZE = TILE_KINDS * COPIES;
+  var WAN = 0;
+  var TIAO = 1;
+  var TONG = 2;
+  var SUIT_NAMES = ["wan", "tiao", "tong"];
+  var SUIT_LABELS = ["万", "条", "筒"];
+  function tileId(suit, rank) {
+    return suit * RANKS + (rank - 1);
+  }
+  function suitOf(id) {
+    return Math.floor(id / RANKS);
+  }
+  function rankOf(id) {
+    return id % RANKS + 1;
+  }
+  function tileLabel(id) {
+    return `${rankOf(id)}${SUIT_LABELS[suitOf(id)]}`;
+  }
+  function tileLabelEn(id) {
+    return `${rankOf(id)} ${SUIT_NAMES[suitOf(id)]}`;
+  }
+  function createWall() {
+    const wall = new Array(WALL_SIZE);
+    let k = 0;
+    for (let i = 0; i < TILE_KINDS; i++) {
+      for (let n = 0; n < COPIES; n++) wall[k++] = i;
+    }
+    return wall;
+  }
+  function shuffleInPlace(a, rnd = Math.random) {
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rnd() * (i + 1));
+      const t = a[i];
+      a[i] = a[j];
+      a[j] = t;
+    }
+    return a;
+  }
+  function makeRng(seed) {
+    let s = seed >>> 0;
+    return function() {
+      s = s + 1831565813 >>> 0;
+      let t = s;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function emptyCounts() {
+    return new Array(TILE_KINDS).fill(0);
+  }
+  function countsFrom(ids) {
+    const c = emptyCounts();
+    for (const id of ids) c[id]++;
+    return c;
+  }
+  function toTiles(c) {
+    const out = [];
+    for (let i = 0; i < TILE_KINDS; i++) {
+      for (let n = 0; n < c[i]; n++) out.push(i);
+    }
+    return out;
+  }
+  function totalOf(c) {
+    let s = 0;
+    for (let i = 0; i < TILE_KINDS; i++) s += c[i];
+    return s;
+  }
+  function cloneCounts(c) {
+    return c.slice();
+  }
+  function addTile(c, id) {
+    c[id]++;
+  }
+  function removeTile(c, id) {
+    if (c[id] <= 0) return false;
+    c[id]--;
+    return true;
+  }
+  function suitCount(c, suit) {
+    let s = 0;
+    const base = suit * RANKS;
+    for (let i = 0; i < RANKS; i++) s += c[base + i];
+    return s;
+  }
+  function suitsPresent(c) {
+    const out = [];
+    for (let s = 0; s < SUITS; s++) {
+      if (suitCount(c, s) > 0) out.push(s);
+    }
+    return out;
+  }
+
+  // chuanma/kernel/src/win.ts
+  function allMelds(c, need) {
+    if (need === 0) {
+      for (let i2 = 0; i2 < TILE_KINDS; i2++) if (c[i2] !== 0) return false;
+      return true;
+    }
+    let i = 0;
+    while (i < TILE_KINDS && c[i] === 0) i++;
+    if (i >= TILE_KINDS) return false;
+    if (c[i] >= 3) {
+      c[i] -= 3;
+      const ok = allMelds(c, need - 1);
+      c[i] += 3;
+      if (ok) return true;
+    }
+    if (i % RANKS <= 6 && c[i + 1] > 0 && c[i + 2] > 0) {
+      c[i]--;
+      c[i + 1]--;
+      c[i + 2]--;
+      const ok = allMelds(c, need - 1);
+      c[i]++;
+      c[i + 1]++;
+      c[i + 2]++;
+      if (ok) return true;
+    }
+    return false;
+  }
+  function canWinStandard(c, melds = 0) {
+    const need = 4 - melds;
+    if (need < 0) return false;
+    let total = 0;
+    for (let i = 0; i < TILE_KINDS; i++) total += c[i];
+    if (total !== need * 3 + 2) return false;
+    for (let i = 0; i < TILE_KINDS; i++) {
+      if (c[i] >= 2) {
+        c[i] -= 2;
+        const ok = allMelds(c, need);
+        c[i] += 2;
+        if (ok) return true;
+      }
+    }
+    return false;
+  }
+  function canWinSevenPairs(c, melds = 0) {
+    if (melds > 0) return false;
+    let total = 0;
+    for (let i = 0; i < TILE_KINDS; i++) total += c[i];
+    if (total !== 14) return false;
+    let pairs = 0;
+    for (let i = 0; i < TILE_KINDS; i++) {
+      const n = c[i];
+      if (n === 0) continue;
+      if (n === 2) pairs += 1;
+      else if (n === 4) pairs += 2;
+      else return false;
+    }
+    return pairs === 7;
+  }
+  function canWin(c, melds = 0) {
+    if (canWinStandard(c, melds)) return "standard";
+    if (canWinSevenPairs(c, melds)) return "sevenPairs";
+    return null;
+  }
+  function findPairs(c) {
+    const out = [];
+    for (let i = 0; i < TILE_KINDS; i++) {
+      if (c[i] >= 2) out.push(i);
+    }
+    return out;
+  }
+
+  // chuanma/kernel/src/shanten.ts
+  var MAX_M = 4;
+  var MAX_BLOCK = 5;
+  function enumerateSuit(c9) {
+    const seen = /* @__PURE__ */ new Set();
+    const out = [];
+    const record = (m, p, pr) => {
+      const key = m * 36 + p * 6 + pr;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({ m, p, pr });
+    };
+    const dfs = (i, m, p, pr) => {
+      if (i >= RANKS) {
+        record(m, p, pr);
+        return;
+      }
+      if (c9[i] === 0) {
+        dfs(i + 1, m, p, pr);
+        return;
+      }
+      if (m + p + pr >= MAX_BLOCK) {
+        c9[i]--;
+        dfs(i, m, p, pr);
+        c9[i]++;
+        return;
+      }
+      if (c9[i] >= 3 && m < MAX_M) {
+        c9[i] -= 3;
+        dfs(i, m + 1, p, pr);
+        c9[i] += 3;
+      }
+      if (i <= 6 && c9[i + 1] > 0 && c9[i + 2] > 0 && m < MAX_M) {
+        c9[i]--;
+        c9[i + 1]--;
+        c9[i + 2]--;
+        dfs(i, m + 1, p, pr);
+        c9[i]++;
+        c9[i + 1]++;
+        c9[i + 2]++;
+      }
+      if (c9[i] >= 2 && pr < 6) {
+        c9[i] -= 2;
+        dfs(i, m, p, pr + 1);
+        c9[i] += 2;
+      }
+      if (i <= 7 && c9[i + 1] > 0) {
+        c9[i]--;
+        c9[i + 1]--;
+        dfs(i, m, p + 1, pr);
+        c9[i]++;
+        c9[i + 1]++;
+      }
+      if (i <= 6 && c9[i + 2] > 0) {
+        c9[i]--;
+        c9[i + 2]--;
+        dfs(i, m, p + 1, pr);
+        c9[i]++;
+        c9[i + 2]++;
+      }
+      c9[i]--;
+      dfs(i, m, p, pr);
+      c9[i]++;
+    };
+    dfs(0, 0, 0, 0);
+    return out;
+  }
+  function shantenFromShape(M, P, PR) {
+    let B = P + Math.max(0, PR - 1);
+    if (M + B > 4) B = 4 - M;
+    if (B < 0) B = 0;
+    return 8 - 2 * M - B - (PR > 0 ? 1 : 0);
+  }
+  function shantenStandard(c, melds = 0) {
+    const per = [];
+    for (let s = 0; s < SUITS; s++) {
+      const base = s * RANKS;
+      const c9 = new Array(RANKS);
+      for (let i = 0; i < RANKS; i++) c9[i] = c[base + i];
+      per.push(enumerateSuit(c9));
+    }
+    let best = 8;
+    for (const a of per[0]) {
+      for (const b of per[1]) {
+        const m0 = a.m + b.m;
+        if (m0 > MAX_M + 1) continue;
+        for (const d of per[2]) {
+          const M = m0 + d.m + melds;
+          if (M > 4) continue;
+          const sh = shantenFromShape(M, a.p + b.p + d.p, a.pr + b.pr + d.pr);
+          if (sh < best) best = sh;
+        }
+      }
+    }
+    return best;
+  }
+  function shantenSevenPairs(c) {
+    let pairs = 0;
+    let kinds = 0;
+    for (let i = 0; i < TILE_KINDS; i++) {
+      const n = c[i];
+      if (n === 0) continue;
+      kinds++;
+      if (n >= 2) pairs += n === 4 ? 2 : 1;
+    }
+    const lack = Math.max(0, 7 - 2 * kinds);
+    return 6 - pairs + lack;
+  }
+  function shanten(c, melds = 0) {
+    const expected = 13 - 3 * melds;
+    const total = totalOf(c);
+    if (total === expected) return shantenCore(c, melds);
+    if (total === expected + 1) {
+      if (canWin(c, melds) !== null) return -1;
+      let best = 8;
+      for (let t = 0; t < TILE_KINDS; t++) {
+        if (c[t] === 0) continue;
+        c[t]--;
+        const s = shantenCore(c, melds);
+        c[t]++;
+        if (s < best) best = s;
+      }
+      return best;
+    }
+    return shantenCore(c, melds);
+  }
+  function shantenCore(c, melds) {
+    let best = shantenStandard(c, melds);
+    if (melds === 0) {
+      const s7 = shantenSevenPairs(c);
+      if (s7 < best) best = s7;
+    }
+    return best;
+  }
+  function isTenpai(c, melds = 0) {
+    return shanten(c, melds) === 0;
+  }
+
+  // chuanma/kernel/src/ukeire.ts
+  function winningTiles(c, melds = 0) {
+    const out = [];
+    for (let t = 0; t < TILE_KINDS; t++) {
+      if (c[t] >= COPIES) continue;
+      c[t]++;
+      const ok = canWin(c, melds) !== null;
+      c[t]--;
+      if (ok) out.push(t);
+    }
+    return out;
+  }
+  function remainingOf(visible, t) {
+    const r = COPIES - visible[t];
+    return r > 0 ? r : 0;
+  }
+  function ukeire(c, melds = 0, visible) {
+    const wins = winningTiles(c, melds);
+    let count = 0;
+    if (visible) {
+      for (const t of wins) count += remainingOf(visible, t);
+    } else {
+      for (const t of wins) count += COPIES - c[t];
+    }
+    return { tiles: wins, kinds: wins.length, count };
+  }
+  function improvingTiles(c, melds = 0) {
+    const sh = shanten(c, melds);
+    const out = [];
+    for (let d = 0; d < TILE_KINDS; d++) {
+      if (c[d] >= COPIES) continue;
+      c[d]++;
+      const advanced = shanten(c, melds) < sh;
+      c[d]--;
+      if (advanced) out.push(d);
+    }
+    return out;
+  }
+  function analyzeDiscards(c, melds = 0, visible) {
+    const out = [];
+    const seen = /* @__PURE__ */ new Set();
+    for (let t = 0; t < TILE_KINDS; t++) {
+      if (c[t] === 0 || seen.has(t)) continue;
+      seen.add(t);
+      const vis = visible ? visible.slice() : c.slice();
+      vis[t]--;
+      c[t]--;
+      const sh = shanten(c, melds);
+      if (sh === 0) {
+        const u = ukeire(c, melds, vis);
+        out.push({
+          tile: t,
+          shanten: sh,
+          ukeireTiles: u.tiles,
+          ukeireKinds: u.kinds,
+          ukeireCount: u.count
+        });
+      } else {
+        const tiles = improvingTiles(c, melds);
+        let count = 0;
+        for (const d of tiles) count += visible ? remainingOf(vis, d) : COPIES - c[d];
+        out.push({
+          tile: t,
+          shanten: sh,
+          ukeireTiles: tiles,
+          ukeireKinds: tiles.length,
+          ukeireCount: count
+        });
+      }
+      c[t]++;
+    }
+    return out;
+  }
+  function recommendDiscard(c, melds = 0, visible) {
+    const opts = analyzeDiscards(c, melds, visible);
+    if (opts.length === 0) return null;
+    opts.sort((a, b) => {
+      if (a.shanten !== b.shanten) return a.shanten - b.shanten;
+      if (a.ukeireCount !== b.ukeireCount) return b.ukeireCount - a.ukeireCount;
+      if (a.ukeireKinds !== b.ukeireKinds) return b.ukeireKinds - a.ukeireKinds;
+      return a.tile - b.tile;
+    });
+    return opts[0];
+  }
+  function isolationScore(c, t) {
+    const rank = t % 9;
+    const base = Math.floor(t / 9) * 9;
+    let neighbors = 0;
+    if (rank >= 2 && c[base + rank - 2] > 0) neighbors++;
+    if (rank >= 1 && c[base + rank - 1] > 0) neighbors++;
+    if (rank <= 8 && c[base + rank] > 0) neighbors++;
+    if (rank <= 7 && c[base + rank + 1] > 0) neighbors++;
+    let score = 4 - neighbors;
+    if (rank === 1 || rank === 9) score += 1;
+    return score;
+  }
+
+  // chuanma/kernel/src/scoring.ts
+  var defaultScoring = {
+    rules: {
+      allowKong: true,
+      allowAddedKong: true,
+      checkReadyHand: true,
+      checkFlowerPig: true,
+      taxRefund: true,
+      cap: 0
+    },
+    basePoints: 1,
+    payFrom: "unwon",
+    flowerPigPay: 16,
+    fan: {
+      pinghu: 1,
+      pengpeng: 2,
+      qingyise: 4,
+      qidui: 2,
+      longqidui: 2,
+      gen: 1,
+      zimo: 1,
+      gangshanghua: 1,
+      gangshangpao: 1,
+      haidi: 1,
+      jingoudiao: 2
+    },
+    kong: {
+      exposedFromDiscarder: 2,
+      concealedEach: 2,
+      addedEach: 1
+    }
+  };
+  function gatherSuits(p) {
+    const s = /* @__PURE__ */ new Set();
+    for (let i = 0; i < TILE_KINDS; i++) {
+      if (p.hand[i] > 0) s.add(Math.floor(i / 9));
+    }
+    for (const m of p.melds) s.add(Math.floor(m.tile / 9));
+    return s;
+  }
+  function isFlush(p) {
+    return gatherSuits(p).size === 1;
+  }
+  function isAllTriplets(c, kongs) {
+    let total = 0;
+    let pairs = 0;
+    for (let i = 0; i < TILE_KINDS; i++) {
+      const n = c[i];
+      total += n;
+      if (n === 0) continue;
+      if (n % 3 === 2 && pairs === 0) {
+        pairs++;
+        continue;
+      }
+      if (n % 3 !== 0) return false;
+    }
+    return total === (4 - kongs) * 3 + 2 && pairs === 1;
+  }
+  function countRoots(p) {
+    const cnt = p.hand.slice();
+    for (const m of p.melds) {
+      if (m.type === "kong") cnt[m.tile] += 4;
+      else cnt[m.tile] += 3;
+    }
+    let roots = 0;
+    for (let i = 0; i < TILE_KINDS; i++) if (cnt[i] >= 4) roots++;
+    return roots;
+  }
+  function isJinGouDiao(p) {
+    if (p.melds.length < 4) return false;
+    return p.melds.every((m) => m.type === "kong");
+  }
+  function scoringFor(g, p, ctx) {
+    const cfg = g.config;
+    const items = [];
+    const add = (key, name, fans) => {
+      if (fans > 0) items.push({ key, name, fans });
+    };
+    const kongs = p.melds.filter((m) => m.type === "kong").length;
+    const seven = canWinSevenPairs(p.hand, p.melds.length) && p.melds.length === 0;
+    const flush = isFlush(p);
+    const roots = countRoots(p);
+    const allTriplets = !seven && isAllTriplets(p.hand, kongs);
+    if (seven) {
+      add("qidui", "七对", cfg.fan.qidui);
+      const hasQuad = p.hand.some((n) => n === 4);
+      if (hasQuad) add("longqidui", "龙七对", cfg.fan.longqidui);
+      if (flush) add("qingyise", "清一色", cfg.fan.qingyise);
+      if (flush && hasQuad) add("qingqidui", "清龙七对", 0);
+    } else {
+      add("pinghu", "平胡", cfg.fan.pinghu);
+      if (allTriplets) add("pengpeng", "碰碰胡", cfg.fan.pengpeng);
+      if (flush) add("qingyise", "清一色", cfg.fan.qingyise);
+      if (isJinGouDiao(p)) add("jingoudiao", "金钩钓", cfg.fan.jingoudiao);
+    }
+    if (roots > 0) add("gen", `根×${roots}`, cfg.fan.gen * roots);
+    if (ctx.selfDraw) add("zimo", "自摸", cfg.fan.zimo);
+    if (ctx.kongReplacement && ctx.selfDraw) add("gangshanghua", "杠上花", cfg.fan.gangshanghua);
+    if (ctx.afterKongDiscard && !ctx.selfDraw) add("gangshangpao", "杠上炮", cfg.fan.gangshangpao);
+    if (ctx.lastTile) add("haidi", "海底", cfg.fan.haidi);
+    let total = items.reduce((s, it) => s + it.fans, 0);
+    const cap = cfg.rules.cap;
+    if (cap > 0 && total > cap) total = cap;
+    return {
+      items,
+      total,
+      isFlush: flush,
+      isSevenPairs: seven,
+      isAllTriplets: allTriplets,
+      roots,
+      fanKeys: items.map((i) => i.key)
+    };
+  }
+
+  // chuanma/kernel/src/settle.ts
+  function blankSeat(seat) {
+    return {
+      seat,
+      won: false,
+      fans: 0,
+      fanPoints: 0,
+      kongIn: 0,
+      kongOut: 0,
+      readyIn: 0,
+      readyOut: 0,
+      flowerPigIn: 0,
+      flowerPigOut: 0,
+      refundIn: 0,
+      refundOut: 0,
+      net: 0,
+      isReady: false,
+      isFlowerPig: false
+    };
+  }
+  function fanToPoints(fan, basePoints) {
+    return Math.max(0, Math.round(fan * basePoints));
+  }
+  function hasClearedMissing(p) {
+    if (p.missing < 0) return true;
+    return suitCount(p.hand, p.missing) === 0;
+  }
+  function isFlowerPig(p) {
+    return p.missing >= 0 && suitCount(p.hand, p.missing) > 0;
+  }
+  function isReadyHand(p) {
+    if (!hasClearedMissing(p)) return false;
+    return winningTiles(p.hand, p.melds.length).length > 0;
+  }
+  function fanOfWinTile(p, tile, g) {
+    if (p.hand[tile] >= 4) return 0;
+    p.hand[tile]++;
+    const ctx = {
+      selfDraw: true,
+      by: -1,
+      tile,
+      kongReplacement: false,
+      afterKongDiscard: false,
+      lastTile: false
+    };
+    const r = scoringFor(g, p, ctx);
+    p.hand[tile]--;
+    return r.total;
+  }
+  function bigCallFan(g, p) {
+    if (!hasClearedMissing(p)) return 0;
+    const tiles = winningTiles(p.hand, p.melds.length);
+    let best = 0;
+    for (const t of tiles) {
+      if (p.missing >= 0 && Math.floor(t / RANKS) === p.missing) continue;
+      const f = fanOfWinTile(p, t, g);
+      if (f > best) best = f;
+    }
+    return best;
+  }
+  function recordKong(g, seat, kind, tile, fromSeat = -1) {
+    const cfg = g.config;
+    const k = cfg.kong;
+    const out = [];
+    const label = kind === "concealed" ? "暗杠" : kind === "added" ? "补杠" : "直杠";
+    const tileName = tileLabel(tile);
+    if (kind === "exposed") {
+      if (fromSeat >= 0 && fromSeat !== seat && k.exposedFromDiscarder > 0) {
+        out.push({
+          kind: "kong",
+          from: fromSeat,
+          to: seat,
+          amount: k.exposedFromDiscarder,
+          note: `${label} ${tileName}：放杠者付 ${k.exposedFromDiscarder}`
+        });
+      }
+    } else {
+      const each = kind === "concealed" ? k.concealedEach : k.addedEach;
+      if (each > 0) {
+        for (const s of [0, 1, 2, 3]) {
+          if (s === seat) continue;
+          out.push({
+            kind: "kong",
+            from: s,
+            to: seat,
+            amount: each,
+            note: `${label} ${tileName}：每家付 ${each}`
+          });
+        }
+      }
+    }
+    for (const e of out) g.kongEntries.push(e);
+    g.kongScores[seat] += out.reduce((s, e) => s + e.amount, 0);
+    return out;
+  }
+  function emptySeats() {
+    return [blankSeat(0), blankSeat(1), blankSeat(2), blankSeat(3)];
+  }
+  function settleRoundImpl(g) {
+    const cfg = g.config;
+    const base = cfg.basePoints;
+    const seats = emptySeats();
+    const entries = [];
+    const reason = g.winCount >= 3 ? "threeWins" : "wallEmpty";
+    const unwon = [0, 1, 2, 3].filter((s) => !g.players[s].won);
+    for (const e of g.kongEntries) {
+      entries.push(e);
+      seats[e.to].kongIn += e.amount;
+      seats[e.from].kongOut += e.amount;
+    }
+    for (const s of [0, 1, 2, 3]) {
+      const p = g.players[s];
+      if (!p.won || !p.winInfo) continue;
+      const st = seats[s];
+      st.won = true;
+      st.fans = p.winInfo.fans.total;
+      const pts = fanToPoints(p.winInfo.fans.total, base);
+      const payers = p.winInfo.selfDraw ? cfg.payFrom === "all" ? [0, 1, 2, 3].filter((x) => x !== s) : unwon.filter((x) => x !== s) : [p.winInfo.by];
+      let collected = 0;
+      for (const payer of payers) {
+        if (payer === void 0 || payer < 0 || payer === s) continue;
+        collected += pts;
+        entries.push({
+          kind: "fan",
+          from: payer,
+          to: s,
+          amount: pts,
+          note: p.winInfo.selfDraw ? `自摸 ${st.fans} 番：付 ${pts}` : `点炮 ${st.fans} 番：放炮者付 ${pts}`
+        });
+      }
+      p.winInfo.score = collected;
+    }
+    if (reason === "wallEmpty") {
+      const alive = unwon;
+      for (const s of alive) seats[s].isFlowerPig = isFlowerPig(g.players[s]);
+      for (const s of alive) seats[s].isReady = !seats[s].isFlowerPig && isReadyHand(g.players[s]);
+      const pigs = alive.filter((s) => seats[s].isFlowerPig);
+      const clean = alive.filter((s) => !seats[s].isFlowerPig);
+      if (cfg.rules.checkFlowerPig && cfg.flowerPigPay > 0) {
+        for (const f of pigs) {
+          for (const c of clean) {
+            entries.push({
+              kind: "flowerPig",
+              from: f,
+              to: c,
+              amount: cfg.flowerPigPay,
+              note: `花猪未打缺：赔 ${cfg.flowerPigPay}`
+            });
+          }
+        }
+      }
+      if (cfg.rules.checkReadyHand) {
+        const ready = clean.filter((s) => seats[s].isReady);
+        const notReady = clean.filter((s) => !seats[s].isReady);
+        for (const r of ready) {
+          const fan = Math.max(1, bigCallFan(g, g.players[r]));
+          const pts = fanToPoints(fan, base);
+          for (const n of notReady) {
+            entries.push({
+              kind: "ready",
+              from: n,
+              to: r,
+              amount: pts,
+              note: `未听牌赔听牌 ${fan} 番 = ${pts}`
+            });
+          }
+        }
+      }
+    }
+    if (cfg.rules.taxRefund) {
+      for (const e of g.kongEntries) {
+        if (g.players[e.to].won) continue;
+        entries.push({
+          kind: "refund",
+          from: e.to,
+          to: e.from,
+          amount: e.amount,
+          note: `未胡退税 ${e.amount}`
+        });
+      }
+    }
+    for (const e of entries) {
+      const a = seats[e.to], b = seats[e.from];
+      a.net += e.amount;
+      b.net -= e.amount;
+      switch (e.kind) {
+        case "fan":
+          a.fanPoints += e.amount;
+          break;
+        case "ready":
+          a.readyIn += e.amount;
+          b.readyOut += e.amount;
+          break;
+        case "flowerPig":
+          a.flowerPigIn += e.amount;
+          b.flowerPigOut += e.amount;
+          break;
+        case "refund":
+          a.refundIn += e.amount;
+          b.refundOut += e.amount;
+          break;
+        default:
+          break;
+      }
+    }
+    return { reason, entries, seats };
+  }
+  function isSettlementBalanced(s) {
+    return s.seats.reduce((acc, x) => acc + x.net, 0) === 0;
+  }
+
+  // chuanma/kernel/src/flow.ts
+  var SEATS = [0, 1, 2, 3];
+  var defaultRules = {
+    allowKong: true,
+    allowAddedKong: true,
+    checkReadyHand: true,
+    checkFlowerPig: true,
+    taxRefund: true,
+    cap: 0
+  };
+  function createGame(humanSeat = 0, rules = defaultRules, scoring = defaultScoring, rng = Math.random) {
+    const wall = shuffleInPlace(createWall(), rng);
+    const players = SEATS.map((s) => ({
+      seat: s,
+      hand: new Array(TILE_KINDS).fill(0),
+      melds: [],
+      missing: -1,
+      river: [],
+      won: false,
+      lastDrawn: -1,
+      isHuman: s === humanSeat
+    }));
+    const g = {
+      wall,
+      wallPointer: 0,
+      players,
+      dealer: 0,
+      turn: 0,
+      phase: "declareMissing",
+      lastDiscard: null,
+      claim: null,
+      pendingDraw: false,
+      winCount: 0,
+      config: { ...scoring, rules: { ...rules } },
+      history: [],
+      kongScores: [0, 0, 0, 0],
+      kongEntries: [],
+      settlement: null,
+      readyAtEnd: [false, false, false, false],
+      lastKongSeat: -1,
+      replacementPending: false
+    };
+    for (let r = 0; r < 13; r++) {
+      for (const s of SEATS) {
+        const t = g.wall.pop();
+        g.players[s].hand[t]++;
+      }
+    }
+    g.history.push({ type: "deal", note: "13 tiles each" });
+    return g;
+  }
+  function declareMissing(g, seat, suit) {
+    if (g.phase !== "declareMissing") throw new Error("not in declareMissing phase");
+    const p = g.players[seat];
+    if (p.missing !== -1) throw new Error(`seat ${seat} already declared`);
+    p.missing = suit;
+    g.history.push({ type: "declareMissing", seat, note: `missing suit ${suit}` });
+    if (SEATS.every((s) => g.players[s].missing !== -1)) {
+      g.phase = "playing";
+      g.turn = g.dealer;
+      g.pendingDraw = true;
+    }
+  }
+  function draw(g, seat) {
+    if (g.wall.length === 0) return false;
+    const t = g.wall.pop();
+    g.wallPointer++;
+    g.players[seat].hand[t]++;
+    g.players[seat].lastDrawn = t;
+    g.history.push({ type: "draw", seat, tile: t });
+    return true;
+  }
+  function holdsMissingSuit(p) {
+    if (p.missing < 0) return false;
+    return suitCount(p.hand, p.missing) > 0;
+  }
+  function hasNoMissing(p) {
+    if (p.missing < 0) return true;
+    return suitCount(p.hand, p.missing) === 0;
+  }
+  function canSelfWin(p, melds = 0) {
+    if (!hasNoMissing(p)) return false;
+    return canWin(p.hand, melds) !== null;
+  }
+  function canRon(p, tile, melds = 0) {
+    if (!hasNoMissing(p)) return false;
+    if (p.missing >= 0 && Math.floor(tile / 9) === p.missing) return false;
+    p.hand[tile]++;
+    const ok = canWin(p.hand, melds) !== null;
+    p.hand[tile]--;
+    return ok;
+  }
+  function discard(g, seat, tile) {
+    const p = g.players[seat];
+    if (p.hand[tile] <= 0) throw new Error(`seat ${seat} has no tile ${tile}`);
+    if (holdsMissingSuit(p) && Math.floor(tile / 9) !== p.missing) {
+      throw new Error(`seat ${seat} must discard missing suit tile`);
+    }
+    p.hand[tile]--;
+    p.lastDrawn = -1;
+    p.river.push(tile);
+    g.lastDiscard = { seat, tile };
+    g.history.push({ type: "discard", seat, tile });
+    g.pendingDraw = false;
+    const ron = [];
+    const pong = [];
+    const kong = [];
+    const tileSuit = Math.floor(tile / 9);
+    for (const s of SEATS) {
+      if (s === seat) continue;
+      const q = g.players[s];
+      if (q.won) continue;
+      if (canRon(q, tile, q.melds.length)) ron.push(s);
+      if (q.missing >= 0 && tileSuit === q.missing) continue;
+      if (q.hand[tile] >= 2) pong.push(s);
+      if (g.config.rules.allowKong && q.hand[tile] >= 3) kong.push(s);
+    }
+    g.claim = { discardSeat: seat, tile, ron, pong, kong, resolved: false };
+  }
+  function applyPong(g, seat) {
+    const c = g.claim;
+    if (!c || c.resolved) throw new Error("no unresolved claim");
+    if (!c.pong.includes(seat)) throw new Error(`seat ${seat} cannot pong`);
+    const p = g.players[seat];
+    p.hand[c.tile] -= 2;
+    p.melds.push({ type: "pong", tile: c.tile, concealed: false, added: false, from: c.discardSeat });
+    g.history.push({ type: "pong", seat, tile: c.tile, by: c.discardSeat });
+    g.turn = seat;
+    g.claim = null;
+    g.pendingDraw = false;
+  }
+  function applyKong(g, seat) {
+    const c = g.claim;
+    if (!c || c.resolved) throw new Error("no unresolved claim");
+    if (!c.kong.includes(seat)) throw new Error(`seat ${seat} cannot kong`);
+    const p = g.players[seat];
+    p.hand[c.tile] -= 3;
+    p.melds.push({ type: "kong", tile: c.tile, concealed: false, added: false, from: c.discardSeat });
+    g.history.push({ type: "kong", seat, tile: c.tile, by: c.discardSeat, note: "exposed" });
+    g.claim = null;
+    g.turn = seat;
+    g.lastKongSeat = seat;
+    g.replacementPending = true;
+    g.pendingDraw = false;
+    recordKong(g, seat, "exposed", c.tile, c.discardSeat);
+    draw(g, seat);
+  }
+  function applyConcealedKong(g, seat, tile) {
+    const p = g.players[seat];
+    if (!g.config.rules.allowKong) throw new Error("kong disabled");
+    if (p.hand[tile] < 4) throw new Error(`seat ${seat} has <4 of ${tile}`);
+    p.hand[tile] -= 4;
+    p.melds.push({ type: "kong", tile, concealed: true, added: false, from: -1 });
+    g.history.push({ type: "kong", seat, tile, note: "concealed" });
+    g.lastKongSeat = seat;
+    g.replacementPending = true;
+    g.pendingDraw = false;
+    if (g.turn !== seat) g.turn = seat;
+    recordKong(g, seat, "concealed", tile);
+    draw(g, seat);
+  }
+  function applyAddedKong(g, seat, tile) {
+    const p = g.players[seat];
+    if (!g.config.rules.allowAddedKong) throw new Error("added kong disabled");
+    const m = p.melds.find((x) => x.type === "pong" && x.tile === tile);
+    if (!m) throw new Error("no pong to add kong");
+    if (p.hand[tile] < 1) throw new Error("no tile to add");
+    p.hand[tile] -= 1;
+    m.type = "kong";
+    m.added = true;
+    m.concealed = false;
+    g.history.push({ type: "kong", seat, tile, note: "added" });
+    g.lastKongSeat = seat;
+    g.replacementPending = true;
+    g.pendingDraw = false;
+    if (g.turn !== seat) g.turn = seat;
+    recordKong(g, seat, "added", tile);
+    draw(g, seat);
+  }
+  function applySelfWin(g, seat) {
+    const p = g.players[seat];
+    if (!canSelfWin(p, p.melds.length)) throw new Error(`seat ${seat} cannot self-win`);
+    const rec = finalizeWin(g, seat, p.lastDrawn, true, -1);
+    g.turn = nextActiveSeat(g, seat);
+    g.pendingDraw = true;
+    return rec;
+  }
+  function applyRon(g, seat) {
+    const c = g.claim;
+    if (!c || !c.ron.includes(seat)) throw new Error(`seat ${seat} cannot ron`);
+    const p = g.players[seat];
+    const t = c.tile;
+    p.hand[t]++;
+    const rec = finalizeWin(g, seat, t, false, c.discardSeat);
+    p.hand[t]--;
+    g.claim = null;
+    g.turn = nextActiveSeat(g, c.discardSeat);
+    g.pendingDraw = true;
+    return rec;
+  }
+  function finalizeWin(g, seat, tile, selfDraw, by) {
+    const p = g.players[seat];
+    const kind = canWin(p.hand, p.melds.length) === "sevenPairs" ? "sevenPairs" : "standard";
+    const ctx = {
+      selfDraw,
+      by,
+      tile,
+      kongReplacement: g.replacementPending && selfDraw,
+      afterKongDiscard: g.replacementPending && !selfDraw && g.lastKongSeat === (g.claim?.discardSeat ?? -2),
+      lastTile: g.wall.length === 0
+    };
+    const fans = scoringFor(g, p, ctx);
+    const rec = {
+      tile,
+      selfDraw,
+      by,
+      kind,
+      fans,
+      score: fans.total
+    };
+    p.won = true;
+    p.winInfo = rec;
+    g.winCount++;
+    g.history.push({ type: "win", seat, tile, by, note: `${kind} fans=${fans.total}` });
+    g.replacementPending = false;
+    g.lastKongSeat = -1;
+    return rec;
+  }
+  function isGameOver(g) {
+    if (g.winCount >= 3) return true;
+    return g.wall.length === 0 && g.phase === "playing";
+  }
+  function settleRound(g) {
+    if (g.phase === "finished") return;
+    g.phase = "finished";
+    for (const s of SEATS) {
+      const p = g.players[s];
+      if (!p.won) g.readyAtEnd[s] = isReadyAtEnd(p);
+    }
+    g.settlement = settleRoundImpl(g);
+    g.history.push({ type: "roundEnd", note: "settled" });
+  }
+  function isReadyAtEnd(p) {
+    if (!hasNoMissing(p)) return false;
+    for (let t = 0; t < TILE_KINDS; t++) {
+      if (p.hand[t] >= COPIES) continue;
+      if (p.missing >= 0 && Math.floor(t / 9) === p.missing) continue;
+      p.hand[t]++;
+      const ok = canWin(p.hand, p.melds.length) !== null;
+      p.hand[t]--;
+      if (ok) return true;
+    }
+    return false;
+  }
+  function nextActiveSeat(g, from) {
+    for (let i = 1; i <= 4; i++) {
+      const s = (from + i) % 4;
+      if (!g.players[s].won) return s;
+    }
+    return from;
+  }
+  function passClaim(g) {
+    const c = g.claim;
+    if (!c) throw new Error("no claim to pass");
+    g.history.push({ type: "noClaim", seat: c.discardSeat, tile: c.tile });
+    g.claim = null;
+    g.replacementPending = false;
+    g.lastKongSeat = -1;
+    g.turn = nextActiveSeat(g, c.discardSeat);
+    g.pendingDraw = true;
+  }
+  function concealedTiles(p) {
+    const out = [];
+    for (let i = 0; i < TILE_KINDS; i++) for (let n = 0; n < p.hand[i]; n++) out.push(i);
+    return out;
+  }
+  function handShanten(p) {
+    return shanten(p.hand, p.melds.length);
+  }
+
+  // chuanma/kernel/src/bot.ts
+  function botMissingSuit(g, seat) {
+    const p = g.players[seat];
+    let best = 0;
+    let bestN = Infinity;
+    for (let s = 0; s < SUITS; s++) {
+      const n = suitCount(p.hand, s);
+      if (n < bestN) {
+        bestN = n;
+        best = s;
+      }
+    }
+    return best;
+  }
+  var DIFFICULTIES = ["easy", "normal", "hard"];
+  function suitConcentration(c, tile) {
+    const n = [0, 0, 0];
+    for (let i = 0; i < TILE_KINDS; i++) {
+      const v = i === tile ? c[i] - 1 : c[i];
+      if (v > 0) n[Math.floor(i / RANKS)] += v;
+    }
+    const tot = n[0] + n[1] + n[2];
+    if (tot === 0) return 0;
+    return (n[0] * n[0] + n[1] * n[1] + n[2] * n[2]) / (tot * tot);
+  }
+  function botDiscardTile(g, seat, diff = "normal", rng = Math.random) {
+    const p = g.players[seat];
+    if (holdsMissingSuit(p)) {
+      let bestT = -1;
+      let bestScore = -1;
+      for (let t = 0; t < TILE_KINDS; t++) {
+        if (p.hand[t] > 0 && Math.floor(t / RANKS) === p.missing) {
+          const sc = isolationScore(p.hand, t);
+          if (sc > bestScore) {
+            bestScore = sc;
+            bestT = t;
+          }
+        }
+      }
+      if (bestT >= 0) return bestT;
+    }
+    const opts = analyzeDiscards(p.hand, p.melds.length).filter((o) => p.hand[o.tile] > 0);
+    if (opts.length === 0) {
+      for (let t = 0; t < TILE_KINDS; t++) if (p.hand[t] > 0) return t;
+      throw new Error("empty hand");
+    }
+    if (diff === "easy") {
+      let minSh = Infinity;
+      for (const o of opts) if (o.shanten < minSh) minSh = o.shanten;
+      const cands = opts.filter((o) => o.shanten === minSh);
+      return cands[Math.floor(rng() * cands.length)].tile;
+    }
+    opts.sort((a, b) => {
+      if (a.shanten !== b.shanten) return a.shanten - b.shanten;
+      if (a.ukeireCount !== b.ukeireCount) return b.ukeireCount - a.ukeireCount;
+      if (diff === "hard") {
+        const ca = suitConcentration(p.hand, a.tile);
+        const cb = suitConcentration(p.hand, b.tile);
+        if (ca !== cb) return cb - ca;
+      }
+      const ia = isolationScore(p.hand, a.tile);
+      const ib = isolationScore(p.hand, b.tile);
+      if (ia !== ib) return ib - ia;
+      return a.tile - b.tile;
+    });
+    return opts[0].tile;
+  }
+  function botConcealedKongTile(g, seat, diff = "normal") {
+    if (diff === "easy") return -1;
+    const p = g.players[seat];
+    for (let t = 0; t < TILE_KINDS; t++) {
+      if (p.hand[t] === 4 && (p.missing < 0 || Math.floor(t / RANKS) !== p.missing)) return t;
+    }
+    return -1;
+  }
+  function botAddedKongTile(g, seat, diff = "normal") {
+    if (diff === "easy") return -1;
+    const p = g.players[seat];
+    for (const m of p.melds) {
+      if (m.type === "pong" && p.hand[m.tile] >= 1) {
+        if (p.missing < 0 || Math.floor(m.tile / RANKS) !== p.missing) return m.tile;
+      }
+    }
+    return -1;
+  }
+  function botShouldPong(g, seat, diff = "normal") {
+    const p = g.players[seat];
+    const c = g.claim;
+    if (!c) return false;
+    const before = shanten(p.hand, p.melds.length);
+    const tmp = cloneCounts(p.hand);
+    tmp[c.tile] -= 2;
+    const after = shanten(tmp, p.melds.length + 1);
+    return diff === "easy" ? after < before : after <= before;
+  }
+  function simulateGameOpts(opts = {}) {
+    const seed = opts.seed;
+    const dealRng = seed !== void 0 ? makeRngLocal(seed) : Math.random;
+    const polRng = seed !== void 0 ? makeRngLocal((seed ^ 2654435769) >>> 0) : Math.random;
+    const diffs = opts.diffs ?? [];
+    const dOf = (s) => diffs[s] ?? "normal";
+    const g = createGame(0, defaultRules, defaultScoring, dealRng);
+    let steps = 0;
+    const MAX = 8e3;
+    let reason = "stepCap";
+    while (g.phase !== "finished" && steps < MAX) {
+      steps++;
+      if (g.phase === "declareMissing") {
+        for (const s of SEATS) if (g.players[s].missing === -1) declareMissing(g, s, botMissingSuit(g, s));
+        continue;
+      }
+      if (g.claim) {
+        const c = g.claim;
+        if (c.ron.length > 0) {
+          applyRon(g, c.ron[0]);
+        } else if (c.kong.length > 0 && dOf(c.kong[0]) !== "easy") {
+          applyKong(g, c.kong[0]);
+        } else if (c.pong.length > 0 && botShouldPong(g, c.pong[0], dOf(c.pong[0]))) {
+          applyPong(g, c.pong[0]);
+        } else {
+          passClaim(g);
+        }
+        continue;
+      }
+      const seat = g.turn;
+      const p = g.players[seat];
+      if (g.pendingDraw) {
+        if (!draw(g, seat)) {
+          const three = g.winCount >= 3;
+          settleRound(g);
+          reason = three ? "threeWins" : "wallEmpty";
+          break;
+        }
+      }
+      if (canSelfWin(p, p.melds.length)) {
+        applySelfWin(g, seat);
+        if (isGameOver(g)) {
+          settleRound(g);
+          reason = "threeWins";
+          break;
+        }
+        continue;
+      }
+      const ck = botConcealedKongTile(g, seat, dOf(seat));
+      if (ck >= 0 && polRng() < 0.5) {
+        applyConcealedKong(g, seat, ck);
+        continue;
+      }
+      const ak = botAddedKongTile(g, seat, dOf(seat));
+      if (ak >= 0 && polRng() < 0.5) {
+        applyAddedKong(g, seat, ak);
+        continue;
+      }
+      discard(g, seat, botDiscardTile(g, seat, dOf(seat), polRng));
+    }
+    if (g.phase !== "finished") settleRound(g);
+    const maxFan = Math.max(0, ...g.players.map((p) => p.winInfo?.fans.total ?? 0));
+    const scoreBySeat = g.players.map((p) => p.winInfo?.score ?? 0);
+    const netBySeat = g.settlement ? g.settlement.seats.map((x) => x.net) : [0, 0, 0, 0];
+    return {
+      state: g,
+      result: {
+        steps,
+        finished: g.phase === "finished",
+        winners: g.winCount,
+        maxFan,
+        historyLen: g.history.length,
+        reason,
+        scoreBySeat,
+        netBySeat
+      }
+    };
+  }
+  function simulateGame(seed, diff = "normal") {
+    return simulateGameOpts({ seed, diffs: [diff, diff, diff, diff] });
+  }
+  function makeRngLocal(seed) {
+    let s = seed >>> 0;
+    return function() {
+      s = s + 1831565813 >>> 0;
+      let t = s;
+      t = Math.imul(t ^ t >>> 15, t | 1);
+      t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  return __toCommonJS(index_exports);
+})();
+</script>
+<script>/* 川麻麻将牌面资产 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背 + 万/条/筒 花色牌）
+ * 用法：MJTiles.face(tileId) / MJTiles.back()
+ *   tileId 0..26  =>  suit = floor(id/9)  rank = id%9+1
+ * 设计：viewBox 0 0 60 84（接近真实牌比例），width/height 100% 随容器缩放。
+ */
+(function () {
+  var COL = {
+    body: '#f3ecda', bodyEdge: '#cabfa6',
+    panel: '#fffdf6', panelEdge: '#e6dfca',
+    shadow: 'rgba(80,70,50,.18)',
+    wanNum: '#22314f', wanChar: '#c0392b',
+    tiao: '#1c7d4d', tiaoDark: '#125c37', tiaoLight: '#5bbf8a',
+    tong: '#2f6fb5', tongDark: '#1f4f86', tongRed: '#c0392b',
+    back: '#2f6fb5', backDark: '#1f4f86', backAccent: '#e8eef7'
+  };
+
+  var X0 = 12, X1 = 48, Y0 = 12, Y1 = 72; // 内容区
+  function px(u) { return X0 + u * (X1 - X0); }
+  function py(v) { return Y0 + v * (Y1 - Y0); }
+
+  function panel() {
+    return '<rect x="1.2" y="1.2" width="57.6" height="81.6" rx="8" fill="' + COL.body + '" stroke="' + COL.bodyEdge + '" stroke-width="1.2"/>' +
+      '<rect x="1.2" y="78" width="57.6" height="4.8" rx="3" fill="rgba(120,105,75,.13)"/>' +
+      '<rect x="5" y="5" width="50" height="74" rx="5" fill="' + COL.panel + '" stroke="' + COL.panelEdge + '" stroke-width="0.9"/>';
+  }
+
+  /* ---------- 筒（圆圈靶心） ---------- */
+  var DOTS = {
+    1: [[0.5, 0.5]],
+    2: [[0.5, 0.2], [0.5, 0.8]],
+    3: [[0.16, 0.18], [0.5, 0.5], [0.84, 0.82]],
+    4: [[0.22, 0.22], [0.78, 0.22], [0.22, 0.78], [0.78, 0.78]],
+    5: [[0.16, 0.16], [0.84, 0.16], [0.5, 0.5], [0.16, 0.84], [0.84, 0.84]],
+    6: [[0.22, 0.14], [0.78, 0.14], [0.22, 0.5], [0.78, 0.5], [0.22, 0.86], [0.78, 0.86]],
+    7: [[0.12, 0.12], [0.5, 0.12], [0.88, 0.12], [0.22, 0.62], [0.78, 0.62], [0.22, 0.9], [0.78, 0.9]],
+    8: [[0.22, 0.06], [0.78, 0.06], [0.22, 0.35], [0.78, 0.35], [0.22, 0.65], [0.78, 0.65], [0.22, 0.94], [0.78, 0.94]],
+    9: [[0.14, 0.14], [0.5, 0.14], [0.86, 0.14], [0.14, 0.5], [0.5, 0.5], [0.86, 0.5], [0.14, 0.86], [0.5, 0.86], [0.86, 0.86]]
+  };
+  var DOT_R = { 1: 12.5, 2: 9, 3: 7.6, 4: 7.4, 5: 6.8, 6: 6.4, 7: 5.6, 8: 5.4, 9: 5.4 };
+
+  function dot(cx, cy, r) {
+    return '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + r + '" fill="' + COL.tong + '" stroke="' + COL.tongDark + '" stroke-width="0.8"/>' +
+      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (r * 0.6).toFixed(2) + '" fill="#fffdf6"/>' +
+      '<circle cx="' + cx.toFixed(1) + '" cy="' + cy.toFixed(1) + '" r="' + (r * 0.28).toFixed(2) + '" fill="' + COL.tongRed + '"/>';
+  }
+
+  function tongPips(n) {
+    var pts = DOTS[n], r = DOT_R[n], s = '';
+    for (var i = 0; i < pts.length; i++) s += dot(px(pts[i][0]), py(pts[i][1]), r);
+    return s;
+  }
+
+  /* ---------- 条（竹节） ---------- */
+  function stick(cx, cy, w, h) {
+    var x = cx - w / 2, y = cy - h / 2;
+    return '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + w.toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + (w * 0.45).toFixed(1) + '" fill="' + COL.tiao + '"/>' +
+      '<rect x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" width="' + (w * 0.34).toFixed(1) + '" height="' + h.toFixed(1) + '" rx="' + (w * 0.3).toFixed(1) + '" fill="' + COL.tiaoLight + '" opacity="0.55"/>' +
+      '<line x1="' + x.toFixed(1) + '" y1="' + (cy - h * 0.17).toFixed(1) + '" x2="' + (x + w).toFixed(1) + '" y2="' + (cy - h * 0.17).toFixed(1) + '" stroke="' + COL.tiaoDark + '" stroke-width="1.1"/>' +
+      '<line x1="' + x.toFixed(1) + '" y1="' + (cy + h * 0.17).toFixed(1) + '" x2="' + (x + w).toFixed(1) + '" y2="' + (cy + h * 0.17).toFixed(1) + '" stroke="' + COL.tiaoDark + '" stroke-width="1.1"/>';
+  }
+
+  var STICKS = {
+    2: [[0.5, 0.25], [0.5, 0.75]],
+    3: [[0.5, 0.2], [0.26, 0.74], [0.74, 0.74]],
+    4: [[0.26, 0.25], [0.74, 0.25], [0.26, 0.75], [0.74, 0.75]],
+    5: [[0.2, 0.2], [0.8, 0.2], [0.5, 0.5], [0.2, 0.8], [0.8, 0.8]],
+    6: [[0.3, 0.16], [0.7, 0.16], [0.3, 0.5], [0.7, 0.5], [0.3, 0.84], [0.7, 0.84]],
+    7: [[0.5, 0.12], [0.22, 0.5], [0.5, 0.5], [0.78, 0.5], [0.22, 0.88], [0.5, 0.88], [0.78, 0.88]],
+    8: [[0.16, 0.26], [0.39, 0.26], [0.61, 0.26], [0.84, 0.26], [0.16, 0.76], [0.39, 0.76], [0.61, 0.76], [0.84, 0.76]],
+    9: [[0.16, 0.16], [0.5, 0.16], [0.84, 0.16], [0.16, 0.5], [0.5, 0.5], [0.84, 0.5], [0.16, 0.84], [0.5, 0.84], [0.84, 0.84]]
+  };
+  var STICK_H = { 2: 17, 3: 16, 4: 15, 5: 14, 6: 14.5, 7: 12.5, 8: 13, 9: 12.5 };
+
+  function tiaoSticks(n) {
+    var pts = STICKS[n], h = STICK_H[n], w = h * 0.42, s = '';
+    for (var i = 0; i < pts.length; i++) s += stick(px(pts[i][0]), py(pts[i][1]), w, h);
+    return s;
+  }
+
+  /* 一索 = 幺鸡（鸟） */
+  function tiaoBird() {
+    return '<g>' +
+      '<ellipse cx="30" cy="46" rx="12" ry="15" fill="' + COL.tiao + '"/>' +
+      '<path d="M30 31 q-9 -6 -6 -16 q7 4 9 12 z" fill="' + COL.tiaoDark + '"/>' +
+      '<circle cx="30" cy="25" r="8.5" fill="' + COL.tiao + '"/>' +
+      '<path d="M30 17 q3 -7 8 -8 q-1 6 -5 9 z" fill="' + COL.tongRed + '"/>' +
+      '<circle cx="27" cy="24" r="1.7" fill="#0d2e1c"/>' +
+      '<path d="M38 26 l7 3 l-7 3 z" fill="#d99a2b"/>' +
+      '<path d="M18 50 q-8 6 -10 16 q10 -2 14 -9 z" fill="' + COL.tiaoLight + '" opacity="0.85"/>' +
+      '<path d="M42 50 q8 6 10 16 q-10 -2 -14 -9 z" fill="' + COL.tiaoLight + '" opacity="0.85"/>' +
+      '<path d="M22 60 l-3 12 M38 60 l3 12" stroke="' + COL.tiaoDark + '" stroke-width="2" stroke-linecap="round"/>' +
+      '</g>';
+  }
+
+  function tiaoContent(n) {
+    if (n === 1) return tiaoBird();
+    return tiaoSticks(n);
+  }
+
+  /* ---------- 万（汉字） ---------- */
+  var CN = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+  function wanContent(n) {
+    return '<text x="30" y="34" text-anchor="middle" font-size="30" font-weight="700" ' +
+      'font-family="KaiTi,STKaiti,SimSun,STSong,serif" fill="' + COL.wanNum + '">' + CN[n] + '</text>' +
+      '<text x="30" y="70" text-anchor="middle" font-size="27" font-weight="700" ' +
+      'font-family="KaiTi,STKaiti,SimSun,STSong,serif" fill="' + COL.wanChar + '">萬</text>';
+  }
+
+  function face(id) {
+    var suit = Math.floor(id / 9), rank = (id % 9) + 1;
+    var content = suit === 0 ? wanContent(rank) : (suit === 1 ? tiaoContent(rank) : tongPips(rank));
+    return '<svg viewBox="0 0 60 84" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" ' +
+      'style="display:block;border-radius:8px">' + panel() + content + '</svg>';
+  }
+
+  /* ---------- 牌背 ---------- */
+  function back() {
+    var dots = '';
+    for (var r = 0; r < 3; r++) for (var c = 0; c < 2; c++) {
+      dots += '<circle cx="' + (22 + c * 16) + '" cy="' + (24 + r * 18) + '" r="3.4" fill="' + COL.backAccent + '" opacity="0.5"/>';
+    }
+    return '<svg viewBox="0 0 60 84" xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" style="display:block;border-radius:8px">' +
+      '<rect x="1.2" y="1.2" width="57.6" height="81.6" rx="8" fill="' + COL.body + '" stroke="' + COL.bodyEdge + '" stroke-width="1.2"/>' +
+      '<rect x="6" y="6" width="48" height="72" rx="6" fill="' + COL.back + '" stroke="' + COL.backDark + '" stroke-width="1.2"/>' +
+      '<rect x="9.5" y="9.5" width="41" height="65" rx="4" fill="none" stroke="' + COL.backAccent + '" stroke-width="0.9" opacity="0.6"/>' +
+      dots + '</svg>';
+  }
+
+  window.MJTiles = { face: face, back: back, CN: CN };
+})();
+
+;
+/* 川麻实战 · 血战到底 —— 牌桌 UI（普通脚本，使用全局 ChuanMa 内核） */
+(function () {
+  var CM = window.ChuanMa;
+  var HUMAN = 0;
+  var SEATS = CM.SEATS;
+  var AREA = ['me', 'right', 'top', 'left']; // seat -> 圆桌方位
+
+  var SUITS = [
+    { zh: '万', en: 'wan', hex: '#c0392b' },
+    { zh: '条', en: 'tiao', hex: '#1c7d4d' },
+    { zh: '筒', en: 'tong', hex: '#2f6fb5' }
+  ];
+  var SEAT_KEY = ['you', 'next', 'opp', 'prev']; // 0=你 1=下家 2=对家 3=上家
+
+  var T = {
+    zh: {
+      title: '川麻实战 · 血战到底',
+      help: '说明', demo: '自动演示', demoStop: '停止演示', newGame: '新开一局', lang: 'EN',
+      you: '你', next: '下家', opp: '对家', prev: '上家',
+      dirNext: '下一位 →', dirPrev: '← 上一位', dealerTag: '庄',
+      wall: '牌墙', turn: '轮到', orderT: '出牌顺序',
+      hand: '手牌', melds: '副露', river: '牌河', missing: '缺', count: '张',
+      reveal: '亮牌', shantenLbl: '向听', waiting: '听', won: '已胡',
+      declareT: '定缺 —— 选一门要打光的牌',
+      declareSub: '川麻开局必选一门「缺门」：必须先把这一门打完，且胡牌时手上不能有它。建议选张数最少的一门。',
+      recommend: '推荐', close: '开始',
+      yourTurn: '轮到你打牌 —— 点手牌即可打出',
+      mustMiss: '你还有缺门牌，必须先打完缺门（只能点缺门牌）',
+      claimT: '可以鸣牌', kongBtn: '杠', pongBtn: '碰', passBtn: '过',
+      concealedKong: '暗杠', addedKong: '补杠',
+      demoOn: '演示中…（双方自动出牌）',
+      teachMustMiss: '还有缺门牌，必须先打完',
+      teachReady: '已听牌',
+      teachWait: function (n) { return '可和 ' + n + ' 张'; },
+      teachWaiting: '听牌：',
+      teachShanten: function (n) { return n <= 0 ? '已听牌' : '还差 ' + n + ' 张听牌'; },
+      teachImprove: function (n) { return '进张 ' + n + ' 张'; },
+      teachReason: function (tl, n) { return '打 ' + tl + ' → 进张 ' + n + ' 张'; },
+      youWon: '你胡了',
+      diffLbl: '难度', dEasy: '新手', dNormal: '标准', dHard: '困难',
+      colNet: '净分', colDetail: '明细', scoreTitle: '本局得分',
+      detailFan: '胡牌', detailKong: '杠', detailReady: '查叫', detailPig: '花猪', detailRefund: '退税',
+      scoreNote: '分 = 番数 × 底分(1)；自摸由尚未胡牌者各付，点炮由放炮者独付；流局查大叫/查花猪；未胡者杠分退还。',
+      logcap: '对局记录',
+      settled: '本局结束', reasonThree: '3 家已胡', reasonWall: '牌墙摸完 · 流局',
+      seatRes: '座位', status: '结果', handTile: '和的牌', fanCol: '番种 / 番数',
+      stWon: '胡', stReady: '听牌', stNot: '未听', again: '再来一局',
+      helpTitle: '怎么看这张桌子',
+      helpBody: '<b>座位</b>：你在下方；<b>下家</b>（右）是下一位出牌的，<b>上家</b>（左）是上一位（按 你→下家→对家→上家 循环）。<br>' +
+        '<b>金框 +「推荐」</b> = 建议你打这张。灰色牌背 = 对手手牌（不可见）。<br>' +
+        '<b>亮牌</b>：有人胡牌时他的手牌会全部翻开，胡的那张金框标出。<br>' +
+        '<b>血战到底</b>：一家胡牌后本局继续，直到 3 家胡牌或牌墙摸完。<br>' +
+        '<b>定缺</b>：持有缺门牌时只能打缺门牌，胡牌手牌里也不能有它。',
+      evDeclare: function (s, su) { return s + ' 定缺 ' + su; },
+      evDiscard: function (s, tl) { return s + ' 打出 ' + tl; },
+      evPong: function (s, tl) { return s + ' 碰 ' + tl; },
+      evKong: function (s, tl) { return s + ' 杠 ' + tl; },
+      evWinSelf: function (s, tl, f) { return '🎉 ' + s + ' 自摸 ' + tl + '（' + f + ' 番）'; },
+      evWinRon: function (s, tl, by, f) { return '🎉 ' + s + ' 胡 ' + tl + '（' + by + ' 点炮，' + f + ' 番）'; },
+      evEnd: '本局结算',
+      bannerWinSelf: function (tl, f) { return '🎉 你自摸 ' + tl + '！' + f + ' 番'; },
+      bannerWinRon: function (tl, f) { return '🎉 你胡牌 ' + tl + '！' + f + ' 番'; },
+      bannerBot: function (s, tl, f) { return s + ' 胡了 ' + tl + '（' + f + ' 番）'; }
+    },
+    en: {
+      title: 'Chuanma · Blood Battle',
+      help: 'Help', demo: 'Auto demo', demoStop: 'Stop demo', newGame: 'New game', lang: '中文',
+      you: 'You', next: 'Right', opp: 'Across', prev: 'Left',
+      dirNext: 'next →', dirPrev: '← prev', dealerTag: 'D',
+      wall: 'Wall', turn: 'Turn', orderT: 'Turn order',
+      hand: 'Hand', melds: 'Melds', river: 'River', missing: 'Missing', count: '',
+      reveal: 'Revealed', shantenLbl: 'Shanten', waiting: 'Wait', won: 'Won',
+      declareT: 'Declare Missing Suit',
+      declareSub: 'Pick one suit to clear out. You must discard this whole suit first, and your winning hand must not contain it. Pick the suit with fewest tiles.',
+      recommend: 'PICK', close: 'Start',
+      yourTurn: 'Your turn — click a tile to discard',
+      mustMiss: 'You still hold your missing suit — you must discard those first',
+      claimT: 'You can claim', kongBtn: 'Kong', pongBtn: 'Pong', passBtn: 'Pass',
+      concealedKong: 'Concealed kong', addedKong: 'Added kong',
+      demoOn: 'Demo running… (both sides auto-play)',
+      teachMustMiss: 'Clear your missing suit first',
+      teachReady: 'Ready',
+      teachWait: function (n) { return n + ' winning tiles left'; },
+      teachWaiting: 'Waiting:',
+      teachShanten: function (n) { return n <= 0 ? 'Ready' : n + ' away from ready'; },
+      teachImprove: function (n) { return n + ' tiles improve'; },
+      teachReason: function (tl, n) { return 'Discard ' + tl + ' → ' + n + ' tiles improve'; },
+      youWon: 'You win',
+      diffLbl: 'Level', dEasy: 'Easy', dNormal: 'Normal', dHard: 'Hard',
+      colNet: 'Net', colDetail: 'Breakdown', scoreTitle: 'Round score',
+      detailFan: 'Win', detailKong: 'Kong', detailReady: 'Ready', detailPig: 'Pig', detailRefund: 'Refund',
+      scoreNote: 'Points = fan × base (1). Self-draw: each unwon player pays. Discard win: discarder pays alone. Draw: big-call / flower-pig penalties; kong points of non-winners refunded.',
+      logcap: 'Game log',
+      settled: 'Round over', reasonThree: '3 players won', reasonWall: 'Wall empty · draw',
+      seatRes: 'Seat', status: 'Result', handTile: 'Winning tile', fanCol: 'Fan',
+      stWon: 'Won', stReady: 'Ready', stNot: 'Not ready', again: 'Play again',
+      helpTitle: 'How to read the table',
+      helpBody: '<b>Seats</b>: you are at the bottom; <b>Right</b> is the next to play, <b>Left</b> the previous (order: You→Right→Across→Left).<br>' +
+        '<b>Gold frame + “PICK”</b> = suggested discard. Grey backs = opponents\' hidden tiles.<br>' +
+        '<b>Reveal</b>: when someone wins, their hand is turned face-up (winning tile in gold).<br>' +
+        '<b>Blood Battle</b>: play continues after a win until 3 wins or the wall empties.<br>' +
+        '<b>Missing suit</b>: while holding it you may only discard it; a winning hand must not contain it.',
+      evDeclare: function (s, su) { return s + ' declares missing: ' + su; },
+      evDiscard: function (s, tl) { return s + ' discards ' + tl; },
+      evPong: function (s, tl) { return s + ' pongs ' + tl; },
+      evKong: function (s, tl) { return s + ' kongs ' + tl; },
+      evWinSelf: function (s, tl, f) { return '🎉 ' + s + ' self-draws ' + tl + ' (' + f + ' fan)'; },
+      evWinRon: function (s, tl, by, f) { return '🎉 ' + s + ' wins ' + tl + ' (' + by + ' discard, ' + f + ' fan)'; },
+      evEnd: 'Round settled',
+      bannerWinSelf: function (tl, f) { return '🎉 You self-drew ' + tl + '! ' + f + ' fan'; },
+      bannerWinRon: function (tl, f) { return '🎉 You won on ' + tl + '! ' + f + ' fan'; },
+      bannerBot: function (s, tl, f) { return s + ' won on ' + tl + ' (' + f + ' fan)'; }
+    }
+  };
+
+  var state = { g: null, lang: 'zh', demo: false, timer: null, banner: null, loggedUpTo: 0, logLines: [], overlay: null, diff: 'normal' };
+
+  function t() { return T[state.lang]; }
+  function tileName(id) { return state.lang === 'zh' ? CM.tileLabel(id) : CM.tileLabelEn(id); }
+  function suitName(s) { return state.lang === 'zh' ? SUITS[s].zh : SUITS[s].en; }
+  function seatName(seat) { return t()[SEAT_KEY[seat]]; }
+
+  var MJ = window.MJTiles;
+  function tileHTML(id, opts) {
+    opts = opts || {};
+    var cls = 'tile' + (opts.sm ? ' sm' : '') + (opts.xs ? ' xs' : '') + (opts.cls ? ' ' + opts.cls : '');
+    return '<div class="' + cls + '"' + (opts.attr || '') + '>' + MJ.face(id) + '</div>';
+  }
+  function backHTML(n, cls) {
+    var h = '';
+    for (var i = 0; i < n; i++) h += '<div class="tile ' + (cls || 'sm') + '">' + MJ.back() + '</div>';
+    return h;
+  }
+  function meldsHTML(p, cls) {
+    if (!p.melds.length) return '';
+    return p.melds.map(function (m) {
+      var n = m.type === 'kong' ? 4 : 3, inner = '';
+      for (var i = 0; i < n; i++) inner += tileHTML(m.tile, { cls: cls, attr: ' data-face="1"' });
+      return '<div class="meld">' + inner + '</div>';
+    }).join('');
+  }
+  /** 牌河：按出牌顺序整齐摆「两排」（第一排靠门前，超出换第二排） */
+  function riverHTML(p) {
+    var n = p.river.length;
+    if (!n) return '<span style="color:var(--sub);font-size:12px">—</span>';
+    var per = Math.max(6, Math.ceil(n / 2));   // 保证「门前两排」：n>12 时自动加宽每排
+    var rows = [];
+    for (var i = 0; i < n; i += per) rows.push(p.river.slice(i, i + per));
+    return rows.map(function (row) {
+      return '<div class="river-row">' +
+        row.map(function (id) { return tileHTML(id, { xs: true, attr: ' data-face="1"' }); }).join('') +
+        '</div>';
+    }).join('');
+  }
+  function revealHTML(p) {
+    var tiles = CM.concealedTiles(p), winT = p.winInfo ? p.winInfo.tile : -1, used = false;
+    var html = '';
+    tiles.forEach(function (id) {
+      var cls = '';
+      if (id === winT && !used) { cls = 'wintile'; used = true; }
+      html += tileHTML(id, { cls: cls, attr: ' data-face="1"' });
+    });
+    // 点炮胡：和的那张不在手牌里，单独补一张亮在右手边
+    if (winT >= 0 && !used && p.winInfo && !p.winInfo.selfDraw) {
+      html += '<span class="handsep"></span>' + tileHTML(winT, { cls: 'wintile', attr: ' data-face="1"' });
+    }
+    return html;
+  }
+
+  /* ---------------- 新局 ---------------- */
+  function newGame() {
+    if (state.timer) { clearInterval(state.timer); state.timer = null; }
+    state.demo = false;
+    state.g = CM.createGame(HUMAN, CM.defaultRules, CM.defaultScoring);
+    state.banner = null; state.loggedUpTo = 0; state.logLines = []; state.overlay = null;
+    pump();
+    render();
+  }
+
+  /* ---------------- 引擎推进 ---------------- */
+  function afterWinCheck() { if (CM.isGameOver(state.g)) { CM.settleRound(state.g); return true; } return false; }
+  function botActAfterDraw(seat) {
+    var g = state.g, p = g.players[seat];
+    if (CM.canSelfWin(p, p.melds.length)) { CM.applySelfWin(g, seat); setBannerBot(seat, p.winInfo); afterWinCheck(); return; }
+    var ck = CM.botConcealedKongTile(g, seat, state.diff); if (ck >= 0) { CM.applyConcealedKong(g, seat, ck); return; }
+    var ak = CM.botAddedKongTile(g, seat, state.diff); if (ak >= 0) { CM.applyAddedKong(g, seat, ak); return; }
+    CM.discard(g, seat, CM.botDiscardTile(g, seat, state.diff));
+  }
+  function resolveHumanPass() {
+    var g = state.g, c = g.claim;
+    var br = c.ron.filter(function (s) { return s !== HUMAN; });
+    if (br.length) { CM.applyRon(g, br[0]); setBannerBot(br[0], g.players[br[0]].winInfo); afterWinCheck(); return; }
+    var bk = c.kong.filter(function (s) { return s !== HUMAN; });
+    if (bk.length) { CM.applyKong(g, bk[0]); return; }
+    var bp = c.pong.filter(function (s) { return s !== HUMAN; });
+    if (bp.length && CM.botShouldPong(g, bp[0], state.diff)) { CM.applyPong(g, bp[0]); return; }
+    CM.passClaim(g);
+  }
+  function humanAutoAct() {
+    var g = state.g;
+    if (g.phase === 'declareMissing') { CM.declareMissing(g, HUMAN, CM.botMissingSuit(g, HUMAN)); return; }
+    if (g.claim) {
+      var c = g.claim;
+      if (c.ron.indexOf(HUMAN) >= 0) { CM.applyRon(g, HUMAN); setBannerHuman(g.players[HUMAN].winInfo, false); afterWinCheck(); return; }
+      if (c.kong.indexOf(HUMAN) >= 0) { CM.applyKong(g, HUMAN); return; }
+      if (c.pong.indexOf(HUMAN) >= 0 && CM.botShouldPong(g, HUMAN)) { CM.applyPong(g, HUMAN); return; }
+      resolveHumanPass(); return;
+    }
+    var my = g.players[HUMAN];
+    if (g.pendingDraw) {
+      if (g.wall.length === 0) { CM.settleRound(g); return; }
+      CM.draw(g, HUMAN);
+      if (CM.canSelfWin(my, my.melds.length)) { CM.applySelfWin(g, HUMAN); setBannerHuman(my.winInfo, true); afterWinCheck(); return; }
+    } else if (CM.canSelfWin(my, my.melds.length)) {
+      CM.applySelfWin(g, HUMAN); setBannerHuman(my.winInfo, true); afterWinCheck(); return;
+    }
+    var ck = CM.botConcealedKongTile(g, HUMAN); if (ck >= 0) { CM.applyConcealedKong(g, HUMAN, ck); return; }
+    var ak = CM.botAddedKongTile(g, HUMAN); if (ak >= 0) { CM.applyAddedKong(g, HUMAN, ak); return; }
+    CM.discard(g, HUMAN, CM.botDiscardTile(g, HUMAN));
+  }
+  function pump() {
+    var g = state.g, guard = 0;
+    while (guard++ < 200000) {
+      if (g.phase === 'finished') return;
+      if (g.phase === 'declareMissing') {
+        var pending = false;
+        for (var i = 0; i < SEATS.length; i++) {
+          var s = SEATS[i];
+          if (g.players[s].missing === -1) {
+            if (s === HUMAN) { if (state.demo) humanAutoAct(); else pending = true; }
+            else CM.declareMissing(g, s, CM.botMissingSuit(g, s));
+          }
+        }
+        if (pending) return;
+        continue;
+      }
+      if (g.claim) {
+        var c = g.claim;
+        if (c.ron.length) {
+          var w = c.ron.indexOf(HUMAN) >= 0 ? HUMAN : c.ron[0];
+          CM.applyRon(g, w);
+          if (w === HUMAN) setBannerHuman(g.players[w].winInfo, false); else setBannerBot(w, g.players[w].winInfo);
+          afterWinCheck(); continue;
+        }
+        if (c.pong.indexOf(HUMAN) >= 0 || c.kong.indexOf(HUMAN) >= 0) { if (state.demo) humanAutoAct(); else return; continue; }
+        resolveHumanPass(); continue;
+      }
+      if (g.pendingDraw) {
+        var seat = g.turn;
+        if (seat === HUMAN) {
+          if (state.demo) { humanAutoAct(); continue; }
+          if (g.wall.length === 0) { CM.settleRound(g); return; }
+          CM.draw(g, HUMAN);
+          var my = g.players[HUMAN];
+          if (CM.canSelfWin(my, my.melds.length)) { CM.applySelfWin(g, HUMAN); setBannerHuman(my.winInfo, true); afterWinCheck(); continue; }
+          return;
+        }
+        if (!CM.draw(g, seat)) { CM.settleRound(g); return; }
+        if (CM.isGameOver(g)) { CM.settleRound(g); return; }
+        botActAfterDraw(seat); continue;
+      }
+      var seat2 = g.turn;
+      if (seat2 === HUMAN) {
+        if (state.demo) { humanAutoAct(); continue; }
+        var my2 = g.players[HUMAN];
+        if (CM.canSelfWin(my2, my2.melds.length)) { CM.applySelfWin(g, HUMAN); setBannerHuman(my2.winInfo, true); afterWinCheck(); continue; }
+        return;
+      }
+      var p2 = g.players[seat2];
+      if (CM.canSelfWin(p2, p2.melds.length)) { CM.applySelfWin(g, seat2); setBannerBot(seat2, p2.winInfo); afterWinCheck(); continue; }
+      CM.discard(g, seat2, CM.botDiscardTile(g, seat2, state.diff));
+    }
+  }
+  function setBannerHuman(rec, self) {
+    if (!rec) return;
+    state.banner = { text: self ? t().bannerWinSelf(CM.tileLabel(rec.tile), rec.fans.total) : t().bannerWinRon(CM.tileLabel(rec.tile), rec.fans.total) };
+  }
+  function setBannerBot(seat, rec) {
+    if (!rec) return;
+    state.banner = { text: t().bannerBot(seatName(seat), CM.tileLabel(rec.tile), rec.fans.total) };
+  }
+
+  /* ---------------- 人类交互 ---------------- */
+  function humanDeclare(suit) { CM.declareMissing(state.g, HUMAN, suit); state.overlay = null; pump(); render(); }
+  function humanDiscard(tile) { CM.discard(state.g, HUMAN, tile); pump(); render(); }
+  function humanPong() { CM.applyPong(state.g, HUMAN); pump(); render(); }
+  function humanKong() { CM.applyKong(state.g, HUMAN); pump(); render(); }
+  function humanPass() { resolveHumanPass(); pump(); render(); }
+  function humanConcealedKong() { var tk = CM.botConcealedKongTile(state.g, HUMAN); if (tk >= 0) CM.applyConcealedKong(state.g, HUMAN, tk); pump(); render(); }
+  function humanAddedKong() { var tk = CM.botAddedKongTile(state.g, HUMAN); if (tk >= 0) CM.applyAddedKong(state.g, HUMAN, tk); pump(); render(); }
+
+  /* ---------------- 渲染 ---------------- */
+  function logNewEvents() {
+    var g = state.g, lines = [];
+    for (var i = state.loggedUpTo; i < g.history.length; i++) {
+      var e = g.history[i];
+      var s = e.seat !== undefined ? seatName(e.seat) : '';
+      var by = e.by !== undefined && e.by >= 0 ? seatName(e.by) : '';
+      var tl = e.tile !== undefined ? CM.tileLabel(e.tile) : '';
+      var line = null;
+      if (e.type === 'declareMissing') line = t().evDeclare(s, suitName(g.players[e.seat].missing));
+      else if (e.type === 'discard') line = t().evDiscard(s, tl);
+      else if (e.type === 'pong') line = t().evPong(s, tl);
+      else if (e.type === 'kong') line = t().evKong(s, tl);
+      else if (e.type === 'win') { var rec = g.players[e.seat].winInfo; var f = rec ? rec.fans.total : '?'; line = e.by >= 0 ? t().evWinRon(s, tl, by, f) : t().evWinSelf(s, tl, f); }
+      else if (e.type === 'roundEnd') line = t().evEnd;
+      if (line) lines.push(line);
+    }
+    state.loggedUpTo = g.history.length;
+    return lines;
+  }
+
+  function panelHTML(seat) {
+    var g = state.g, p = g.players[seat], isMe = seat === HUMAN;
+    var isTurn = g.phase === 'playing' && g.turn === seat && !p.won;
+    var cls = 'panel ppanel b-' + AREA[seat] + (isTurn ? ' turn' : '') + (p.won ? ' won' : '');
+    var tags = '';
+    if (seat === 1) tags += '<span class="ptag dir">' + t().dirNext + '</span>';
+    if (seat === 3) tags += '<span class="ptag dir">' + t().dirPrev + '</span>';
+    if (g.dealer === seat) tags += '<span class="ptag">' + t().dealerTag + '</span>';
+    if (p.won) tags += '<span class="ptag won">' + t().won + ' · ' + t().reveal + '</span>';
+    if (p.missing >= 0) tags += '<span class="ptag miss">' + t().missing + ' ' + suitName(p.missing) + '</span>';
+    if (isTurn) tags += '<span class="ptag turn">●</span>';
+
+    var h = '<div class="phead"><span class="pname">' + seatName(seat) + '</span>' + tags + '</div>';
+    var sizeCls = seat === 2 ? 'sm' : 'xs';
+    h += '<div class="rowlbl">' + t().hand + ' ' + CM.totalOf(p.hand) + ' ' + t().count + '</div>';
+    if (isMe) h += '<div class="handrow" id="hand"></div>';
+    else if (p.won) h += '<div class="tiles">' + revealHTML(p) + '</div>';
+    else {
+      var tot = CM.totalOf(p.hand), dj = (p.lastDrawn >= 0 && tot > 0) ? 1 : 0;
+      h += '<div class="tiles">' + backHTML(tot - dj, sizeCls) +
+        (dj ? '<span class="handsep"></span>' + backHTML(1, sizeCls) : '') + '</div>';
+    }
+    if (p.melds.length) h += '<div class="rowlbl">' + t().melds + '</div><div class="melds">' + meldsHTML(p, sizeCls) + '</div>';
+    if (!isMe) h += '<div class="rowlbl">' + t().river + '</div><div class="river">' + riverHTML(p) + '</div>';
+    if (isMe) {
+      var sh = CM.handShanten(p);
+      var need = 13 - p.melds.length * 3;
+      var total = CM.totalOf(p.hand);
+      var mustMiss = CM.holdsMissingSuit(p);
+      var myT = g.turn === HUMAN && !g.claim && !p.won;
+      var rec2 = -1, recCnt = 0;
+      if (myT && !mustMiss) {
+        try {
+          var ad = CM.analyzeDiscards(p.hand, p.melds.length).filter(function (o) { return p.hand[o.tile] > 0; });
+          ad.sort(function (a, b) {
+            if (a.shanten !== b.shanten) return a.shanten - b.shanten;
+            if (a.ukeireCount !== b.ukeireCount) return b.ukeireCount - a.ukeireCount;
+            return a.tile - b.tile;
+          });
+          if (ad.length) { rec2 = ad[0].tile; recCnt = ad[0].ukeireCount; }
+        } catch (e) { rec2 = -1; }
+      }
+      // 教学条（A）：向听进度 / 听牌提示 —— 手牌 14 张时按「打完推荐牌」判断
+      h += '<div class="teach" id="teach">';
+      if (p.won) {
+        h += '<div class="tbig win">🎉 ' + t().youWon + ' · ' + (p.winInfo ? p.winInfo.fans.total : 0) + ' 番</div>';
+      } else if (mustMiss) {
+        h += '<div class="tbig warn">⚠ ' + t().teachMustMiss + '</div>';
+      } else {
+        var probe = myT && total === need + 1 && rec2 >= 0;
+        var wt = [], left = 0, shAfter = sh;
+        if (total === need || probe) {
+          if (probe) p.hand[rec2]--;
+          shAfter = CM.shanten(p.hand, p.melds.length);
+          if (shAfter <= 0) wt = CM.winningTiles(p.hand, p.melds.length).filter(function (x) { return !(p.missing >= 0 && Math.floor(x / 9) === p.missing); });
+          if (probe) p.hand[rec2]++;
+        }
+        wt.forEach(function (x) { left += Math.max(0, 4 - p.hand[x]); });
+        if (wt.length) {
+          h += '<div class="tbig ok">' + t().teachReady + ' · ' + t().teachWait(left) + '</div>';
+          h += '<div class="twait">' + t().teachWaiting + wt.map(function (x) { return CM.tileLabel(x) + '(' + Math.max(0, 4 - p.hand[x]) + ')'; }).join(' ') + '</div>';
+        } else {
+          h += '<div class="tbig">' + t().teachShanten(shAfter) + (sh > 0 ? ' · ' + t().teachImprove(CM.improvingTiles(p.hand, p.melds.length).length) : '') + '</div>';
+        }
+      }
+      if (rec2 >= 0) h += '<div class="treason">★ ' + t().teachReason(CM.tileLabel(rec2), recCnt) + '</div>';
+      h += '</div>';
+      h += '<div class="hintbar" id="hint"></div><div class="actions" id="actions"></div>';
+    }
+    return '<div class="' + cls + '">' + h + '</div>';
+  }
+
+  function centerHTML() {
+    var g = state.g;
+    var chips = [0, 1, 2, 3].map(function (seat) {
+      var c = 'chip' + (seat === 0 ? ' you' : (seat === 1 ? ' next' : (seat === 3 ? ' prev' : '')));
+      var mark = (g.phase === 'playing' && g.turn === seat) ? ' ●' : '';
+      return '<span class="' + c + '">' + seatName(seat) + mark + '</span>';
+    }).join('<span>→</span>');
+    var h = '';
+    if (state.banner) h += '<div class="turnrow" style="color:var(--gold)">' + state.banner.text + '</div>';
+    h += '<div class="wallbig">' + g.wall.length + '</div><div class="wallcap">' + t().wall + '</div>';
+    if (!state.banner) h += '<div class="turnrow">' + (g.phase === 'playing' ? t().turn + ' ' + seatName(g.turn) : t().settled) + '</div>';
+    h += '<div class="orderline" style="margin-top:4px">' + t().orderT + '</div><div class="orderline">' + chips + '</div>';
+    if (g.lastDiscard) h += '<div class="lastrow">' + seatName(g.lastDiscard.seat) + ' · ' + tileHTML(g.lastDiscard.tile, { xs: true }) + '</div>';
+    return '<div class="panel b-center">' + h + '</div>';
+  }
+
+  function renderHand() {
+    var g = state.g, my = g.players[HUMAN], el = document.getElementById('hand');
+    if (!el) return;
+    var myTurn = g.phase === 'playing' && g.turn === HUMAN && !my.won && !g.claim;
+    var mustMiss = CM.holdsMissingSuit(my), rec = -1;
+    if (myTurn) { try { rec = CM.botDiscardTile(g, HUMAN); } catch (e) { rec = -1; } }
+    var html = '';
+    // 手牌按序排列；「刚摸到的牌」单独排在右手边，出牌后自动归位
+    var drawn = (!my.won && my.lastDrawn >= 0 && my.hand[my.lastDrawn] > 0) ? my.lastDrawn : -1;
+    var seq = [];
+    for (var q = 0; q < 27; q++) for (var m = 0; m < my.hand[q]; m++) seq.push(q);
+    if (drawn >= 0) { var di = seq.indexOf(drawn); if (di >= 0) seq.splice(di, 1); }
+    function one(id, extra) {
+      var legal = myTurn && (!mustMiss || CM.suitOf(id) === my.missing);
+      var cls = legal ? 'click' : (myTurn ? 'dim' : '');
+      if (myTurn && id === rec) cls += ' rec';
+      if (extra) cls += ' ' + extra;
+      return tileHTML(id, { cls: cls, attr: legal ? ' data-tile="' + id + '"' : '' });
+    }
+    for (var i = 0; i < seq.length; i++) html += one(seq[i]);
+    if (drawn >= 0) html += '<span class="handsep"></span>' + one(drawn, 'justdrawn');
+    el.innerHTML = html;
+    var hint = document.getElementById('hint');
+    if (hint) hint.textContent = my.won ? '' : (myTurn ? (mustMiss ? t().mustMiss : t().yourTurn) : (state.demo ? t().demoOn : ''));
+    el.querySelectorAll('.tile.click').forEach(function (b) { b.onclick = function () { humanDiscard(+b.dataset.tile); }; });
+  }
+
+  function renderActions() {
+    var g = state.g, my = g.players[HUMAN], el = document.getElementById('actions');
+    if (!el) return;
+    var html = '';
+    if (g.phase === 'playing' && !my.won) {
+      if (g.claim && (g.claim.pong.indexOf(HUMAN) >= 0 || g.claim.kong.indexOf(HUMAN) >= 0)) {
+        html += '<span style="font-weight:800;align-self:center">' + t().claimT + '</span>';
+        if (g.claim.kong.indexOf(HUMAN) >= 0) html += '<button class="act kong" id="aKong">' + t().kongBtn + '</button>';
+        if (g.claim.pong.indexOf(HUMAN) >= 0) html += '<button class="act pong" id="aPong">' + t().pongBtn + '</button>';
+        html += '<button class="act pass" id="aPass">' + t().passBtn + '</button>';
+      } else if (g.turn === HUMAN && !g.claim) {
+        var ck = CM.botConcealedKongTile(g, HUMAN); if (ck >= 0) html += '<button class="act kong" id="aCK">' + t().concealedKong + '</button>';
+        var ak = CM.botAddedKongTile(g, HUMAN); if (ak >= 0) html += '<button class="act kong" id="aAK">' + t().addedKong + '</button>';
+      }
+    }
+    el.innerHTML = html;
+    var b;
+    if ((b = document.getElementById('aKong'))) b.onclick = humanKong;
+    if ((b = document.getElementById('aPong'))) b.onclick = humanPong;
+    if ((b = document.getElementById('aPass'))) b.onclick = humanPass;
+    if ((b = document.getElementById('aCK'))) b.onclick = humanConcealedKong;
+    if ((b = document.getElementById('aAK'))) b.onclick = humanAddedKong;
+  }
+
+  function declareModal() {
+    var g = state.g, my = g.players[HUMAN];
+    var cnt = [0, 1, 2].map(function (s) { return CM.suitCount(my.hand, s); });
+    var rec = CM.botMissingSuit(g, HUMAN);
+    var h = '<div class="modal"><h2>' + t().declareT + '</h2><p class="lead">' + t().declareSub + '</p><div class="miss-pick">';
+    for (var s = 0; s < 3; s++) {
+      h += '<div class="mp' + (s === rec ? ' recommend' : '') + '" data-suit="' + s + '">' +
+        '<div class="big" style="color:' + SUITS[s].hex + '">' + suitName(s) + '</div>' +
+        '<div class="cnt">' + cnt[s] + ' ' + t().count + '</div>' +
+        (s === rec ? '<div class="recs">★ ' + t().recommend + '</div>' : '') + '</div>';
+    }
+    h += '</div><div class="rowlbl" style="margin-top:14px">' + t().hand + '</div><div class="tiles">' +
+      CM.concealedTiles(my).map(function (id) { return tileHTML(id, { cls: 'click' }); }).join('') + '</div></div>';
+    return h;
+  }
+
+  function resultModal() {
+    var g = state.g, S = g.settlement, rows = '';
+    var order = [0, 1, 2, 3].slice().sort(function (a, b) {
+      return (S ? S.seats[b].net : 0) - (S ? S.seats[a].net : 0);
+    });
+    for (var i = 0; i < SEATS.length; i++) {
+      var s = order[i], p = g.players[s];
+      var st = p.won ? t().stWon + ' ' + p.winInfo.fans.total + ' 番' : (g.readyAtEnd[s] ? t().stReady : t().stNot);
+      var net = S ? S.seats[s].net : 0;
+      var parts = [];
+      if (S) {
+        var x = S.seats[s];
+        if (x.fanPoints) parts.push(t().detailFan + ' +' + x.fanPoints);
+        if (x.kongIn) parts.push(t().detailKong + ' +' + x.kongIn);
+        if (x.kongOut) parts.push(t().detailKong + ' −' + x.kongOut);
+        if (x.readyIn) parts.push(t().detailReady + ' +' + x.readyIn);
+        if (x.readyOut) parts.push(t().detailReady + ' −' + x.readyOut);
+        if (x.flowerPigOut) parts.push(t().detailPig + ' −' + x.flowerPigOut);
+        if (x.refundIn) parts.push(t().detailRefund + ' +' + x.refundIn);
+        if (x.refundOut) parts.push(t().detailRefund + ' −' + x.refundOut);
+      }
+      // 中国习惯：正分红、负分绿
+      var col = net > 0 ? '#c0392b' : net < 0 ? '#1c7d4d' : '#5b6470';
+      rows += '<tr class="' + (s === HUMAN ? 'me' : '') + '"><td>' + seatName(s) + '</td><td>' + st + '</td>' +
+        '<td>' + (p.winInfo ? CM.tileLabel(p.winInfo.tile) : '—') + '</td>' +
+        '<td style="font-weight:800;color:' + col + '">' + (net > 0 ? '+' : '') + net + '</td>' +
+        '<td class="fanlist">' + (parts.join('　') || (p.winInfo ? p.winInfo.fans.items.map(function (it) { return it.name + '(' + it.fans + ')'; }).join(' ') : '—')) + '</td></tr>';
+    }
+    var myNet = S ? S.seats[HUMAN].net : 0;
+    return '<div class="modal"><h2>' + t().settled + ' — ' + (g.winCount >= 3 ? t().reasonThree : t().reasonWall) +
+      '　|　' + t().you + ' ' + (myNet > 0 ? '+' : '') + myNet + '</h2>' +
+      '<table class="res-table"><thead><tr><th>' + t().seatRes + '</th><th>' + t().status + '</th><th>' + t().handTile + '</th><th>' + t().colNet + '</th><th>' + t().colDetail + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
+      '<div style="margin-top:8px;font-size:12px;color:#5b6470">' + t().scoreNote + '</div>' +
+      '<div style="margin-top:14px;display:flex;gap:10px"><button class="btn pri" id="againBtn">' + t().again + '</button><button class="btn" id="closeRes">' + t().close + '</button></div></div>';
+  }
+
+  function helpModal() {
+    return '<div class="modal"><h2>' + t().helpTitle + '</h2><div class="legendbox">' + t().helpBody + '</div>' +
+      '<div style="margin-top:16px"><button class="btn" id="helpClose">' + t().close + '</button></div></div>';
+  }
+
+  function renderOverlay() {
+    var g = state.g, ov = document.getElementById('overlay');
+    var content = null;
+    if (state.overlay === 'help') content = helpModal();
+    else if (state.overlay === 'result') content = resultModal();
+    else if (g.phase === 'finished') content = resultModal();
+    else if (g.phase === 'declareMissing' && g.players[HUMAN].missing === -1) content = declareModal();
+    if (!content) { ov.className = 'overlay'; ov.innerHTML = ''; return; }
+    ov.className = 'overlay show';
+    ov.innerHTML = content;
+    ov.querySelectorAll('.mp').forEach(function (el) { el.onclick = function () { humanDeclare(+el.dataset.suit); }; });
+    var ag = document.getElementById('againBtn'); if (ag) ag.onclick = newGame;
+    var hc = document.getElementById('helpClose'); if (hc) hc.onclick = function () { state.overlay = null; render(); };
+    var cr = document.getElementById('closeRes'); if (cr) cr.onclick = function () { state.overlay = 'none'; render(); };
+  }
+
+  function renderLog() {
+    state.logLines = state.logLines.concat(logNewEvents());
+    if (state.logLines.length > 150) state.logLines = state.logLines.slice(-150);
+    var el = document.getElementById('log');
+    if (el) {
+      el.innerHTML = state.logLines.map(function (l, i) { return '<div><span class="n">' + (i + 1) + '</span>' + l + '</div>'; }).join('');
+      el.scrollTop = el.scrollHeight;
+    }
+    var cap = document.getElementById('logcap'); if (cap) cap.textContent = t().logcap;
+  }
+
+  function render() {
+    var g = state.g;
+    document.getElementById('ttl').textContent = t().title;
+    document.getElementById('helpBtn').textContent = t().help;
+    document.getElementById('demoBtn').textContent = state.demo ? t().demoStop : t().demo;
+    document.getElementById('newBtn').textContent = t().newGame;
+    document.getElementById('langBtn').textContent = t().lang;
+    var dl = document.getElementById('diffLbl');
+    if (dl) {
+      dl.textContent = t().diffLbl;
+      var dtx = { easy: t().dEasy, normal: t().dNormal, hard: t().dHard };
+      document.querySelectorAll('#diffs .dbtn').forEach(function (b) {
+        b.textContent = dtx[b.dataset.d];
+        b.className = 'dbtn' + (b.dataset.d === state.diff ? ' on' : '');
+      });
+    }
+    document.getElementById('hstat').innerHTML =
+      '<span>' + t().wall + ' <b>' + g.wall.length + '</b></span>' +
+      '<span>' + t().turn + ' <b class="turnlbl">' + (g.phase === 'playing' ? seatName(g.turn) : '—') + '</b></span>' +
+      '<span>' + t().dealerTag + ' <b>' + seatName(g.dealer) + '</b></span>' +
+      (g.settlement ? '<span>' + t().colNet + ' <b>' + (g.settlement.seats[HUMAN].net > 0 ? '+' : '') + g.settlement.seats[HUMAN].net + '</b></span>' : '') +
+      (state.demo ? '<span>' + t().demoOn + '</span>' : '');
+
+    document.getElementById('board').innerHTML =
+      panelHTML(2) + panelHTML(3) + centerHTML() + panelHTML(1) + panelHTML(0);
+
+    renderHand();
+    renderActions();
+    renderOverlay();
+    renderLog();
+  }
+
+  /* ---------------- 演示模式 ---------------- */
+  function toggleDemo() {
+    if (state.demo) { state.demo = false; if (state.timer) { clearInterval(state.timer); state.timer = null; } render(); return; }
+    state.overlay = null;
+    state.demo = true;
+    state.timer = setInterval(function () {
+      if (!state.g || state.g.phase === 'finished') { clearInterval(state.timer); state.timer = null; state.demo = false; render(); return; }
+      pump(); render();
+    }, 350);
+    render();
+  }
+
+  /* ---------------- 事件 ---------------- */
+  document.getElementById('newBtn').onclick = function () { newGame(); };
+  document.getElementById('demoBtn').onclick = toggleDemo;
+  document.getElementById('helpBtn').onclick = function () { state.overlay = state.overlay === 'help' ? null : 'help'; render(); };
+  document.getElementById('langBtn').onclick = function () { state.lang = state.lang === 'zh' ? 'en' : 'zh'; render(); };
+  document.querySelectorAll('#diffs .dbtn').forEach(function (b) {
+    b.onclick = function () { state.diff = b.dataset.d; render(); };
+  });
+
+  newGame();
+})();
+</script>
+</body>
+</html>

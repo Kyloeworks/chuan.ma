@@ -1,0 +1,48 @@
+name: Deploy static site to GitHub Pages
+
+# 站点由仓库根目录下的自包含 HTML 组成（无构建步骤）。
+# 推送到 main 即自动发布；也可在 Actions 页手动触发。
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Stage site (只发布网页文件)
+        run: |
+          mkdir -p _site
+          cp -v *.html .nojekyll _site/
+          cp -rv docs _site/ 2>/dev/null || true
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+        with:
+          enablement: true
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
+        id: deploy
+        uses: actions/deploy-pages@v4
