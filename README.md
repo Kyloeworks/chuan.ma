@@ -153,12 +153,28 @@ Where this repository is strict is **internal consistency**: the engine, the tab
 
 ## Deployment
 
-The site is plain static files served from the repository root. Either of these works; enabling Pages is a one-time setting on GitHub.
+The site is plain static files served from the repository root, published by the included workflow (`.github/workflows/pages.yml`) on every push to `main`.
 
-- **Deploy from a branch** — *Settings → Pages → Source: `Deploy from a branch` → `main` / `(root)`*
-- **GitHub Actions** — flip *Settings → Actions → General → Workflow permissions* to **Read and write**, then run the included workflow. A brand-new repository defaults to a read-only token, which caps the `pages: write` permission and makes `actions/configure-pages` fail with `Resource not accessible by integration`.
+Live at <https://kyloeworks.github.io/chuan.ma/>.
 
-Pushing to `main` updates the live site either way.
+> **One-time setup note.** A brand-new repository's `GITHUB_TOKEN` is read-only by default, which caps the `pages: write` permission declared in the workflow and makes `actions/configure-pages` fail with `Resource not accessible by integration`. Fix it once under *Settings → Actions → General → Workflow permissions → **Read and write***.
+
+### Attaching a custom domain
+
+> ⚠️ **Order matters.** Do **not** enter a custom domain, and do not commit a `CNAME` file, until that domain's DNS actually resolves. The moment a custom domain is attached, GitHub Pages starts redirecting the working `*.github.io` URL to it — so pointing it at a domain that does not resolve takes the site offline entirely.
+
+1. **First confirm the domain is live.**
+   ```powershell
+   Resolve-DnsName -Name <domain> -Type NS
+   Resolve-DnsName -Name <domain> -Type A
+   ```
+   Real name servers and A records mean you can proceed. If you get something like `suspended1.<registrar>.net`, the domain is suspended at the registrar and nothing can be attached — that is a registrar problem, not a GitHub one.
+2. **Point DNS at GitHub Pages.** Four `A` records on the apex domain:
+   `185.199.108.153` · `185.199.109.153` · `185.199.110.153` · `185.199.111.153`
+   plus, optionally, the matching `AAAA` records, and a `CNAME` for `www` pointing at `<owner>.github.io`.
+3. **Tell Pages about it.** *Settings → Pages → Custom domain* → enter the domain → **Save**, wait for the DNS check to pass, then tick **Enforce HTTPS**.
+
+**To remove a custom domain**, clear the *Custom domain* field and save — **deleting the `CNAME` file from the repository is not enough**, because the settings field and the file are two separate places. Browsers also cache the `301` to a former domain permanently, so verify the removal in a private window.
 
 ## Licence
 
