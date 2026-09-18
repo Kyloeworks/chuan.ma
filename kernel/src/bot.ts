@@ -133,9 +133,11 @@ export function botDiscardTile(
   return opts[0].tile;
 }
 
-/** bot 暗杠候选（手牌 4 张且非缺门）。easy 不会用杠，等于白送一路进攻手段 */
+/** bot 暗杠候选（手牌 4 张且非缺门）。easy 不会用杠，等于白送一路进攻手段。
+ *  牌墙已空 → 无牌可补，杠不成立（与 flow.discard 的明杠门槛一致）。 */
 export function botConcealedKongTile(g: GameState, seat: Seat, diff: Difficulty = 'normal'): TileId {
   if (diff === 'easy') return -1;
+  if (g.wall.length === 0) return -1;
   const p = g.players[seat];
   for (let t = 0; t < TILE_KINDS; t++) {
     if (p.hand[t] === 4 && (p.missing < 0 || Math.floor(t / RANKS) !== p.missing)) return t;
@@ -143,9 +145,10 @@ export function botConcealedKongTile(g: GameState, seat: Seat, diff: Difficulty 
   return -1;
 }
 
-/** bot 补杠候选（已有碰，手里有第 4 张） */
+/** bot 补杠候选（已有碰，手里有第 4 张）。牌墙已空时同样不可杠。 */
 export function botAddedKongTile(g: GameState, seat: Seat, diff: Difficulty = 'normal'): TileId {
   if (diff === 'easy') return -1;
+  if (g.wall.length === 0) return -1;
   const p = g.players[seat];
   for (const m of p.melds) {
     if (m.type === 'pong' && p.hand[m.tile] >= 1) {

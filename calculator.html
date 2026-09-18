@@ -23,7 +23,8 @@
   h1{font-size:22px;margin:0 0 3px;letter-spacing:-.01em}
   .sub{color:var(--sub);font-size:13px}
   .lang{border:1px solid var(--line);background:var(--card);border-radius:20px;
-    padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink)}
+    padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink);
+    text-decoration:none;display:inline-block}
   .lang:hover{border-color:var(--accent);color:var(--accent)}
   .cols{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}
   @media(max-width:820px){.cols{grid-template-columns:1fr}}
@@ -90,7 +91,10 @@
       <h1 id="ttl">川麻算牌器</h1>
       <div class="sub" id="sub"></div>
     </div>
-    <button class="lang" id="langBtn">EN</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="lang" href="index.html">&#8592; chuan.ma</a>
+      <button class="lang" id="langBtn">EN</button>
+    </div>
   </header>
   <div class="cols">
     <div>
@@ -185,6 +189,7 @@
     isFlush: () => isFlush,
     isGameOver: () => isGameOver,
     isJinGouDiao: () => isJinGouDiao,
+    isReadyCounts: () => isReadyCounts,
     isReadyHand: () => isReadyHand,
     isSettlementBalanced: () => isSettlementBalanced,
     isTenpai: () => isTenpai,
@@ -766,9 +771,15 @@
   function isFlowerPig(p) {
     return p.missing >= 0 && suitCount(p.hand, p.missing) > 0;
   }
+  function isReadyCounts(hand, melds = 0) {
+    const expected = 13 - 3 * melds;
+    const total = totalOf(hand);
+    if (total === expected) return shanten(hand, melds) === 0;
+    return shanten(hand, melds) <= 0;
+  }
   function isReadyHand(p) {
     if (!hasClearedMissing(p)) return false;
-    return winningTiles(p.hand, p.melds.length).length > 0;
+    return isReadyCounts(p.hand, p.melds.length);
   }
   function fanOfWinTile(p, tile, g) {
     if (p.hand[tile] >= 4) return 0;
@@ -1062,7 +1073,7 @@
       if (canRon(q, tile, q.melds.length)) ron.push(s);
       if (q.missing >= 0 && tileSuit === q.missing) continue;
       if (q.hand[tile] >= 2) pong.push(s);
-      if (g.config.rules.allowKong && q.hand[tile] >= 3) kong.push(s);
+      if (g.config.rules.allowKong && q.hand[tile] >= 3 && g.wall.length > 0) kong.push(s);
     }
     g.claim = { discardSeat: seat, tile, ron, pong, kong, resolved: false };
   }
@@ -1191,15 +1202,7 @@
   }
   function isReadyAtEnd(p) {
     if (!hasNoMissing(p)) return false;
-    for (let t = 0; t < TILE_KINDS; t++) {
-      if (p.hand[t] >= COPIES) continue;
-      if (p.missing >= 0 && Math.floor(t / 9) === p.missing) continue;
-      p.hand[t]++;
-      const ok = canWin(p.hand, p.melds.length) !== null;
-      p.hand[t]--;
-      if (ok) return true;
-    }
-    return false;
+    return isReadyCounts(p.hand, p.melds.length);
   }
   function nextActiveSeat(g, from) {
     for (let i = 1; i <= 4; i++) {
@@ -1296,6 +1299,7 @@
   }
   function botConcealedKongTile(g, seat, diff = "normal") {
     if (diff === "easy") return -1;
+    if (g.wall.length === 0) return -1;
     const p = g.players[seat];
     for (let t = 0; t < TILE_KINDS; t++) {
       if (p.hand[t] === 4 && (p.missing < 0 || Math.floor(t / RANKS) !== p.missing)) return t;
@@ -1304,6 +1308,7 @@
   }
   function botAddedKongTile(g, seat, diff = "normal") {
     if (diff === "easy") return -1;
+    if (g.wall.length === 0) return -1;
     const p = g.players[seat];
     for (const m of p.melds) {
       if (m.type === "pong" && p.hand[m.tile] >= 1) {

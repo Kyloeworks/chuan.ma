@@ -8,9 +8,12 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const target = process.argv[2] || path.resolve(here, 'dist/play.html');
-const shot = process.argv[3] || '';
-const geomPath = process.argv[4] || '';
+// ⚠️ 必须 resolve：命令行传相对路径（README 里的 `npm run probe` 就是相对路径）时，
+// 直接用 'file:///' + 相对路径 会拼出 file:///web/dist/play.html 这种缺盘符的非法 URL，
+// Chrome 只会停在 chrome-error:// 错误页 —— 探针全程在错误页上求值，看起来「全挂」。
+const target = path.resolve(process.argv[2] || path.join(here, 'dist', 'play.html'));
+const shot = process.argv[3] ? path.resolve(process.argv[3]) : '';
+const geomPath = process.argv[4] ? path.resolve(process.argv[4]) : '';
 const url = 'file:///' + target.replace(/\\/g, '/');
 const CHROME = 'C:/Program Files/Google/Chrome/Application/chrome.exe';
 const PORT = 9333 + Math.floor(Math.random() * 300);
@@ -61,7 +64,7 @@ const AUDIT = `(function(){
   function hit(a,b){ return !(a.x + a.w <= b.x + 0.5 || b.x + b.w <= a.x + 0.5 || a.y + a.h <= b.y + 0.5 || b.y + b.h <= a.y + 0.5); }
   for (var i=0;i<names.length;i++) for (var j=i+1;j<names.length;j++){
     var a = bx[names[i]], b = bx[names[j]];
-    if (hit(a,b)) out.overlaps.push(names[i] + ' x ' + names[j]);
+    if (hit(a,b)) out.overlaps.push(names[i] + ' x ' + names[j] + ' A=' + [a.x,a.y,a.w,a.h].map(Math.round).join(',') + ' B=' + [b.x,b.y,b.w,b.h].map(Math.round).join(','));
   }
   out.rows = L.rows; out.handTiles = L.handTiles;
   out.rots = L.rots; out.sepAtEnd = L.sepAtEnd;
@@ -152,6 +155,64 @@ try {
   const inTable = await ev("!!document.querySelector('#stage canvas') && document.getElementById('overlay').className.indexOf('show')<0");
   ck('定缺后进入牌桌', !!inTable);
 
+  // —— 视口分档：满屏无滚动条 + 牌与字体随档放大（4K 不再显得小）——
+  const baseView = JSON.parse((await ev("JSON.stringify({width:window.innerWidth,height:window.innerHeight,deviceScaleFactor:1,mobile:false})")) || '{}');
+  const VIEWS = [
+    { w: 1280, h: 720, name: '1280×720' },
+    { w: 1920, h: 1080, name: '1920×1080' },
+    { w: 2560, h: 1440, name: '2560×1440' },
+    { w: 3840, h: 2160, name: '3840×2160(4K)' },
+  ];
+  const tierRows = [];
+  for (const v of VIEWS) {
+    await cmd('Emulation.setDeviceMetricsOverride', { width: v.w, height: v.h, deviceScaleFactor: 1, mobile: false });
+    await sleep(450);
+    const s = JSON.parse((await ev(`(function(){
+      var de=document.documentElement, b=document.body, L=window.__PIXI_TABLE__.layout||{};
+      var el=document.getElementById('hstat');
+      var c=document.querySelector('#stage canvas');
+      return JSON.stringify({
+        iw: window.innerWidth, ih: window.innerHeight,
+        sw: de.scrollWidth, sh: de.scrollHeight, bsw: b.scrollWidth, bsh: b.scrollHeight,
+        tier: L.tier, k: L.uiK, handH: L.handH, overflow: L.overflow, boxes: (L.boxes||[]).length,
+        fs: el ? Math.round(parseFloat(getComputedStyle(el).fontSize)*100)/100 : 0,
+        stageH: document.getElementById('stage').clientHeight,
+        canvas: c ? [c.clientWidth, c.clientHeight] : null
+      });
+    })()`)) || '{}');
+    tierRows.push(Object.assign({ name: v.name }, s));
+    ck(`${v.name}：满屏无页面滚动条`, s.sw <= s.iw + 1 && s.sh <= s.ih + 1 && s.bsw <= s.iw + 1 && s.bsh <= s.ih + 1,
+      `doc=${s.sw}×${s.sh} body=${s.bsw}×${s.bsh} 视口=${s.iw}×${s.ih}`);
+  }
+  const ks = tierRows.map((r) => r.k), hhs = tierRows.map((r) => r.handH), fss = tierRows.map((r) => r.fs);
+  ck('视口越大档位越高（k 随视口单调递增）', ks.every((x, i) => i === 0 || x > ks[i - 1]), `k=${ks.join(' / ')}`);
+  ck('手牌随档放大（4K 至少是 720p 的 1.8 倍）',
+    hhs.every((x, i) => i === 0 || x > hhs[i - 1]) && hhs[hhs.length - 1] >= 1.8 * hhs[0],
+    `handH=${hhs.join(' / ')}`);
+  ck('DOM 字号同步放大（牌与字一起变大，不是只放大画布）',
+    fss.every((x, i) => i === 0 || x > fss[i - 1]), `fontSize=${fss.join(' / ')}`);
+  ck('各档布局均不越界（放大后仍全在屏内）', tierRows.every((r) => r.overflow === 0),
+    JSON.stringify(tierRows.map((r) => r.overflow)));
+  ck('各档画布均跟随舞台尺寸重算', tierRows.every((r) => r.canvas && r.canvas[1] > 0 && Math.abs(r.canvas[1] - r.stageH) <= 2),
+    JSON.stringify(tierRows.map((r) => r.canvas)));
+  shotTrace += `\n  分档实测: ` + JSON.stringify(tierRows.map((r) => ({ v: r.name, tier: r.tier, k: r.k, handH: r.handH, fs: r.fs })));
+  // 还原到运行前的视口（不要用 clearDeviceMetricsOverride：headless 下会回落到默认小窗口，
+  // 导致后续所有断言都在最小档跑，截图与像素体检也跟着失真）
+  await cmd('Emulation.setDeviceMetricsOverride', baseView);
+  await sleep(520);
+
+  // —— 浮动层：对局记录抽屉（不再占用牌桌高度）——
+  const DX = JSON.parse((await ev(`(function(){
+    var d=document.getElementById('drawer'), b=document.getElementById('logBtn');
+    b.click();
+    var open=d.className.indexOf('open')>=0, disp=getComputedStyle(d.querySelector('.panel')).display;
+    var draft=document.getElementById('overlay').className.indexOf('show')>=0;
+    b.click();
+    return JSON.stringify({ open:open, disp:disp, closed:d.className.indexOf('open')<0, blockedOverlay:draft });
+  })()`)) || '{}');
+  ck('对局记录放在浮动层（抽屉可开合、不占牌桌高度）',
+    DX.open === true && DX.disp === 'block' && DX.closed === true, JSON.stringify(DX));
+
   // 布局体检
   const audit = await ev(AUDIT);
   ck('布局体检可读', audit && !audit.err, audit && audit.err ? audit.err : '');
@@ -240,19 +301,46 @@ try {
   await sleep(400);
 
   // 关键一问：在「真实 UI」里连打 N 局，人类到底能不能赢？（排除"内核能赢但界面不让赢"）
+  // 同时累计「终局手牌形态」违规数 —— 若某家带着刚摸到的那张（标准张数+1）进入查叫结算，
+  // 他必被判「未下叫」，也就是玩家报的「我最后听牌了，查叫却说我没叫牌」。
   const GAMES = 30;
   let humanWins = 0, seatWins = [0, 0, 0, 0], totWin = 0, humanFinalSh = [];
+  let shapeViolations = 0, shapeSamples = 0, shapeDiag = '';
   for (let i = 0; i < GAMES; i++) {
-    await ev("(function(){var b=document.getElementById('againBtn');if(b)b.click();})()");
+    // 结算弹层若已关闭（overlay='none'）就没有 againBtn，退回顶栏「新开一局 → 开始对局」
+    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}var n=document.getElementById('newBtn');if(n)n.click();})()");
     await sleep(90);
-    await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
+    await ev("(function(){var b=document.getElementById('startGameBtn');if(b)b.click();})()");
     await sleep(110);
+    await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
+    await sleep(120);
     const o = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
     const w = o.won || [];
     if (o.humanWon) humanWins++;
     for (let s = 0; s < 4; s++) if (w[s]) seatWins[s]++;
     totWin += w.filter(Boolean).length;
+    if (o.phase === 'finished' && Array.isArray(o.rawHands) && Array.isArray(o.expectHands)) {
+      shapeSamples++;
+      for (let s = 0; s < 4; s++) {
+        // 合法范围：标准张数 … 标准张数 + 1（刚摸的那张没打出）+ 杠数（每个杠可留一张补牌在手）。
+        // 下界是重点：低于标准张数就是「没摸牌就出牌」的抽干（会永久少牌、再也胡不了）。
+        const lo = o.expectHands[s];
+        const hi = lo + 1 + ((o.kongsOf && o.kongsOf[s]) || 0);
+        if (!(o.rawHands[s] >= lo && o.rawHands[s] <= hi)) {
+          shapeViolations++;
+          if (!shapeDiag) {
+            shapeDiag = `raw=${JSON.stringify(o.rawHands)} expect=${JSON.stringify(o.expectHands)}` +
+              ` won=${JSON.stringify(w)} self=${JSON.stringify(o.winSelf || null)} melds=${JSON.stringify(o.meldsOf || null)}` +
+              ` kongs=${JSON.stringify(o.kongsOf || null)} ready=${JSON.stringify(o.readyAtEnd || null)}` +
+              ` draws=${o.draws} rivers=${JSON.stringify(o.rivers)}`;
+          }
+        }
+      }
+    }
   }
+  ck(`终局手牌张数合法（${shapeSamples} 局：每家 ∈ {标准张数, 标准张数+1}）`,
+    shapeSamples === GAMES && shapeViolations === 0,
+    `samples=${shapeSamples} violations=${shapeViolations}${shapeDiag ? ' | ' + shapeDiag : ''}`);
   const pct = (humanWins / GAMES * 100).toFixed(0);
   const seatPct = seatWins.map((x) => (x / GAMES * 100).toFixed(0) + '%').join(' / ');
   ck(`真实 UI 里人类能赢（${GAMES} 局赢 ${humanWins} 局）`, humanWins >= 3,
@@ -268,7 +356,9 @@ try {
     // 每次都从「新的一局」开始：先把上一局收尾（若有），再开新局并定缺
     await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
     await sleep(160);
-    await ev("(function(){var b=document.getElementById('againBtn');if(b)b.click();})()");
+    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}var n=document.getElementById('newBtn');if(n)n.click();})()");
+    await sleep(200);
+    await ev("(function(){var b=document.getElementById('startGameBtn');if(b)b.click();})()");
     await sleep(260);
     await ev("(function(){var r=document.querySelector('.mp.recommend')||document.querySelector('.mp');if(r)r.click();})()");
     await sleep(220);
@@ -298,14 +388,19 @@ try {
       var b=document.getElementById('aWin'); if(!b) return '{}';
       var ab=document.getElementById('actions');
       var bs=ab?[].slice.call(ab.querySelectorAll('button')):[];
+      var L=window.__PIXI_TABLE__.layout||{};
       return JSON.stringify({ txt:b.textContent, huFs:parseFloat(getComputedStyle(b).fontSize),
         huH:Math.round(b.getBoundingClientRect().height), btnCount:bs.length,
+        bodyFs: parseFloat(getComputedStyle(document.body).fontSize),
+        vw: window.innerWidth, vh: window.innerHeight, k: L.uiK, tier: L.tier,
         minFs: bs.length?Math.min.apply(null, bs.map(function(x){return parseFloat(getComputedStyle(x).fontSize)})):0,
         minH: bs.length?Math.min.apply(null, bs.map(function(x){return Math.round(x.getBoundingClientRect().height)})):0 });
     })()`)) || '{}');
     ck('「胡」按钮已渲染在牌桌上', !!BJ.txt && BJ.txt !== 'undefined' && BJ.btnCount >= 1, JSON.stringify(BJ));
-    ck('碰/杠/胡等动作按钮已放大（字号≥18px、高度≥40px）',
-      BJ.minFs >= 18 && BJ.minH >= 40, `minFontSize=${BJ.minFs} minHeight=${BJ.minH} huFontSize=${BJ.huFs}`);
+    ck('碰/杠/胡等动作按钮足够醒目（≥1.4 倍正文字号、高度≥40px，随档同比例放大）',
+      BJ.minFs >= 1.4 * BJ.bodyFs && BJ.minH >= 40,
+      `minFontSize=${BJ.minFs} bodyFontSize=${BJ.bodyFs} minHeight=${BJ.minH} huFontSize=${BJ.huFs}` +
+      ` viewport=${BJ.vw}×${BJ.vh} tier=${BJ.tier} k=${BJ.k}`);
     await ev("document.getElementById('aWin').click()");
     await sleep(500);
     const Lw3 = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
@@ -321,8 +416,10 @@ try {
     await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.dbgOn()");
     await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
     await sleep(200);
-    await ev("(function(){var b=document.getElementById('againBtn');if(b)b.click();})()");
-    await sleep(2300);
+    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}var n=document.getElementById('newBtn');if(n)n.click();})()");
+    await sleep(200);
+    await ev("(function(){var b=document.getElementById('startGameBtn');if(b)b.click();})()");
+    await sleep(2100);
     await ev("(function(){var r=document.querySelector('.mp.recommend')||document.querySelector('.mp');if(r)r.click();})()");
     await sleep(900);
     // 逐帧采样牌形不变量（手牌 + 3×副露 + 杠 恒为 13/14）—— 抓「没摸牌就出牌」的抽干
@@ -336,8 +433,8 @@ try {
         shapeLog.push(Ls.shape);
       }
     }
-    ck('牌形不变量：人类「手牌 + 3×副露 + 杠」恒为 13/14（没摸牌就出牌的抽干会立刻暴露）',
-      shapeLog.length >= 25 && minShape >= 13 && maxShape <= 14,
+    ck('牌形不变量：人类「手牌 + 3×副露 + 杠」恒为 13/14（连杠时可到 15）',
+      shapeLog.length >= 25 && minShape >= 13 && maxShape <= 15,
       `samples=${shapeLog.length} min=${minShape} max=${maxShape} log=${shapeLog.join(',')}`);
     await sleep(900);   // 等飞行牌/粒子这类补间收尾，避免截图抓到半空中的牌
     // 采样牌形不变量（诊断用；真正的一局跑在 dbg 里逐动作记录）

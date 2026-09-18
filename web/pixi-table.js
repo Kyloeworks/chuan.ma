@@ -72,9 +72,8 @@
       teachReason: function (t, cnt) { return '打 ' + t + ' → 进张 ' + cnt + ' 张'; },
       teachWinReason: function (t, f) { return '打 ' + t + ' → 下叫（' + f + '）'; },
       teachMustMiss: '还有缺门牌，必须先打完',
+      teachCanWin: '可以胡了 —— 点牌桌中间的「胡」按钮',
       teachFlowerPig: '尚未打缺 · 流局要赔花猪',
-      teachGhost: '叫',
-      teachLeft: '剩余',
       teachWaiting: '叫牌：',
       winBanner: function (f) { return '你胡了！' + f + ' 番'; },
       winBannerSelf: '自摸',
@@ -141,8 +140,6 @@
       teachMustMiss: 'Clear your missing suit first',
       teachCanWin: 'You can win — press the Hu button on the table',
       teachFlowerPig: 'Missing suit not cleared · flower-pig penalty',
-      teachGhost: 'WAIT',
-      teachLeft: 'left',
       teachWaiting: 'Waiting on:',
       winBanner: function (f) { return 'YOU WIN! ' + f + ' fan'; },
       winBannerSelf: 'self-draw',
@@ -302,19 +299,21 @@
         if (c.pong.indexOf(HUMAN) >= 0 || c.kong.indexOf(HUMAN) >= 0) { humanAutoAct(); continue; }
         resolveHumanPass(); continue;
       }
+      // ⚠️ 牌墙摸完只在「摸不到牌」那一刻结束（draw 返回 false），**不在摸到之后**结束。
+      // 若在摸完之后就结算，该家会带着 14 张手牌进入查叫判定，而被判「未下叫」——
+      // 这正是玩家报的「我最后听牌了，查叫却说我没叫」。摸到最后一张仍可自摸（海底）
+      // 或打出一张（被别人点炮/碰），之后才流局。
       if (g.pendingDraw) {
         var seat = g.turn;
         if (seat === HUMAN) {
           if (g.wall.length === 0) { CM.settleRound(g); return; }
           CM.draw(g, HUMAN);
           g.pendingDraw = false;   // 这一次摸牌已消费（后面只等「打哪张 / 胡 / 杠」的决定）
-          if (CM.isGameOver(g)) { CM.settleRound(g); return; }
           requestRender();
           if (!state.demo) return; // 非演示：停下等玩家（自摸点「胡」，否则点手牌打出）
           // 演示：落到下面的「seat2 === HUMAN」分支代打，避免这里重复摸牌
         } else {
           if (!CM.draw(g, seat)) { CM.settleRound(g); return; }
-          if (CM.isGameOver(g)) { CM.settleRound(g); return; }
           botActAfterDraw(seat); continue;
         }
       }
@@ -522,22 +521,65 @@
     c.__face = face;
     return c;
   }
+  /* ================= 视口分档缩放（k）=================
+     一个系数同时驱动「牌桌尺寸」与「所有文字/按钮」：避免 4K 上牌和字都显得小。
+     档位按「舞台可用区 / 设计基准(1440×800)」的比值向下取档（保证永不溢出），
+     比值 = min(W/1440, H/800)，落在哪一档就取哪一档的 k。 */
+  var REF = { W: 1440, H: 720 };   // 设计基准＝舞台可用区（不含顶栏）
+  var TIERS = [
+    { id: 'xs', k: 0.72 },   // 小窗 / 笔记本分屏
+    { id: 'sm', k: 0.85 },
+    { id: 'md', k: 1.00 },   // 设计基准（≈1440×800 浏览器）
+    { id: 'lg', k: 1.25 },   // 1080p 全屏
+    { id: 'xl', k: 1.55 },   // 1440p / 2.5K
+    { id: 'xxl', k: 2.00 },  // 1600p / 大屏
+    { id: '4k', k: 2.50 }    // 4K 全屏
+  ];
+  /** 取「比值最接近」的一档（对数距离），避免刚好差一点就掉一档 */
+  function pickTierIdx(W, H) {
+    var raw = Math.min((W || REF.W) / REF.W, (H || REF.H) / REF.H);
+    var idx = 0, best = Infinity;
+    for (var i = 0; i < TIERS.length; i++) {
+      var d = Math.abs(Math.log(TIERS[i].k) - Math.log(Math.max(0.2, raw)));
+      if (d < best) { best = d; idx = i; }
+    }
+    return idx;
+  }
+  function applyTier() {
+    var st = document.getElementById('stage');
+    var winW = window.innerWidth || REF.W;
+    var winH = window.innerHeight || REF.H + 48;
+    var W = (st && st.clientWidth) || winW;
+    var H = (st && st.clientHeight) || Math.max(320, winH - 48);
+    // 舞台可能处于瞬时布局（0 或明显偏小）→ 退回窗口尺寸判断，避免误降到最小档
+    if (W < winW * 0.6 || H < winH * 0.5) { W = winW; H = Math.max(320, winH - 48); }
+    var i = pickTierIdx(W, H);
+    state.tier = TIERS[i].id;
+    state.k = TIERS[i].k;
+    try { document.documentElement.style.setProperty('--k', String(state.k)); } catch (e) { /* ignore */ }
+    return i;
+  }
+
   function label(text, size, color, weight) {
     return new PIXI.Text({
       text: text,
-      style: { fontFamily: '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif', fontSize: size, fill: color, fontWeight: weight || '600' }
+      style: { fontFamily: '-apple-system, "PingFang SC", "Microsoft YaHei", sans-serif',
+        fontSize: Math.max(8, size * (state.k || 1)), fill: color, fontWeight: weight || '600' }
     });
   }
 
   /* ================= 布局 ================= */
   function metrics(W, H) {
-    var handH = clamp(Math.min(H * 0.125, W / 17), 38, 86);
+    var k = state.k || 1;
+    // 牌宽：随档放大；上限由「高度占比」和「13 张 + 摸牌位横向放得下」共同约束
+    var byW = (((W - 48 * k) / 14) - 4 * k) / AR;
+    var handH = clamp(82.5 * k, 34, Math.min(H * 0.135, byW));
     return {
-      W: W, H: H, PAD: 12,
+      W: W, H: H, PAD: 12 * k,
       handH: handH, handW: handH * AR,
       oppH: handH * 0.62, meldH: handH * 0.70, riverH: handH * 0.44,
-      bottomPad: 58, labelGap: 24,   // 底部留出「教学条」的位置
-      stripH: 58
+      bottomPad: 58 * k, labelGap: 24 * k,   // 底部留出「教学条」的位置
+      stripH: 58 * k
     };
   }
   function seatFrame(s, M) {
@@ -781,63 +823,63 @@
   }
 
   function seatLabel(s, W, H, M) {
-    var G = state.g, p = G.players[s], isMe = s === HUMAN;
+    var G = state.g, p = G.players[s], isMe = s === HUMAN, k = state.k || 1;
     var isTurn = G.phase === 'playing' && G.turn === s && !G.won && !G.claim;
     var txt = seatName(s) + ' · ' + CM.totalOf(p.hand) +
       (G.dealer === s ? ' · ' + t().dealer : '') +
       (p.missing >= 0 ? ' · 缺' + SUITS[p.missing].zh : '') +
       (p.won ? ' · ' + t().won : '');
     var lb = label(txt, 12.5, isTurn || p.won ? '#ffffff' : '#bcd6c6', isTurn ? '800' : '600');
-    var bgW = lb.width + 16, bgH = 22;
+    var bgW = lb.width + 16 * k, bgH = 22 * k;
     var pos;
-    if (s === 2) pos = { x: W / 2, y: 6, ax: 0.5, ay: 0 };
-    else if (s === 1) pos = { x: W - 10, y: 6, ax: 1, ay: 0 };
-    else if (s === 3) pos = { x: 10, y: 6, ax: 0, ay: 0 };
-    else pos = { x: W / 2, y: H - 6, ax: 0.5, ay: 1 };
+    if (s === 2) pos = { x: W / 2, y: 6 * k, ax: 0.5, ay: 0 };
+    else if (s === 1) pos = { x: W - 10 * k, y: 6 * k, ax: 1, ay: 0 };
+    else if (s === 3) pos = { x: 10 * k, y: 6 * k, ax: 0, ay: 0 };
+    else pos = { x: W / 2, y: H - 6 * k, ax: 0.5, ay: 1 };
     var bg = gfx();
     var bx = pos.x - pos.ax * bgW, by = pos.y - pos.ay * bgH;
-    bg.roundRect(bx, by, bgW, bgH, 11).fill({ color: isTurn ? 0x0d3a53 : 0x0a2619, alpha: isTurn ? 0.92 : 0.72 });
-    bg.roundRect(bx, by, bgW, bgH, 11).stroke({ width: isTurn ? 2 : 1.2, color: SEAT_C[s], alpha: isTurn ? 1 : 0.5 });
+    bg.roundRect(bx, by, bgW, bgH, 11 * k).fill({ color: isTurn ? 0x0d3a53 : 0x0a2619, alpha: isTurn ? 0.92 : 0.72 });
+    bg.roundRect(bx, by, bgW, bgH, 11 * k).stroke({ width: isTurn ? 2 : 1.2, color: SEAT_C[s], alpha: isTurn ? 1 : 0.5 });
     state.world.addChild(bg);
     lb.anchor.set(pos.ax, pos.ay);
-    lb.position.set(pos.x - pos.ax * 8, pos.y - pos.ay * 3);
+    lb.position.set(pos.x - pos.ax * 8 * k, pos.y - pos.ay * 3 * k);
     state.world.addChild(lb);
     if (isTurn) pulse(bg, { period: 900, min: 0.55, max: 1 });
     box('label' + s, bx, by, bgW, bgH);
   }
 
   function drawCenter(W, H, M) {
-    var G = state.g, cx = W / 2, cy = H / 2;
-    var pw = 224, ph = 132;
+    var G = state.g, cx = W / 2, cy = H / 2, k = state.k || 1;
+    var pw = 224 * k, ph = 132 * k;
     var pad = gfx();
-    pad.roundRect(cx - pw / 2, cy - ph / 2, pw, ph, 20)
+    pad.roundRect(cx - pw / 2, cy - ph / 2, pw, ph, 20 * k)
       .fill({ color: 0x0a2a1b, alpha: 0.82 })
       .stroke({ width: 2, color: 0xd9b45c, alpha: 0.42 });
     state.world.addChild(pad);
     box('center', cx - pw / 2, cy - ph / 2, pw, ph);
 
     var wall = label(String(G.wall.length), 46, '#ffffff', '800');
-    wall.anchor.set(0.5); wall.position.set(cx, cy - 30);
+    wall.anchor.set(0.5); wall.position.set(cx, cy - 30 * k);
     state.world.addChild(wall);
     var wc = label(t().wall, 11.5, '#8fb8a2', '700');
-    wc.anchor.set(0.5); wc.position.set(cx, cy - 2);
+    wc.anchor.set(0.5); wc.position.set(cx, cy - 2 * k);
     state.world.addChild(wc);
 
     var trTxt = G.phase === 'playing' ? (t().turn + '  ' + seatName(G.turn)) : t().settled;
     var tr = label(trTxt, 14, G.phase === 'playing' ? '#ffe6a3' : '#c8d6cd', '800');
-    tr.anchor.set(0.5); tr.position.set(cx, cy + 20);
+    tr.anchor.set(0.5); tr.position.set(cx, cy + 20 * k);
     state.world.addChild(tr);
 
     if (G.lastDiscard) {
       var rH = M.riverH * 1.06, rW = rH * AR;
       var ln = tileNode(G.lastDiscard.tile, rW, rH, { rot: 0, glow: true });
-      ln.position.set(cx, cy + 48);
+      ln.position.set(cx, cy + 48 * k);
       state.world.addChild(ln);
     }
     // 方位小指示（下家 / 上家）
     var dirs = [
-      { s: 1, x: cx + 130, y: cy, txt: '▶' },
-      { s: 3, x: cx - 130, y: cy, txt: '◀' }
+      { s: 1, x: cx + 130 * k, y: cy, txt: '▶' },
+      { s: 3, x: cx - 130 * k, y: cy, txt: '◀' }
     ];
     for (var i = 0; i < dirs.length; i++) {
       var dl = label(dirs[i].txt, 15, '#' + SEAT_C[dirs[i].s].toString(16).padStart(6, '0'), '800');
@@ -1176,7 +1218,7 @@
         drawIdle(W, H, M);
         drawActionsDOM(W, H);
         renderChrome(); renderOverlay(); renderLog();
-        window.__PIXI_TABLE__.layout = { W: W, H: H, boxes: state.boxes, overflow: 0, idle: true, phase: 'setup', actions: actionFlags(), winReady: false };
+        window.__PIXI_TABLE__.layout = { W: W, H: H, boxes: state.boxes, overflow: 0, idle: true, phase: 'setup', actions: actionFlags(), winReady: false, tier: state.tier || null, uiK: +(state.k || 1).toFixed(2) };
         window.__PIXI_TABLE__.fx = { deals: state.fxStats.deals, flights: state.fxStats.flights, rings: 0, bursts: 0, live: 0, tweens: 0 };
         return;
       }
@@ -1216,6 +1258,7 @@
     window.__PIXI_TABLE__.layout = {
       W: W, H: H, boxes: state.boxes, overflow: over,
       handH: +M.handH.toFixed(1), riverH: +M.riverH.toFixed(1),
+      tier: state.tier || null, uiK: +(state.k || 1).toFixed(2),
       // 座位朝向：应为 [0, -90, 180, 90]（牌顶朝向桌心）
       rots: SEATS.map(function (s) { return Math.round(seatFrame(s, M).rot * 180 / Math.PI); }),
       // 刚摸的牌是否排在「右手边」（沿 right 方向位于主体之后）
@@ -1267,6 +1310,30 @@
       winReady: humanWinReady(),
       // 牌形不变量：正常应恒为 13 或 14（探针据此抓「没摸牌就出牌」的抽干问题）
       shape: shapeOf(state.g.players[HUMAN]),
+      // 原始手牌张数 / 标准张数（不含副露）——终局形态断言用：
+      // 未胡者在结算时必须恰好等于标准张数，否则就是「带着多摸的那张进入查叫」。
+      rawHands: SEATS.map(function (s) {
+        var q = state.g.players[s], n = 0;
+        for (var i = 0; i < 27; i++) n += q.hand[i];
+        return n;
+      }),
+      expectHands: SEATS.map(function (s) {
+        var q = state.g.players[s], k = 0;
+        for (var m = 0; m < q.melds.length; m++) if (q.melds[m].type === 'kong') k++;
+        return 13 - 3 * q.melds.length - k;   // 杠多占一张，必须一并扣掉
+      }),
+      meldsOf: SEATS.map(function (s) { return state.g.players[s].melds.length; }),
+      kongsOf: SEATS.map(function (s) {
+        var q = state.g.players[s], k = 0;
+        for (var m = 0; m < q.melds.length; m++) if (q.melds[m].type === 'kong') k++;
+        return k;
+      }),
+      readyAtEnd: (state.g.readyAtEnd || []).slice(),
+      // 是否自摸（点炮胡时那张和牌不进手牌，只记在 winInfo 里 → 手牌张数不自增）
+      winSelf: SEATS.map(function (s) {
+        var p = state.g.players[s];
+        return !!(p.won && p.winInfo && p.winInfo.selfDraw);
+      }),
       dbg: state.dbg.slice(-40),
       shapes: SEATS.map(function (s) { return shapeOf(state.g.players[s]); })
     };
@@ -1286,6 +1353,8 @@
     document.getElementById('newBtn').textContent = t().newGame;
     document.getElementById('langBtn').textContent = t().lang;
     document.getElementById('logcap').textContent = t().logcap;
+    var lb = document.getElementById('logBtn');
+    if (lb) lb.textContent = (document.getElementById('drawer').className.indexOf('open') >= 0 ? '▾ ' : '▸ ') + t().logcap;
     document.getElementById('hstat').innerHTML = G ? (
       '<span>' + t().wall + ' <b>' + G.wall.length + '</b></span>' +
       '<span>' + t().turn + ' <b>' + (G.phase === 'playing' ? seatName(G.turn) : '—') + '</b></span>' +
@@ -1339,7 +1408,7 @@
     if ((b = document.getElementById('aPass'))) b.onclick = humanPass;
     if ((b = document.getElementById('aCK'))) b.onclick = humanCK;
     if ((b = document.getElementById('aAK'))) b.onclick = humanAK;
-    box.style.top = Math.round(H / 2 + 84) + 'px';
+    box.style.top = Math.round(H / 2 + 84 * (state.k || 1)) + 'px';
   }
   function declareModal() {
     var G = state.g, my = G.players[HUMAN];
@@ -1436,7 +1505,9 @@
     else if (!G) { ov.className = 'overlay'; ov.innerHTML = ''; return; }
     else if (state.overlay === 'help') content = helpModal();
     else if (state.overlay === 'result') content = resultModal();
-    else if (G.phase === 'finished') content = resultModal();
+    // 结算弹层：phase=finished 时自动弹出；玩家点过「关闭」后（overlay='none'）不再弹回，
+    // 否则「关闭」按钮点了没反应（旧版就是这个 bug）。
+    else if (G.phase === 'finished' && state.overlay !== 'none') content = resultModal();
     else if (G.phase === 'declareMissing' && G.players[HUMAN].missing === -1) content = declareModal();
     if (!content) { ov.className = 'overlay'; ov.innerHTML = ''; return; }
     ov.className = 'overlay show'; ov.innerHTML = content;
@@ -1502,12 +1573,26 @@
       d.dataset.status = 'ok';
       d.textContent = t().diagOk(state.rendererName, state.texCount, 0);
       window.__PIXI_TABLE__ = { ready: true, renderer: state.rendererName, textures: state.texCount };
+      applyTier();                       // 按视口定档（牌与字体同步缩放）
       openSetup();
       render();
-      window.addEventListener('resize', function () { if (state.ready) render(); });
+      window.addEventListener('resize', function () {
+        if (!state.ready) return;
+        applyTier();
+        render();
+      });
     } catch (e) { fail((e && e.message) || e); }
   }
 
+  document.getElementById('logBtn').onclick = function () {
+    var d = document.getElementById('drawer');
+    d.className = d.className.indexOf('open') >= 0 ? 'drawer' : 'drawer open';
+    renderChrome();
+    if (d.className.indexOf('open') >= 0) {
+      var el = document.getElementById('log');
+      if (el) el.scrollTop = el.scrollHeight;
+    }
+  };
   document.getElementById('newBtn').onclick = function () { if (state.ready) { openSetup(); render(); } };
   document.getElementById('demoBtn').onclick = function () {
     if (!state.ready) return;
@@ -1516,7 +1601,10 @@
       if (state.timer) { clearInterval(state.timer); state.timer = null; }
       render(); return;
     }
+    // 还在「开局设置」（无牌局）时点演示：先按当前设置开局，否则按钮点了等于没反应、还顺手关掉了设置弹层
+    if (!state.g) startGame();
     state.overlay = null; state.demo = true;
+    if (state.timer) clearInterval(state.timer);
     state.timer = setInterval(function () {
       if (!state.g || state.g.phase === 'finished') {
         clearInterval(state.timer); state.timer = null; state.demo = false; render(); return;

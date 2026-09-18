@@ -13,11 +13,11 @@
     "publish": "node web/build.mjs && node web/publish.mjs",
     "serve": "node web/serve.mjs 8791",
     "test": "npm run test:kernel && npm run smoke",
-    "test:kernel": "node --experimental-strip-types kernel/test/win.test.ts && node --experimental-strip-types kernel/test/scoring.test.ts && node --experimental-strip-types kernel/test/flow.test.ts && node --experimental-strip-types kernel/test/settle.test.ts",
+    "test:kernel": "node --experimental-strip-types kernel/test/win.test.ts && node --experimental-strip-types kernel/test/scoring.test.ts && node --experimental-strip-types kernel/test/flow.test.ts && node --experimental-strip-types kernel/test/settle.test.ts && node --experimental-strip-types kernel/test/ready.test.ts",
     "verify": "node --experimental-strip-types kernel/test/verify_shanten.ts 20000 && node --experimental-strip-types kernel/test/fuzz.run.ts 20000",
     "sim": "node --experimental-strip-types kernel/test/sim.run.ts 400",
     "winrate": "node --experimental-strip-types kernel/test/winrate.run.ts 300 all",
-    "smoke": "node web/smoke.mjs && node web/tiles.smoke.mjs",
+    "smoke": "node web/smoke.mjs && node web/tiles.smoke.mjs && node web/linkcheck.mjs",
     "probe": "node web/browser-probe.mjs web/dist/play.html",
     "pixel": "node web/pixel-audit.mjs"
   },

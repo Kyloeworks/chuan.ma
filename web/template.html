@@ -23,7 +23,8 @@
   h1{font-size:22px;margin:0 0 3px;letter-spacing:-.01em}
   .sub{color:var(--sub);font-size:13px}
   .lang{border:1px solid var(--line);background:var(--card);border-radius:20px;
-    padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink)}
+    padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink);
+    text-decoration:none;display:inline-block}
   .lang:hover{border-color:var(--accent);color:var(--accent)}
   .cols{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}
   @media(max-width:820px){.cols{grid-template-columns:1fr}}
@@ -90,7 +91,10 @@
       <h1 id="ttl">川麻算牌器</h1>
       <div class="sub" id="sub"></div>
     </div>
-    <button class="lang" id="langBtn">EN</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <a class="lang" href="index.html">&#8592; chuan.ma</a>
+      <button class="lang" id="langBtn">EN</button>
+    </div>
   </header>
   <div class="cols">
     <div>

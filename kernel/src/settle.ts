@@ -12,8 +12,9 @@
  * - 本模块**不运行时依赖 flow.ts**（只用 type import），避免循环依赖
  */
 
-import { TILE_KINDS, RANKS, type TileId, type Counts, suitCount, tileLabel } from './tiles.ts';
+import { TILE_KINDS, RANKS, type TileId, type Counts, suitCount, tileLabel, totalOf } from './tiles.ts';
 import { winningTiles } from './ukeire.ts';
+import { shanten } from './shanten.ts';
 import { scoringFor, type WinContext } from './scoring.ts';
 import type { GameState, PlayerState, Seat } from './flow.ts';
 
@@ -80,10 +81,27 @@ export function isFlowerPig(p: PlayerState): boolean {
   return p.missing >= 0 && suitCount(p.hand, p.missing) > 0;
 }
 
-/** 听牌（已打缺 且 至少一张可和） */
+/**
+ * 听牌（下叫）判定 —— **张数归一化**版本，查叫与 UI 显示共用这一个。
+ *
+ * 为什么必须归一化：手牌有两种合法形态 ——
+ *   ① 标准张数 13 - 3*melds（回合之间的静止态）
+ *   ② 多一张 14 - 3*melds（刚摸完牌、尚未打出的瞬间；流局恰好落在这一刻时就是它）
+ * 旧实现直接对 `hand + 1` 调 `canWin`，只要手牌是 14 张就恒为「不成和」（14+1≠14），
+ * 于是**任何以 14 张进入终局的家都会被判未下叫**。改为用向听数判定后两种形态都正确。
+ */
+export function isReadyCounts(hand: Counts, melds = 0): boolean {
+  const expected = 13 - 3 * melds;
+  const total = totalOf(hand);
+  if (total === expected) return shanten(hand, melds) === 0;
+  // 多一张：打掉某张后能听即可；本身已成和（向听 -1）同样算下叫
+  return shanten(hand, melds) <= 0;
+}
+
+/** 听牌（已打缺 且 手牌形态可和） */
 export function isReadyHand(p: PlayerState): boolean {
   if (!hasClearedMissing(p)) return false;
-  return winningTiles(p.hand, p.melds.length).length > 0;
+  return isReadyCounts(p.hand, p.melds.length);
 }
 
 /** 该听牌手牌中，某张和牌能拿到的番数 */

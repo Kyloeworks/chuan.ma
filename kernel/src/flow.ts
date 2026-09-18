@@ -16,7 +16,6 @@
 
 import {
   TILE_KINDS,
-  COPIES,
   WAN,
   TIAO,
   TONG,
@@ -38,7 +37,7 @@ import {
   type WinContext,
   defaultScoring,
 } from './scoring.ts';
-import { recordKong, settleRoundImpl, type PayEntry, type RoundSettlement } from './settle.ts';
+import { recordKong, settleRoundImpl, isReadyCounts, type PayEntry, type RoundSettlement } from './settle.ts';
 
 export type Seat = 0 | 1 | 2 | 3;
 export const SEATS: Seat[] = [0, 1, 2, 3];
@@ -294,7 +293,8 @@ export function discard(g: GameState, seat: Seat, tile: TileId): void {
     // 缺门牌不可碰/杠（川麻硬约束）
     if (q.missing >= 0 && tileSuit === q.missing) continue;
     if (q.hand[tile] >= 2) pong.push(s);
-    if (g.config.rules.allowKong && q.hand[tile] >= 3) kong.push(s);
+    // 杠必须能补牌：牌墙已空时杠无从补牌，按流局处理，不给这个选项
+    if (g.config.rules.allowKong && q.hand[tile] >= 3 && g.wall.length > 0) kong.push(s);
   }
   g.claim = { discardSeat: seat, tile, ron, pong, kong, resolved: false };
 }
@@ -468,18 +468,16 @@ export function settleRound(g: GameState): void {
   g.history.push({ type: 'roundEnd', note: 'settled' });
 }
 
-/** 流局听牌：模拟补任意一张（不超 4 张），看是否可和（保持缺门） */
+/**
+ * 流局听牌判定：与 settle.isReadyHand 同源（张数归一化 + 缺门必须已打清）。
+ *
+ * 历史坑：旧实现在这里对 `hand + 1` 直接调 canWin，隐含假设手牌是标准张数；
+ * 一旦有一家以 14 张（刚摸完牌墙最后一张、还没打出）进入结算，就必然判「未下叫」，
+ * 也就是玩家看到的「我明明听牌了，查叫却说我没叫」。
+ */
 function isReadyAtEnd(p: PlayerState): boolean {
   if (!hasNoMissing(p)) return false;
-  for (let t = 0; t < TILE_KINDS; t++) {
-    if (p.hand[t] >= COPIES) continue;
-    if (p.missing >= 0 && Math.floor(t / 9) === p.missing) continue;
-    p.hand[t]++;
-    const ok = canWin(p.hand, p.melds.length) !== null;
-    p.hand[t]--;
-    if (ok) return true;
-  }
-  return false;
+  return isReadyCounts(p.hand, p.melds.length);
 }
 
 /** 下一位未胡的 seat（用于无人鸣牌时推进） */
