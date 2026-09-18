@@ -1,11 +1,18 @@
 name: Deploy static site to GitHub Pages
 
 # 站点由仓库根目录下的自包含 HTML 组成（无构建步骤）。
-# 推送到 main 即自动发布；也可在 Actions 页手动触发。
+#
+# ⚠️ 使用本工作流前必须先在 GitHub 上做一次性设置，否则会报
+#    "Resource not accessible by integration"：
+#      仓库 Settings → Actions → General → Workflow permissions
+#      → 选择 "Read and write permissions" → Save
+#    （新仓库默认是只读，会把下面 permissions: 里声明的 pages: write 压掉）
+#
+# 若不想改权限，可改用「分支发布」，本工作流即可删除：
+#      Settings → Pages → Source = Deploy from a branch
+#      → Branch = main / (root) → Save
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

@@ -91,8 +91,19 @@ python -m http.server 8791
 
 ## 部署
 
-推送到 `main` 分支即自动发布（GitHub Actions 会把根目录下的网页文件发布到 GitHub Pages）。
-也可以在 **Actions → Deploy static site to GitHub Pages → Run workflow** 手动触发。
+本仓库为纯静态站点，无构建步骤，两种发布方式任选其一（启用后每次推送到 `main` 会自动更新线上页面）：
+
+**方式一 · 分支发布（推荐，最简单）**
+
+> Settings → Pages → **Source** 选 `Deploy from a branch` → **Branch** 选 `main` / `/ (root)` → Save
+
+**方式二 · GitHub Actions**
+
+> 先到 Settings → Actions → General → **Workflow permissions** 选择 `Read and write permissions` 并保存
+> （新仓库默认只读，会把工作流里的 `pages: write` 压掉，导致 `Resource not accessible by integration`），
+> 然后到 **Actions → Deploy static site to GitHub Pages → Run workflow** 触发。
+
+仓库内已包含 `.github/workflows/pages.yml`。若采用方式一，该工作流可直接删除。
 
 ---
 
