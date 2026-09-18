@@ -86,10 +86,18 @@ const pixi = readFileSync(tmpPixi, 'utf8');
 
 const read = (f) => readFileSync(path.resolve(here, f), 'utf8');
 
+// --- 设计令牌：色板/质感参数的唯一来源 ---
+// tokens.js 是浏览器 IIFE（挂 window.CMTokens）。这里用 new Function 取同一份值，
+// 把 :root{...} 注入模板与 site.css，使样式表与绘制代码不可能各自漂移。
+const tokensSrc = read('tokens.js');
+const tokensCss = new Function('window', tokensSrc + '\n;return window.CMTokens.css();')({});
+const injectTokens = (text) =>
+  text.indexOf('/*__TOKENS_CSS__*/') >= 0 ? text.replace('/*__TOKENS_CSS__*/', () => tokensCss) : text;
+
 const targets = [
-  { template: 'template.html', scripts: ['tiles-ui.js', 'app.js'], out: 'calculator.html', kernel: true },
-  { template: 'tiles.template.html', scripts: ['tiles-ui.js', 'gallery.js'], out: 'tiles.html', kernel: false },
-  { template: 'pixi-table.template.html', scripts: ['tiles-ui.js', 'pixi-table.js'], out: 'play.html', kernel: true, pixi: true },
+  { template: 'template.html', scripts: ['tokens.js', 'tiles-ui.js', 'app.js'], out: 'calculator.html', kernel: true },
+  { template: 'tiles.template.html', scripts: ['tokens.js', 'tiles-ui.js', 'gallery.js'], out: 'tiles.html', kernel: false },
+  { template: 'pixi-table.template.html', scripts: ['tokens.js', 'tiles-ui.js', 'pixi-table.js'], out: 'play.html', kernel: true, pixi: true },
 ];
 
 for (const tg of targets) {
@@ -98,12 +106,14 @@ for (const tg of targets) {
   // 用函数替换，避免代码里的 $ 被当作替换模式
   if (html.indexOf('/*__KERNEL__*/') >= 0) html = html.replace('/*__KERNEL__*/', () => (tg.kernel ? kernel : ''));
   if (html.indexOf('/*__PIXI__*/') >= 0) html = html.replace('/*__PIXI__*/', () => (tg.pixi ? pixi : ''));
+  html = injectTokens(html);
   html = html.replace('/*__APP__*/', () => app);
   writeFileSync(path.resolve(distDir, tg.out), html);
   console.log(`built  -> ${tg.out}  (${(html.length / 1024).toFixed(1)} KB)`);
 }
 
 // 学习内容页：纯静态，无脚本打包，原样复制（含共享样式表 site.css）
+// site.css 顶部的 /*__TOKENS_CSS__*/ 在此展开，使 dist 里的样式表自带变量定义。
 const statics = [
   'learn-rules.html', 'learn-tiles.html', 'learn-scoring.html',
   'learn-culture.html', 'glossary.html', 'site.css',
@@ -111,7 +121,7 @@ const statics = [
 for (const f of statics) {
   const src = path.resolve(here, 'content', f);
   if (!existsSync(src)) { console.warn(`skip   -> content/${f} (缺失)`); continue; }
-  writeFileSync(path.resolve(distDir, f), readFileSync(src, 'utf8'));
+  writeFileSync(path.resolve(distDir, f), injectTokens(readFileSync(src, 'utf8')));
   console.log(`copied -> ${f}`);
 }
 
