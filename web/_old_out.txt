@@ -1,7 +1,0 @@
-wrote C:\Users\Luca\WorkBuddy\2026-09-17-11-34-25\chuan.ma\web\.old-tiles-ui.js  bytes=7397
-head-4-lines:
-/* 川麻麻将牌面资产 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背 + 万/条/筒 花色牌）
- * 用法：MJTiles.face(tileId) / MJTiles.back()
- *   tileId 0..26  =>  suit = floor(id/9)  rank = id%9+1
- * 设计：viewBox 0 0 60 84（接近真实牌比例），width/height 100% 随容器缩放。
-has MJTiles: true

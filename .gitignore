@@ -22,3 +22,4 @@ _dbg*
 *~
 *.orig
 _compare_out.txt
+web/_*
