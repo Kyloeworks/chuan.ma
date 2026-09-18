@@ -105,7 +105,14 @@ for (const [k, r] of Object.entries(regions)) {
   console.log(`  ${k.padEnd(7)} 区域=${r.join(',')}  牌像素=${b.n}  bbox=${b.w}x${b.h}  最大横段=${mh.len}  最大竖段=${mv.len}`);
 }
 
-for (const k of Object.keys(R)) ck(`${k} 手牌区画出牌`, R[k].b.n > 400, `pixels=${R[k].b.n}`);
+// 本帧人类手牌张数（被副露拆空时底部牌带会窄到量不出「牌宽」——那是合法状态，跳过而非误报）
+const myHandN = (G.hand && G.hand[0]) ? (G.hand[0].main + G.hand[0].sep) : -1;
+const thinBottom = myHandN >= 0 && myHandN < 6;
+
+for (const k of Object.keys(R)) {
+  if (k === 'bottom' && thinBottom) { console.log(`NOTE | 本帧人类手牌仅 ${myHandN} 张，跳过底部三项检查`); continue; }
+  ck(`${k} 手牌区画出牌`, R[k].b.n > 400, `pixels=${R[k].b.n}`);
+}
 for (const k of ['left', 'right']) {
   if (!R[k]) continue;
   const w = R[k].mh.len;
@@ -113,7 +120,7 @@ for (const k of ['left', 'right']) {
     `maxRunH=${w} 期望≈${oppH.toFixed(0)}（未旋转会是≈${oppW.toFixed(0)}）`);
   ck(`${k} 牌列竖排（bbox 高/宽>3）`, R[k].b.h / Math.max(1, R[k].b.w) > 3, `bbox=${R[k].b.w}x${R[k].b.h}`);
 }
-if (R.bottom) {
+if (R.bottom && !thinBottom) {
   ck('bottom 单牌横向跨度≈牌宽（竖摆）', R.bottom.mh.len >= handW * 0.75 && R.bottom.mh.len <= handW * 1.5,
     `maxRunH=${R.bottom.mh.len} 期望≈${handW.toFixed(0)}`);
   ck('bottom 单牌纵向>横向（竖向牌）', R.bottom.mv.len > R.bottom.mh.len * 1.15,

@@ -27,7 +27,7 @@
       help: '说明', demo: '自动演示', demoStop: '停止演示', newGame: '新开一局', lang: 'EN',
       you: '你', next: '下家 →', opp: '对家', prev: '← 上家',
       wall: '牌墙', turn: '轮到', dealer: '庄', shanten: '离下叫', shantenUnit: ' 张',
-      claimT: '可以鸣牌', kong: '杠', pong: '碰', pass: '过', ck: '暗杠', ak: '补杠',
+      claimT: '可以鸣牌', kong: '杠', pong: '碰', pass: '过', ck: '暗杠', ak: '补杠', win: '胡',
       hintTurn: '轮到你打牌 —— 点牌即可打出',
       hintMiss: '还有缺门牌，必须先打完（只能点缺门牌）',
       declareT: '定缺 —— 选一门要打光的牌',
@@ -54,6 +54,7 @@
         '<b>★ 推荐</b>：金色光晕那张是建议打出的牌，教学条右侧会说明理由（打它之后进张多少张）。<br>' +
         '<b>难度</b>：右上角可切 新手 / 标准 / 困难 —— 只改对手的强弱，不改规则。<br>' +
         '<b>结算</b>：终局按「番数×底分」计分，另算杠分、查叫、查花猪、退税，给出每家净分。<br>' +
+        '<b>动作按钮</b>：牌桌中间会弹出「胡 / 碰 / 杠 / 过」——<b>要不要胡由你决定</b>，系统不会替你胡。<br>' +
         '<b>血战到底</b>：一家胡后本局继续，直到 3 家胡或牌墙摸完。<br>' +
         '<b>川麻用语</b>：下叫＝听牌 · 大对子＝碰碰胡 · 查叫＝查大叫 · 幺鸡＝一条 · 十八罗汉＝四副全杠。',
       evDeclare: function (s, su) { return s + ' 定缺 ' + su; },
@@ -94,7 +95,7 @@
       help: 'Help', demo: 'Auto demo', demoStop: 'Stop demo', newGame: 'New game', lang: '中文',
       you: 'You', next: 'Right →', opp: 'Across', prev: '← Left',
       wall: 'Wall', turn: 'Turn', dealer: 'D', shanten: 'To ready', shantenUnit: '',
-      claimT: 'Claim', kong: 'Kong', pong: 'Pong', pass: 'Pass', ck: 'Concealed', ak: 'Added',
+      claimT: 'Claim', kong: 'Kong', pong: 'Pong', pass: 'Pass', ck: 'Concealed', ak: 'Added', win: 'Win',
       hintTurn: 'Your turn — click a tile to discard',
       hintMiss: 'Clear your missing suit first (only those tiles clickable)',
       declareT: 'Declare Missing Suit',
@@ -121,6 +122,7 @@
         '<b>River</b>: discards are laid neatly in <b>two rows</b> in front of each player.<br>' +
         '<b>Gold glow</b> = suggested discard. Opponents\' hands are tile backs.<br>' +
         '<b>Reveal</b>: on a win the hand turns face-up, winning tile gold and set apart.<br>' +
+        '<b>Action buttons</b>: Hu / Pong / Kong / Pass appear mid-table — <b>the decision to win is yours</b>, nothing wins for you automatically.<br>' +
         '<b>Blood Battle</b>: play continues until 3 wins or the wall empties.<br>' +
         '<b>Sichuan terms</b>: 下叫 (ready) = listening; 大对子 = all triplets; 查叫 = ready check; 幺鸡 = the 1 of bamboo; 十八罗汉 = four kongs.',
       evDeclare: function (s, su) { return s + ' missing: ' + su; },
@@ -137,6 +139,7 @@
       teachReason: function (t, cnt) { return 'Discard ' + t + ' → ' + cnt + ' tiles improve'; },
       teachWinReason: function (t, f) { return 'Discard ' + t + ' → READY (' + f + ')'; },
       teachMustMiss: 'Clear your missing suit first',
+      teachCanWin: 'You can win — press the Hu button on the table',
       teachFlowerPig: 'Missing suit not cleared · flower-pig penalty',
       teachGhost: 'WAIT',
       teachLeft: 'left',
@@ -164,6 +167,9 @@
     tweens: [], particles: [], pulses: [], boxes: [], fxStats: null,
     fxSeen: 0, pendingDeal: false, hideHandsUntil: 0, feltTex: null, feltKey: '',
     rendererName: '', needRender: false,
+    haltHumanWin: false,     // 测试用：推进到「人类可以胡」就停住，把决定权留给按钮
+    dbg: [],                 // 诊断：pump 每步轨迹（环形，最多 200 条）
+    haltHit: false,          // 测试用：上一步已因 haltHumanWin 停住 → pump 立即退出
     diff: 'normal',          // 对手难度（B）
     started: false,          // 是否已开局（false = 先显示「开局设置」，不自动发牌）
     dealerSeat: 0,           // 起手位（庄）：庄家先摸第 14 张
@@ -198,22 +204,61 @@
     if (bp.length && CM.botShouldPong(g, bp[0], state.diff)) { CM.applyPong(g, bp[0]); return; }
     CM.passClaim(g);
   }
+  /** 「我」此刻是否可以胡（自摸 或 别人点炮）——UI 与测试共用同一判据 */
+  function humanWinReady() {
+    var g = state.g;
+    if (!g || g.phase !== 'playing') return false;
+    var my = g.players[HUMAN];
+    if (my.won) return false;
+    if (g.claim) return g.claim.ron.indexOf(HUMAN) >= 0;
+    return g.turn === HUMAN && CM.canSelfWin(my, my.melds.length);
+  }
+  /** 当前该给玩家哪些动作按钮（UI 与测试共用同一判据） */
+  function actionFlags() {
+    var out = { win: false, kong: false, pong: false, ck: false, ak: false, pass: false };
+    var G = state.g;
+    if (!G || G.phase !== 'playing') return out;
+    var my = G.players[HUMAN];
+    if (my.won) return out;
+    var c = G.claim;
+    var canRon = !!c && c.ron.indexOf(HUMAN) >= 0;
+    var canCKong = !!c && c.kong.indexOf(HUMAN) >= 0;
+    var canPong = !!c && c.pong.indexOf(HUMAN) >= 0;
+    var myTurn = !c && G.turn === HUMAN;
+    out.win = canRon || (myTurn && CM.canSelfWin(my, my.melds.length));
+    out.kong = canCKong;
+    out.pong = canPong;
+    if (myTurn) {
+      out.ck = CM.botConcealedKongTile(G, HUMAN) >= 0;
+      out.ak = CM.botAddedKongTile(G, HUMAN) >= 0;
+    }
+    out.pass = canRon || canCKong || canPong;
+    return out;
+  }
+  /** 测试用：此刻该停下把决定权交给按钮吗（返回 true 表示已停住，pump 需立刻退出） */
+  function haltHere() {
+    if (!state.haltHumanWin || !humanWinReady()) return false;
+    state.haltHit = true;
+    return true;
+  }
   function humanAutoAct() {
     var g = state.g;
     if (g.phase === 'declareMissing') { CM.declareMissing(g, HUMAN, CM.botMissingSuit(g, HUMAN)); return; }
     if (g.claim) {
       var c = g.claim;
-      if (c.ron.indexOf(HUMAN) >= 0) { CM.applyRon(g, HUMAN); afterWinCheck(); return; }
+      if (c.ron.indexOf(HUMAN) >= 0) { if (haltHere()) return; CM.applyRon(g, HUMAN); afterWinCheck(); return; }
       if (c.kong.indexOf(HUMAN) >= 0) { CM.applyKong(g, HUMAN); return; }
       if (c.pong.indexOf(HUMAN) >= 0 && CM.botShouldPong(g, HUMAN)) { CM.applyPong(g, HUMAN); return; }
       resolveHumanPass(); return;
     }
     var my = g.players[HUMAN];
-    if (g.pendingDraw) {
-      if (g.wall.length === 0) { CM.settleRound(g); return; }
-      CM.draw(g, HUMAN);
-      if (CM.canSelfWin(my, my.melds.length)) { CM.applySelfWin(g, HUMAN); afterWinCheck(); return; }
-    } else if (CM.canSelfWin(my, my.melds.length)) { CM.applySelfWin(g, HUMAN); afterWinCheck(); return; }
+    // 摸牌由 pump 单点负责并就地消费掉 pendingDraw —— 这里只负责「摸完之后做什么」。
+    // （之前把「本回合是否已摸」记在牌墙指针上做去重：三家胡完后轮次会回到同一人而中间无人摸牌，
+    //   指针不变 → 每次都被判为「已摸」→ 手牌被抽干。现已彻底去掉该去重。）
+    if (CM.canSelfWin(my, my.melds.length)) {
+      if (haltHere()) return;
+      CM.applySelfWin(g, HUMAN); afterWinCheck(); return;
+    }
     var ck = CM.botConcealedKongTile(g, HUMAN); if (ck >= 0) { CM.applyConcealedKong(g, HUMAN, ck); return; }
     var ak = CM.botAddedKongTile(g, HUMAN); if (ak >= 0) { CM.applyAddedKong(g, HUMAN, ak); return; }
     CM.discard(g, HUMAN, CM.botDiscardTile(g, HUMAN));
@@ -223,6 +268,16 @@
     var g = state.g, guard = 0, max = budget || 200000;
     while (guard++ < max) {
       if (g.phase === 'finished') return;
+      // 测试用：已停在「我此刻可以胡」→ 立刻退出循环（避免重复消费这一次摸牌）
+      if (state.haltHit) { requestRender(); return; }
+      if (state.dbg) {
+        try {
+          state.dbg.push([guard, g.phase === 'playing' ? 'P' : g.phase[0], g.wallPointer,
+            g.pendingDraw ? 1 : 0, g.claim ? 1 : 0, g.turn,
+            shapeOf(g.players[HUMAN]), g.wall.length, state.demo ? 1 : 0]);
+          if (state.dbg.length > 200) state.dbg.shift();
+        } catch (e) { /* ignore */ }
+      }
       if (g.phase === 'declareMissing') {
         var pending = false;
         for (var i = 0; i < SEATS.length; i++) {
@@ -237,30 +292,37 @@
       }
       if (g.claim) {
         var c = g.claim;
+        var humanInClaim = c.ron.indexOf(HUMAN) >= 0 || c.pong.indexOf(HUMAN) >= 0 || c.kong.indexOf(HUMAN) >= 0;
+        var humanCanRon = c.ron.indexOf(HUMAN) >= 0;
+        // 非演示：只要「我」能做动作（胡/碰/杠）就停下等玩家点按钮；
+        // 测试暂停（haltHumanWin）：只在「能胡」时停下，碰杠仍由代打处理，好让牌局继续推进
+        if (humanInClaim && (state.haltHumanWin ? humanCanRon : !state.demo)) { requestRender(); return; }
         if (c.ron.length) { CM.applyRon(g, c.ron.indexOf(HUMAN) >= 0 ? HUMAN : c.ron[0]); afterWinCheck(); continue; }
-        if (c.pong.indexOf(HUMAN) >= 0 || c.kong.indexOf(HUMAN) >= 0) { if (state.demo) humanAutoAct(); else return; continue; }
+        // 演示模式：由代打决定碰/杠；非演示时上面已停下等玩家点按钮
+        if (c.pong.indexOf(HUMAN) >= 0 || c.kong.indexOf(HUMAN) >= 0) { humanAutoAct(); continue; }
         resolveHumanPass(); continue;
       }
       if (g.pendingDraw) {
         var seat = g.turn;
         if (seat === HUMAN) {
-          if (state.demo) { humanAutoAct(); continue; }
           if (g.wall.length === 0) { CM.settleRound(g); return; }
           CM.draw(g, HUMAN);
-          var my = g.players[HUMAN];
-          if (CM.canSelfWin(my, my.melds.length)) { CM.applySelfWin(g, HUMAN); afterWinCheck(); continue; }
-          return;
+          g.pendingDraw = false;   // 这一次摸牌已消费（后面只等「打哪张 / 胡 / 杠」的决定）
+          if (CM.isGameOver(g)) { CM.settleRound(g); return; }
+          requestRender();
+          if (!state.demo) return; // 非演示：停下等玩家（自摸点「胡」，否则点手牌打出）
+          // 演示：落到下面的「seat2 === HUMAN」分支代打，避免这里重复摸牌
+        } else {
+          if (!CM.draw(g, seat)) { CM.settleRound(g); return; }
+          if (CM.isGameOver(g)) { CM.settleRound(g); return; }
+          botActAfterDraw(seat); continue;
         }
-        if (!CM.draw(g, seat)) { CM.settleRound(g); return; }
-        if (CM.isGameOver(g)) { CM.settleRound(g); return; }
-        botActAfterDraw(seat); continue;
       }
       var seat2 = g.turn;
       if (seat2 === HUMAN) {
         if (state.demo) { humanAutoAct(); continue; }
-        var my2 = g.players[HUMAN];
-        if (CM.canSelfWin(my2, my2.melds.length)) { CM.applySelfWin(g, HUMAN); afterWinCheck(); continue; }
-        return;
+        requestRender();
+        return;     // 等玩家：胡 / 碰杠 / 出牌
       }
       var p2 = g.players[seat2];
       if (CM.canSelfWin(p2, p2.melds.length)) { CM.applySelfWin(g, seat2); afterWinCheck(); continue; }
@@ -270,6 +332,12 @@
   function act(fn) { return function () { fn(); pump(); render(); }; }
   var humanDeclare = function (suit) { CM.declareMissing(state.g, HUMAN, suit); state.overlay = null; pump(); render(); };
   var humanDiscard = function (tile) { CM.discard(state.g, HUMAN, tile); pump(); render(); };
+  var humanWin = act(function () {
+    var g = state.g, c = g.claim;
+    if (c && c.ron.indexOf(HUMAN) >= 0) CM.applyRon(g, HUMAN);
+    else if (CM.canSelfWin(g.players[HUMAN], g.players[HUMAN].melds.length)) CM.applySelfWin(g, HUMAN);
+    afterWinCheck();
+  });
   var humanPong = act(function () { CM.applyPong(state.g, HUMAN); });
   var humanKong = act(function () { CM.applyKong(state.g, HUMAN); });
   var humanPass = act(function () { resolveHumanPass(); });
@@ -987,7 +1055,11 @@
       waiting: waiting, waitLeft: waitLeft, improving: improving, rec: rec, recInfo: recInfo,
       // 诊断用（探针读取）
       diag: { need: need, total: total, melds: melds, canProbe: canProbe, waitingRaw: waitingRaw,
-              turn: G.turn, hasClaim: !!G.claim }
+              turn: G.turn, hasClaim: !!G.claim,
+              pendingDraw: G.pendingDraw, wallPointer: G.wallPointer, wallLen: G.wall.length,
+              lastDrawn: my.lastDrawn,
+              drewPtr: -1,
+              drewSameG: false }
     };
   }
 
@@ -1004,11 +1076,15 @@
     state.world.addChild(bg);
 
     var teach = state.teach;
+    var winNow = humanWinReady();
     var msg = '', col = '#cfe6d8';
     if (my.won) {
       var f = my.winInfo ? my.winInfo.fans.total : 0;
       msg = '🎉 ' + T0.youWon + ' · ' + f + ' 番';
       col = '#ffe6a3';
+    } else if (winNow) {
+      msg = '🎉 ' + T0.teachCanWin;
+      col = '#ffe07a';
     } else if (teach && teach.mustMiss) {
       msg = '⚠ ' + T0.teachMustMiss;
       col = '#ffc98a';
@@ -1100,7 +1176,7 @@
         drawIdle(W, H, M);
         drawActionsDOM(W, H);
         renderChrome(); renderOverlay(); renderLog();
-        window.__PIXI_TABLE__.layout = { W: W, H: H, boxes: state.boxes, overflow: 0, idle: true, phase: 'setup' };
+        window.__PIXI_TABLE__.layout = { W: W, H: H, boxes: state.boxes, overflow: 0, idle: true, phase: 'setup', actions: actionFlags(), winReady: false };
         window.__PIXI_TABLE__.fx = { deals: state.fxStats.deals, flights: state.fxStats.flights, rings: 0, bursts: 0, live: 0, tweens: 0 };
         return;
       }
@@ -1163,6 +1239,11 @@
       humanWon: state.g.players[HUMAN].won,
       diff: state.diff,
       dealer: state.g.dealer,
+      // 第一张被摸走的牌属于哪个座位（应与所选庄家一致）
+      firstDraw: (function () {
+        for (var h = 0; h < state.g.history.length; h++) if (state.g.history[h].type === 'draw') return state.g.history[h].seat;
+        return -1;
+      })(),
       turn: state.g.turn,
       netBySeat: state.g.settlement ? state.g.settlement.seats.map(function (x) { return x.net; }) : null,
       teach: state.teach ? {
@@ -1179,8 +1260,15 @@
       } : null,
       handTiles: SEATS.map(function (s) {
         var p = state.g.players[s], pl = handPlan(p);
-        return { main: pl.tiles.length, sep: pl.sepId >= 0 ? 1 : 0 };
-      })
+        return { main: pl.tiles.length, sep: pl.sepId >= 0 ? 1 : 0, melds: p.melds.length, won: p.won };
+      }),
+      // 当前给玩家的动作按钮（胡/碰/杠/过）—— 与 UI 同一判据
+      actions: actionFlags(),
+      winReady: humanWinReady(),
+      // 牌形不变量：正常应恒为 13 或 14（探针据此抓「没摸牌就出牌」的抽干问题）
+      shape: shapeOf(state.g.players[HUMAN]),
+      dbg: state.dbg.slice(-40),
+      shapes: SEATS.map(function (s) { return shapeOf(state.g.players[s]); })
     };
     window.__PIXI_TABLE__.fx = {
       deals: state.fxStats.deals, flights: state.fxStats.flights,
@@ -1217,6 +1305,13 @@
     var d = document.getElementById('diag');
     if (d.dataset.status === 'ok') d.textContent = t().diagOk(state.rendererName, state.texCount, Math.round(state.app ? state.app.ticker.FPS : 0));
   }
+  /** 牌形不变量：手牌张数 + 3×副露数 + 杠数 —— 正常恒为 13 或 14 */
+  function shapeOf(p) {
+    var n = 0, k = 0;
+    for (var i = 0; i < 27; i++) n += p.hand[i];
+    for (var m = 0; m < p.melds.length; m++) if (p.melds[m].type === 'kong') k++;
+    return n + 3 * p.melds.length + k;
+  }
   function drawActionsDOM(W, H) {
     var G = state.g;
     var box = document.getElementById('actions');
@@ -1225,29 +1320,26 @@
     if (!box) {
       box = document.createElement('div');
       box.id = 'actions';
-      box.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);display:flex;gap:10px;justify-content:center;z-index:5';
+      box.style.cssText = 'position:absolute;left:50%;transform:translateX(-50%);z-index:6';
       document.getElementById('stage').appendChild(box);
     }
-    box.style.top = Math.round(H / 2 + 84) + 'px';
-    var html = '';
-    if (G.phase === 'playing' && !my.won) {
-      if (G.claim && (G.claim.pong.indexOf(HUMAN) >= 0 || G.claim.kong.indexOf(HUMAN) >= 0)) {
-        if (G.claim.kong.indexOf(HUMAN) >= 0) html += '<button class="btn pri" id="aKong">' + t().kong + '</button>';
-        if (G.claim.pong.indexOf(HUMAN) >= 0) html += '<button class="btn pri" id="aPong">' + t().pong + '</button>';
-        html += '<button class="btn" id="aPass">' + t().pass + '</button>';
-      } else if (G.turn === HUMAN && !G.claim) {
-        if (CM.botConcealedKongTile(G, HUMAN) >= 0) html += '<button class="btn" id="aCK">' + t().ck + '</button>';
-        if (CM.botAddedKongTile(G, HUMAN) >= 0) html += '<button class="btn" id="aAK">' + t().ak + '</button>';
-      }
-    }
+    var html = '', F = actionFlags();
+    // 胡（自摸 / 点炮）：只给按钮，绝不代替玩家决定
+    if (F.win) html += '<button class="btn hu" id="aWin">' + t().win + '</button>';
+    if (F.kong) html += '<button class="btn pri" id="aKong">' + t().kong + '</button>';
+    if (F.pong) html += '<button class="btn pri" id="aPong">' + t().pong + '</button>';
+    if (F.ck) html += '<button class="btn" id="aCK">' + t().ck + '</button>';
+    if (F.ak) html += '<button class="btn" id="aAK">' + t().ak + '</button>';
+    if (F.pass) html += '<button class="btn" id="aPass">' + t().pass + '</button>';
     box.innerHTML = html;
     var b;
+    if ((b = document.getElementById('aWin'))) b.onclick = humanWin;
     if ((b = document.getElementById('aKong'))) b.onclick = humanKong;
     if ((b = document.getElementById('aPong'))) b.onclick = humanPong;
     if ((b = document.getElementById('aPass'))) b.onclick = humanPass;
     if ((b = document.getElementById('aCK'))) b.onclick = humanCK;
     if ((b = document.getElementById('aAK'))) b.onclick = humanAK;
-    if (html) box.style.top = Math.round(H / 2 + 84) + 'px';
+    box.style.top = Math.round(H / 2 + 84) + 'px';
   }
   function declareModal() {
     var G = state.g, my = G.players[HUMAN];
@@ -1458,6 +1550,19 @@
       render();
       return true;
     },
+    /** 推进到「人类可以胡」的那一刻停下（不替玩家胡），用于验证「胡」按钮 */
+    stepToHumanWin: function () {
+      if (!state.g) return false;
+      var savedDemo = state.demo;
+      state.haltHumanWin = true;
+      state.haltHit = false;
+      state.demo = true;
+      try { pump(); } finally { state.haltHumanWin = false; state.haltHit = false; state.demo = savedDemo; }
+      render();
+      return humanWinReady();
+    },
+    /** 诊断用：开启代打逐步记录（清空并开始记录） */
+    dbgOn: function () { state.dbg = []; return true; },
     fxWin: function (seat) { playWin(seat, metrics(state.app.screen.width, state.app.screen.height)); return true; },
     fxRing: function (seat) {
       var M = metrics(state.app.screen.width, state.app.screen.height);

@@ -41,6 +41,15 @@
   .btn:hover{border-color:#4b9bff;color:#8ec2ff}
   .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
   .btn.pri:hover{background:#1a5fd0;color:#fff}
+  /* 桌面动作按钮（胡 / 碰 / 杠 / 过）：明显放大，胡牌额外强调 */
+  #actions{display:flex;gap:14px;justify-content:center;align-items:center}
+  #actions .btn{font-size:20px;font-weight:900;letter-spacing:.08em;padding:13px 34px;
+    border-radius:14px;min-width:104px;border-width:2px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  #actions .btn.pri{background:linear-gradient(180deg,#3d8ef8,#1a5fd0);border-color:#7ab2ff}
+  #actions .btn.hu{font-size:27px;min-width:140px;padding:13px 42px;color:#3a2600;
+    background:linear-gradient(180deg,#ffdd72,#e0a418);border-color:#fff3c4;
+    animation:hupulse 1s ease-in-out infinite}
+  @keyframes hupulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
   .stage{flex:1;min-height:560px;position:relative;background:#0b2a1c;overflow:hidden}
   .stage canvas{display:block}
   .bottom{flex:0 0 auto;background:#161c22;border-top:1px solid #232b33;color:#93a1b0;

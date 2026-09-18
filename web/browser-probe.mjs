@@ -68,11 +68,12 @@ const AUDIT = `(function(){
   out.rivers = L.rivers; out.draws = L.draws; out.phase = L.phase;
   out.teach = L.teach; out.diff = L.diff; out.netBySeat = L.netBySeat;
   out.idle = !!L.idle; out.dealer = L.dealer; out.turn = L.turn;
+  out.firstDraw = L.firstDraw; out.actions = L.actions; out.winReady = L.winReady;
   out.handH = L.handH; out.riverH = L.riverH;
   return out;
 })()`;
 
-let pass = false, detail = '', checks = [];
+let pass = false, detail = '', checks = [], shotTrace = '';
 const ck = (name, ok, extra) => checks.push(`${ok ? '✅' : '❌'} ${name}${extra ? ' — ' + extra : ''}`);
 
 try {
@@ -135,8 +136,8 @@ try {
   await sleep(900);
   const aDealer = await ev(AUDIT);
   ck('起手位选择已生效（庄 = 下家 / 座 2）', aDealer && aDealer.dealer === 2, 'dealer=' + (aDealer && aDealer.dealer));
-  ck('起手位生效后摸牌顺序随之改变（下家、对家先摸才轮到你）',
-    aDealer && aDealer.draws >= 3, 'wallPointer=' + (aDealer && aDealer.draws) + '（你先起手时为 1）');
+  ck('起手位生效：第一张被摸走的牌属于所选庄家（座 2 先摸）',
+    aDealer && aDealer.firstDraw === 2, 'firstDraw=' + (aDealer && aDealer.firstDraw) + ' wallPointer=' + (aDealer && aDealer.draws) + '（你先起手时 firstDraw=0）');
 
   // 回开局设置，改回「你」先起手，供后续 14 张布局断言使用
   await ev("(function(){document.getElementById('newBtn').click();})()");
@@ -186,9 +187,10 @@ try {
   const auditT = await ev(AUDIT);
   if (auditT && !auditT.err) {
     const tt = auditT.teach;
-    ck('打缺后：轮到我时给出推荐牌 + 进张数（可解释的理由）',
-      tt && !tt.mustMiss && (!tt.myTurn || (tt.recTile >= 0 && tt.recImprove > 0)),
-      JSON.stringify(tt));
+    // 注意：advance(40) 可能正好切在「轮到我、但这一摸尚未执行」的回合边界（那一帧只有 13 张），
+    // 所以此处只断言「已打完缺门 + 教学状态自洽」；「给出推荐牌 + 进张数」放在能稳定停在
+    // 人类决策点的 stepToHumanWin 段（见下）里断言。
+    ck('推进十几手后：缺门已打完（进入向听 / 下叫阶段）', tt && tt.mustMiss === false, JSON.stringify(tt));
     ck('教学状态自洽（向听数 / 已听牌+所听之牌 / 缺门 三选一）',
       tt && (tt.shEff > 0 || (tt.waitingKinds > 0 && tt.waitLeft > 0) || tt.mustMiss), JSON.stringify(tt));
     ck('教学状态不与「向听 0」自相矛盾', tt && !(tt.sh <= 0 && !tt.mustMiss && tt.waitingKinds === 0),
@@ -257,29 +259,109 @@ try {
     `人类胜率≈${pct}%  各座 ${seatPct}  平均赢家/局=${(totWin / GAMES).toFixed(2)}`);
   ck('真实 UI 座位无明显偏向（人类不超过 3 倍优势）', seatWins[0] <= 3 * Math.max(1, (seatWins[1] + seatWins[2] + seatWins[3]) / 3),
     `seatWins=${JSON.stringify(seatWins)}`);
+
+  // —— 胡牌必须由玩家点按钮，不能自动替玩家胡 ——
+  await ev("(function(){var b=document.querySelector('#diffs .dbtn[data-d=\"normal\"]');if(b)b.click();})()");
+  await sleep(150);
+  let gotWin = false;
+  for (let k = 0; k < 12 && !gotWin; k++) {
+    // 每次都从「新的一局」开始：先把上一局收尾（若有），再开新局并定缺
+    await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
+    await sleep(160);
+    await ev("(function(){var b=document.getElementById('againBtn');if(b)b.click();})()");
+    await sleep(260);
+    await ev("(function(){var r=document.querySelector('.mp.recommend')||document.querySelector('.mp');if(r)r.click();})()");
+    await sleep(220);
+    gotWin = (await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.stepToHumanWin()")) === true;
+  }
+  ck('能推进到「人类可以胡」的时点', gotWin === true, 'gotWin=' + gotWin);
+  if (gotWin) {
+    const Lw = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
+    ck('到了可以胡的时点：牌局停住、没有自动替玩家胡',
+      Lw.winReady === true && Lw.humanWon === false, `winReady=${Lw.winReady} humanWon=${Lw.humanWon}`);
+    ck('牌桌给出了「胡」动作按钮', !!(Lw.actions && Lw.actions.win === true), JSON.stringify(Lw.actions || null));
+    // 停下的位置有两种合法形态：①自摸可胡（轮到我、已摸牌）②别人点炮可胡（鸣牌待决）
+    //  ①应给出「推荐打哪张 + 进张数」；②正确行为是不给弃牌推荐（此刻该决定的是胡不胡）
+    if (Lw.teach && Lw.teach.myTurn) {
+      ck('轮到我做决定时：教学条给出推荐牌 + 进张数（可解释的理由）',
+        Lw.teach.recTile >= 0 && Lw.teach.recImprove > 0, JSON.stringify(Lw.teach));
+    } else {
+      ck('点炮可胡时不给弃牌推荐，而是给出「胡 / 过」待决按钮',
+        !!(Lw.actions && Lw.actions.pass === true),
+        `actions=${JSON.stringify(Lw.actions)} teach=${JSON.stringify(Lw.teach)}`);
+    }
+    await sleep(700);   // 静置，确认不会自己往前走
+    const Lw2 = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
+    ck('静置期间状态冻结（不会自动胡 / 自动出牌）',
+      Lw2.humanWon === false && Lw2.winReady === true, `humanWon=${Lw2.humanWon} winReady=${Lw2.winReady}`);
+    const BJ = JSON.parse((await ev(`(function(){
+      var b=document.getElementById('aWin'); if(!b) return '{}';
+      var ab=document.getElementById('actions');
+      var bs=ab?[].slice.call(ab.querySelectorAll('button')):[];
+      return JSON.stringify({ txt:b.textContent, huFs:parseFloat(getComputedStyle(b).fontSize),
+        huH:Math.round(b.getBoundingClientRect().height), btnCount:bs.length,
+        minFs: bs.length?Math.min.apply(null, bs.map(function(x){return parseFloat(getComputedStyle(x).fontSize)})):0,
+        minH: bs.length?Math.min.apply(null, bs.map(function(x){return Math.round(x.getBoundingClientRect().height)})):0 });
+    })()`)) || '{}');
+    ck('「胡」按钮已渲染在牌桌上', !!BJ.txt && BJ.txt !== 'undefined' && BJ.btnCount >= 1, JSON.stringify(BJ));
+    ck('碰/杠/胡等动作按钮已放大（字号≥18px、高度≥40px）',
+      BJ.minFs >= 18 && BJ.minH >= 40, `minFontSize=${BJ.minFs} minHeight=${BJ.minH} huFontSize=${BJ.huFs}`);
+    await ev("document.getElementById('aWin').click()");
+    await sleep(500);
+    const Lw3 = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
+    ck('点了「胡」按钮才真的胡', Lw3.humanWon === true, `humanWon=${Lw3.humanWon} winCount=${Lw3.winCount}`);
+    await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");   // 收尾：把本局打完，恢复既有截图前置状态
+    await sleep(300);
+  }
   ck('全程零脚本错误', errors.length === 0, errors.slice(0, 3).join(' | ') || '无');
 
   if (shot && ready) {
-    // 截一张「对局中」的图：新开一局 → 定缺 → 演示若干步（牌河有牌、无结算遮罩）
+    // 截一张「对局中」的图：新开一局 → 定缺 → 确定性推进十几步（牌河有牌、无结算遮罩、
+    // 且手牌仍未被副露拆空 —— 让像素体检能稳定量到底部手牌）
+    await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.dbgOn()");
+    await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
+    await sleep(200);
     await ev("(function(){var b=document.getElementById('againBtn');if(b)b.click();})()");
-    await sleep(2200);
+    await sleep(2300);
     await ev("(function(){var r=document.querySelector('.mp.recommend')||document.querySelector('.mp');if(r)r.click();})()");
     await sleep(900);
-    await ev("document.getElementById('demoBtn').click()");
-    await sleep(7000);
-    await ev("document.getElementById('demoBtn').click()");
-    await sleep(1200);
+    // 逐帧采样牌形不变量（手牌 + 3×副露 + 杠 恒为 13/14）—— 抓「没摸牌就出牌」的抽干
+    let minShape = 99, maxShape = 0, shapeLog = [];
+    for (let i = 0; i < 30; i++) {
+      await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.advance(1)");
+      await sleep(35);
+      const Ls = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
+      if (typeof Ls.shape === 'number') {
+        minShape = Math.min(minShape, Ls.shape); maxShape = Math.max(maxShape, Ls.shape);
+        shapeLog.push(Ls.shape);
+      }
+    }
+    ck('牌形不变量：人类「手牌 + 3×副露 + 杠」恒为 13/14（没摸牌就出牌的抽干会立刻暴露）',
+      shapeLog.length >= 25 && minShape >= 13 && maxShape <= 14,
+      `samples=${shapeLog.length} min=${minShape} max=${maxShape} log=${shapeLog.join(',')}`);
+    await sleep(900);   // 等飞行牌/粒子这类补间收尾，避免截图抓到半空中的牌
+    // 采样牌形不变量（诊断用；真正的一局跑在 dbg 里逐动作记录）
+    const LA = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
+    shotTrace = `\n  牌形: human=${LA.shape} all=${JSON.stringify(LA.shapes)}` +
+      `\n  代打轨迹[ptr,待摸,鸣牌,牌形,turn,余牌,lastDrawn]:\n    ` +
+      (Array.isArray(LA.dbg) ? LA.dbg.map((r) => JSON.stringify(r)).join('\n    ') : 'null');
 
     // 导出画布几何 + 布局盒，供像素体检脚本做精确坐标映射
     const geom = await ev(`(function(){
       var c = document.querySelector('#stage canvas'); if (!c) return '{}';
       var r = c.getBoundingClientRect(); var L = window.__PIXI_TABLE__.layout || {};
       return JSON.stringify({ dpr: window.devicePixelRatio, rect: { x: r.x, y: r.y, w: r.width, h: r.height },
-        W: L.W, H: L.H, boxes: L.boxes, rivers: L.rivers, rows: L.rows });
+        W: L.W, H: L.H, boxes: L.boxes, rivers: L.rivers, rows: L.rows,
+        hand: L.handTiles, humanWon: L.humanWon, phase: L.phase });
     })()`);
     const gObj = JSON.parse(geom || '{}');
     if (geomPath) writeFileSync(geomPath, geom + '\n');
     ck('截图前无结算遮罩', (await ev("document.getElementById('overlay').className.indexOf('show')<0")) === true);
+    const Ls = JSON.parse((await ev("JSON.stringify(window.__PIXI_TABLE__.layout)")) || '{}');
+    const hs0 = (Ls.handTiles && Ls.handTiles[0]) || {};
+    ck('截图帧：人类手牌仍完整（≥6 张，像素体检才量得到底部）',
+      (hs0.main || 0) + (hs0.sep || 0) >= 6,
+      `hand=${JSON.stringify(hs0)} phase=${Ls.phase} humanWon=${Ls.humanWon} rivers=${JSON.stringify(Ls.rivers)}`);
 
     const cap = await cmd('Page.captureScreenshot', { format: 'png' });
     const data = cap.result && cap.result.data;
@@ -289,8 +371,10 @@ try {
 
   const fails = checks.filter((c) => c.indexOf('❌') === 0).length;
   pass = ready && fails === 0;
+  // 报告由 Node 自己以 UTF-8 写盘（不要经 PowerShell 转手，否则中文/emoji 会被二次编码）
   detail = checks.join('\n  ') + `\n  顶部状态: ${mid}` +
     (audit && !audit.err ? `\n  关键盒: ${JSON.stringify(audit.boxes.center)} center / hand0 ${JSON.stringify(audit.boxes.hand0)} / river0 ${JSON.stringify(audit.boxes.river0)}` : '') +
+    shotTrace +
     (shot ? `\n  截图: ${shot}` : '');
 } catch (e) {
   detail = 'PROBE ERROR: ' + (e && e.message);
@@ -303,4 +387,10 @@ try {
 console.log('=== Pixi 2.5D 牌桌 · 真机验证 ===');
 console.log('  ' + detail);
 console.log(pass ? '\n✅ 全部通过' : '\n❌ 未通过');
+const reportPath = process.argv[5];
+if (reportPath) {
+  const head = `=== Pixi 2.5D 牌桌 · 真机验证 ===\nRESULT pass=${checks.filter((c) => c.indexOf('✅') === 0).length} fail=${checks.filter((c) => c.indexOf('❌') === 0).length} verdict=${pass ? 'PASS' : 'FAIL'}\n\n`;
+  try { writeFileSync(reportPath, head + '  ' + detail + '\n', 'utf8'); } catch { /* ignore */ }
+}
+console.log(`RESULT pass=${checks.filter((c) => c.indexOf('✅') === 0).length} fail=${checks.filter((c) => c.indexOf('❌') === 0).length} verdict=${pass ? 'PASS' : 'FAIL'}`);
 if (!pass) process.exitCode = 1;

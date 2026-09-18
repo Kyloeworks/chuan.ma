@@ -70,9 +70,9 @@ check('点击 3 次 1万 → 角标显示 3', !!badge && badge.textContent === '
 
 // 7) 语言切换
 doc.getElementById('langBtn').click();
-check('切换到英文标题', /Shanten Calculator/.test(txt('#ttl')), txt('#ttl'));
+check('切换到英文标题', /Calculator/.test(txt('#ttl')), txt('#ttl'));
 doc.getElementById('langBtn').click();
-check('切回中文标题', /向听计算器/.test(txt('#ttl')), txt('#ttl'));
+check('切回中文标题', /算牌器/.test(txt('#ttl')), txt('#ttl'));
 
 // 8) 无报错（交互后）
 check('交互后仍无脚本错误', errors.length === 0, errors.join(' | '));
