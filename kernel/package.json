@@ -1,0 +1,19 @@
+{
+  "name": "@chuanma/kernel",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "四川麻将（血战到底）规则内核 — 零依赖，确定性，可单测",
+  "scripts": {
+    "test": "node --experimental-strip-types --test test/win.test.ts",
+    "fuzz": "node --experimental-strip-types test/fuzz.run.ts 20000",
+    "test:scoring": "node --experimental-strip-types test/scoring.test.ts",
+    "test:flow": "node --experimental-strip-types test/flow.test.ts",
+    "test:settle": "node --experimental-strip-types test/settle.test.ts",
+    "verify": "node --experimental-strip-types test/verify_shanten.ts 50000",
+    "sim": "node --experimental-strip-types test/sim.run.ts 1500",
+    "winrate": "node --experimental-strip-types test/winrate.run.ts 300 all",
+    "winrate:fair": "node --experimental-strip-types test/winrate.run.ts 3000 fair",
+    "all": "node --experimental-strip-types test/win.test.ts && node --experimental-strip-types test/scoring.test.ts && node --experimental-strip-types test/flow.test.ts && node --experimental-strip-types test/settle.test.ts && node --experimental-strip-types test/verify_shanten.ts 50000 && node --experimental-strip-types test/fuzz.run.ts 50000 && node --experimental-strip-types test/sim.run.ts 800"
+  }
+}

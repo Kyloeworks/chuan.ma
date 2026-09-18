@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川麻向听计算器 · Chuanma Shanten Calculator</title>
+<style>
+  :root{
+    --bg:#f5f6f8; --card:#fff; --ink:#1a1d21; --sub:#5b6470; --line:#e4e8ed;
+    --accent:#1f6feb; --accent-soft:#eef4fd;
+    --wan:#c0392b; --tiao:#1e8e5a; --tong:#2b6cb0;
+    --good:#1e8e5a; --goodbg:#eef8f2; --warn:#b7791f; --warnbg:#fdf6e8;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 64px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+    border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px;flex-wrap:wrap}
+  h1{font-size:22px;margin:0 0 3px;letter-spacing:-.01em}
+  .sub{color:var(--sub);font-size:13px}
+  .lang{border:1px solid var(--line);background:var(--card);border-radius:20px;
+    padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink)}
+  .lang:hover{border-color:var(--accent);color:var(--accent)}
+  .cols{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}
+  @media(max-width:820px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 12px;color:#3a4149;letter-spacing:.02em;
+    text-transform:uppercase;font-weight:700}
+  .suitrow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .suitrow .st{width:22px;font-size:13px;font-weight:700;text-align:center;flex:none}
+  .tiles{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;flex:1}
+  .tb{position:relative;height:52px;border:1px solid var(--line);border-radius:8px;background:#fbfcfd;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    padding:2px;transition:.12s;user-select:none}
+  .tb:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.08)}
+  .tb:active{transform:translateY(0)}
+  .tb .tf{display:block;width:34px;height:47px;line-height:0}
+  .tb .tf svg{display:block;width:100%;height:100%}
+  .tb.on{background:#fff;border-color:currentColor;box-shadow:inset 0 0 0 1.5px currentColor}
+  .tb .n{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;border-radius:9px;
+    background:var(--ink);color:#fff;font-size:11px;line-height:17px;text-align:center;padding:0 3px}
+  .controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:4px}
+  .ctrl{display:flex;align-items:center;gap:7px;font-size:13.5px}
+  select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:13.5px;
+    background:#fff;color:var(--ink);font-family:inherit}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;
+    font-size:13px;cursor:pointer;color:var(--ink)}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.gh{cursor:default;border-style:dashed;color:var(--sub);font-size:12px}
+  .hint{font-size:12px;color:var(--sub);margin-top:10px}
+  /* results */
+  .big{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .bignum{font-size:46px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .bignum.z{color:var(--good)} .bignum.win{color:var(--accent)} .bignum.neg{color:var(--good)}
+  .biglbl{font-size:15px;font-weight:600;color:var(--sub)}
+  .explain{font-size:14px;color:#333;margin:2px 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{display:inline-flex;align-items:center;gap:5px;border:1px solid currentColor;
+    border-radius:7px;padding:3px 9px;font-weight:700;font-size:13.5px;background:#fff}
+  .chip .mini{display:inline-block;width:15px;height:21px;line-height:0}
+  .chip .mini svg{display:block;width:100%;height:100%}
+  .chip em{font-style:normal;font-size:11.5px;opacity:.7;font-weight:600}
+  .chip.big{border-color:var(--good);color:var(--good);background:var(--goodbg)}
+  .sec-t{font-size:12.5px;font-weight:700;color:var(--sub);margin:16px 0 7px;
+    text-transform:uppercase;letter-spacing:.03em}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{padding:7px 9px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+  tr.best td{background:var(--goodbg)}
+  tr.best td:first-child{font-weight:800}
+  td.num{font-variant-numeric:tabular-nums}
+  .note{border-radius:10px;padding:10px 13px;font-size:13px;margin-top:12px;border:1px solid}
+  .note.warn{background:var(--warnbg);border-color:#f0dcae;color:#7a5310}
+  .note.ok{background:var(--goodbg);border-color:#c3e6d2;color:#166b45}
+  .note.info{background:var(--accent-soft);border-color:#cddff8;color:#1b4f9c}
+  .empty{color:var(--sub);font-size:13.5px;padding:6px 0}
+  .handline{font-family:var(--mono);font-size:12.5px;color:var(--sub);margin-top:8px;word-break:break-all}
+  footer{margin-top:26px;color:var(--sub);font-size:12px;text-align:center}
+  .ex{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1 id="ttl">川麻向听计算器</h1>
+      <div class="sub" id="sub"></div>
+    </div>
+    <button class="lang" id="langBtn">EN</button>
+  </header>
+  <div class="cols">
+    <div>
+      <div class="card">
+        <h2 id="h-hand"></h2>
+        <div id="picker"></div>
+        <div class="controls" id="controls"></div>
+        <div class="handline" id="handline"></div>
+        <div class="ex" id="examples"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" id="result"></div>
+    </div>
+  </div>
+  <footer id="foot"></footer>
+</div>
+<script>/*__KERNEL__*/</script>
+<script>/*__APP__*/</script>
+</body>
+</html>

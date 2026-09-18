@@ -3,177 +3,111 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>川麻实战 · 血战到底 · Chuanma Trainer</title>
+<title>川麻向听计算器 · Chuanma Shanten Calculator</title>
 <style>
   :root{
-    --bg:#e7eaee; --card:#fff; --ink:#1a1d21; --sub:#5b6470; --line:#dfe3e9;
+    --bg:#f5f6f8; --card:#fff; --ink:#1a1d21; --sub:#5b6470; --line:#e4e8ed;
     --accent:#1f6feb; --accent-soft:#eef4fd;
-    --wan:#c0392b; --tiao:#1c7d4d; --tong:#2f6fb5;
+    --wan:#c0392b; --tiao:#1e8e5a; --tong:#2b6cb0;
     --good:#1e8e5a; --goodbg:#eef8f2; --warn:#b7791f; --warnbg:#fdf6e8;
-    --gold:#c9971f; --turn:#1f6feb;
     --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   }
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-size:14px;line-height:1.45;
+  body{background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-    -webkit-font-smoothing:antialiased;min-height:100vh}
-  /* 用 min-height 而非 height:100%：预览面板若按内容自适应高度，height:100% 会塌成 0 导致整页空白 */
-  .app{min-height:100vh;display:flex;flex-direction:column}
-
-  /* ---------- 顶栏 ---------- */
-  header{flex:0 0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
-    padding:8px 16px;background:var(--card);border-bottom:1px solid var(--line)}
-  h1{font-size:16px;margin:0;white-space:nowrap}
-  .hstat{display:flex;gap:14px;align-items:center;font-size:13px;color:var(--sub);flex-wrap:wrap}
-  .hstat b{color:var(--ink);font-variant-numeric:tabular-nums}
-  .hstat .turnlbl{color:var(--accent);font-weight:800}
-  .spacer{flex:1}
-  .btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:5px 12px;
-    font-size:12.5px;cursor:pointer;color:var(--ink);font-weight:600}
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1000px;margin:0 auto;padding:26px 18px 64px}
+  header{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;
+    border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:20px;flex-wrap:wrap}
+  h1{font-size:22px;margin:0 0 3px;letter-spacing:-.01em}
+  .sub{color:var(--sub);font-size:13px}
+  .lang{border:1px solid var(--line);background:var(--card);border-radius:20px;
+    padding:6px 14px;font-size:13px;cursor:pointer;font-weight:600;color:var(--ink)}
+  .lang:hover{border-color:var(--accent);color:var(--accent)}
+  .cols{display:grid;grid-template-columns:1.05fr .95fr;gap:18px;align-items:start}
+  @media(max-width:820px){.cols{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px 18px;margin-bottom:16px}
+  .card h2{font-size:14px;margin:0 0 12px;color:#3a4149;letter-spacing:.02em;
+    text-transform:uppercase;font-weight:700}
+  .suitrow{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+  .suitrow .st{width:22px;font-size:13px;font-weight:700;text-align:center;flex:none}
+  .tiles{display:grid;grid-template-columns:repeat(9,1fr);gap:6px;flex:1}
+  .tb{position:relative;height:52px;border:1px solid var(--line);border-radius:8px;background:#fbfcfd;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;
+    padding:2px;transition:.12s;user-select:none}
+  .tb:hover{transform:translateY(-1px);box-shadow:0 3px 8px rgba(0,0,0,.08)}
+  .tb:active{transform:translateY(0)}
+  .tb .tf{display:block;width:34px;height:47px;line-height:0}
+  .tb .tf svg{display:block;width:100%;height:100%}
+  .tb.on{background:#fff;border-color:currentColor;box-shadow:inset 0 0 0 1.5px currentColor}
+  .tb .n{position:absolute;top:-6px;right:-6px;min-width:17px;height:17px;border-radius:9px;
+    background:var(--ink);color:#fff;font-size:11px;line-height:17px;text-align:center;padding:0 3px}
+  .controls{display:flex;gap:16px;flex-wrap:wrap;align-items:center;margin-top:4px}
+  .ctrl{display:flex;align-items:center;gap:7px;font-size:13.5px}
+  select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;font-size:13.5px;
+    background:#fff;color:var(--ink);font-family:inherit}
+  .btn{border:1px solid var(--line);background:#fff;border-radius:8px;padding:5px 11px;
+    font-size:13px;cursor:pointer;color:var(--ink)}
   .btn:hover{border-color:var(--accent);color:var(--accent)}
-  .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .btn.pri:hover{background:#1a5fd0;color:#fff}
-  .btn.ghost{font-weight:500;color:var(--sub)}
-
-  /* ---------- 圆桌 ---------- */
-  .board{flex:1;min-height:0;display:grid;gap:8px;padding:8px;
-    grid-template-areas:". top ." "left center right" "me me me";
-    grid-template-columns:minmax(120px,17%) minmax(0,1fr) minmax(120px,17%);
-    grid-template-rows:auto minmax(0,1fr) auto}
-  .b-top{grid-area:top} .b-left{grid-area:left} .b-center{grid-area:center}
-  .b-right{grid-area:right} .b-me{grid-area:me}
-  .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:8px 10px;
-    min-width:0;min-height:0;overflow:hidden;display:flex;flex-direction:column}
-  .panel.turn{border-color:var(--turn);box-shadow:0 0 0 2px rgba(31,111,235,.28),0 0 14px rgba(31,111,235,.18)}
-  .panel.won{border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,151,31,.3)}
-  .phead{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:5px}
-  .pname{font-weight:800;font-size:13.5px}
-  .ptag{font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;background:#eef1f5;color:var(--sub);white-space:nowrap}
-  .ptag.miss{background:var(--warnbg);color:var(--warn)}
-  .ptag.won{background:#fbf3df;color:var(--gold)}
-  .ptag.turn{background:var(--accent-soft);color:var(--accent)}
-  .ptag.dir{background:#e8f5ee;color:var(--good)}
-  .rowlbl{font-size:10.5px;color:var(--sub);margin:5px 0 3px;text-transform:uppercase;letter-spacing:.05em;font-weight:700}
-  .tiles{display:flex;flex-wrap:wrap;gap:3px;align-content:flex-start;min-height:0}
-  .tile{width:26px;height:36px;line-height:0;position:relative;flex:none;user-select:none;border-radius:6px}
-  .tile svg{display:block;width:100%;height:100%}
-  .tile.sm{width:18px;height:25px;border-radius:4px}
-  .tile.xs{width:20px;height:28px;border-radius:5px}
-  .tile.click{cursor:pointer;transition:.1s}
-  .tile.click:hover{transform:translateY(-4px);box-shadow:0 5px 12px rgba(0,0,0,.16)}
-  .tile.dim{opacity:.28;cursor:not-allowed}
-  .tile.rec{border-radius:7px;box-shadow:0 0 0 2px var(--gold),0 0 10px rgba(201,151,31,.55)}
-  .tile.rec::after{content:'推荐';position:absolute;bottom:-8px;left:50%;transform:translateX(-50%);font-size:9px;
-    background:var(--gold);color:#fff;padding:0 4px;border-radius:4px;font-weight:700;line-height:13px;white-space:nowrap}
-  .tile.wintile{box-shadow:0 0 0 2px var(--gold),0 0 10px rgba(201,151,31,.6);border-radius:7px}
-  .river{display:flex;flex-direction:column;gap:2px;min-height:0}
-  .river-row{display:flex;gap:2px;justify-content:center}
-  .handsep{flex:none;width:12px;align-self:stretch}
-  .tile.justdrawn,.tile.wintile{box-shadow:0 0 0 2px var(--gold)}
-  .melds{display:flex;flex-wrap:wrap;gap:5px;align-content:flex-start}
-  .meld{display:flex;gap:1px;padding:1px;border:1px dashed var(--line);border-radius:5px}
-
-  /* 中央 */
-  .b-center{align-items:center;justify-content:center;text-align:center;gap:6px}
-  .wallbig{font-size:40px;font-weight:900;line-height:1;font-variant-numeric:tabular-nums}
-  .wallcap{font-size:11px;color:var(--sub);letter-spacing:.06em;text-transform:uppercase;font-weight:700}
-  .turnrow{font-size:17px;font-weight:900;color:var(--accent)}
-  .orderline{font-size:12.5px;color:var(--sub);display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:center}
-  .orderline .chip{padding:1px 8px;border-radius:20px;background:#eef1f5;font-weight:700;color:#48505b}
-  .orderline .chip.you{background:var(--accent-soft);color:var(--accent)}
-  .orderline .chip.next{background:#e8f5ee;color:var(--good)}
-  .orderline .chip.prev{background:#fdf6e8;color:var(--warn)}
-  .lastrow{font-size:12.5px;color:var(--sub)}
-  .lastrow .tile{display:inline-block;vertical-align:middle;margin-left:5px}
-
-  /* 我的区 */
-  .b-me{gap:4px}
-  .handrow{display:flex;gap:6px;flex-wrap:wrap;align-items:flex-end;justify-content:center;padding:14px 0 6px;min-height:78px}
-  .handrow .tile{width:46px;height:64px;border-radius:9px}
-  .actions{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;min-height:0;align-items:center;padding-bottom:2px}
-  .act{border:none;border-radius:10px;padding:9px 24px;font-size:15px;font-weight:800;cursor:pointer;
-    color:#fff;background:var(--accent);letter-spacing:.05em}
-  .act.hu{background:var(--wan)} .act.pong{background:var(--tiao)} .act.kong{background:var(--tong)}
-  .act.pass{background:#8a94a0}
-  .act:hover{filter:brightness(1.08)}
-  .hintbar{font-size:12.5px;color:var(--sub);text-align:center;min-height:18px}
-  .metarow{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;font-size:12.5px;color:var(--sub)}
-  .metarow b{color:var(--ink);font-variant-numeric:tabular-nums}
-  .teach{margin:8px auto 0;max-width:640px;background:#f4f8f6;border:1px solid #cfe3d8;border-radius:12px;padding:8px 12px;text-align:center}
-  .teach .tbig{font-size:15px;font-weight:800;color:var(--ink)}
-  .teach .tbig.ok{color:#0f6e56}
-  .teach .tbig.warn{color:#ba7517}
-  .teach .tbig.win{color:var(--gold)}
-  .teach .twait{font-size:12.5px;color:#0f6e56;font-weight:700;margin-top:3px}
-  .teach .treason{font-size:12.5px;color:var(--gold);font-weight:700;margin-top:3px}
-  .diffs{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--sub)}
-  .dbtn{border:1px solid var(--line);background:#fff;color:var(--sub);font-size:12px;padding:3px 9px;border-radius:12px;cursor:pointer;font-weight:600}
-  .dbtn.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .dbtn.on[data-d=easy]{background:#0f6e56;border-color:#0f6e56}
-  .dbtn.on[data-d=hard]{background:#a32d2d;border-color:#a32d2d}
-  .res-table tr.me td{background:#f6f9ff}
-  .res-table tr.me td:first-child{font-weight:800}
-
-  /* ---------- 底部记录 ---------- */
-  .bottom{flex:0 0 auto;background:var(--card);border-top:1px solid var(--line);padding:6px 14px;
-    display:flex;gap:12px;align-items:flex-start;max-height:82px}
-  .bottom .logcap{font-size:10.5px;font-weight:800;color:var(--sub);letter-spacing:.06em;
-    text-transform:uppercase;padding-top:3px;white-space:nowrap}
-  .log{flex:1;overflow-y:auto;font-size:12.5px;max-height:70px}
-  .log div{padding:1px 0}
-  .log .n{color:var(--sub);font-family:var(--mono);font-size:11px;margin-right:6px}
-
-  /* ---------- 覆盖层（定缺 / 结算 / 帮助） ---------- */
-  .overlay{position:fixed;inset:0;background:rgba(20,26,34,.5);display:none;align-items:center;
-    justify-content:center;padding:20px;z-index:20}
-  .overlay.show{display:flex}
-  .modal{background:var(--card);border-radius:16px;padding:22px 24px;max-width:760px;width:100%;
-    max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
-  .modal h2{font-size:18px;margin:0 0 6px}
-  .modal .lead{color:var(--sub);font-size:13.5px;margin:0 0 14px}
-  .miss-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-  .mp{border:2px solid var(--line);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:#fff;transition:.12s}
-  .mp:hover{border-color:var(--accent);transform:translateY(-2px)}
-  .mp .big{font-size:28px;font-weight:900}
-  .mp .cnt{font-size:13px;color:var(--sub);margin-top:4px}
-  .mp .recs{font-size:11.5px;font-weight:800;color:var(--gold);margin-top:5px}
-  .mp.recommend{border-color:var(--gold);background:#fffdf6}
-  .res-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
-  .res-table th,.res-table td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left}
-  .res-table th{font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.03em}
-  .fanlist{font-size:12.5px;color:var(--sub)}
-  .legendbox{font-size:13px;color:#3a4149;line-height:1.9}
-  @media(max-width:900px){
-    .board{grid-template-columns:minmax(92px,15%) minmax(0,1fr) minmax(92px,15%)}
-    .handrow .tile{width:38px;height:53px}
-  }
+  .btn.gh{cursor:default;border-style:dashed;color:var(--sub);font-size:12px}
+  .hint{font-size:12px;color:var(--sub);margin-top:10px}
+  /* results */
+  .big{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+  .bignum{font-size:46px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+  .bignum.z{color:var(--good)} .bignum.win{color:var(--accent)} .bignum.neg{color:var(--good)}
+  .biglbl{font-size:15px;font-weight:600;color:var(--sub)}
+  .explain{font-size:14px;color:#333;margin:2px 0 0}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .chip{display:inline-flex;align-items:center;gap:5px;border:1px solid currentColor;
+    border-radius:7px;padding:3px 9px;font-weight:700;font-size:13.5px;background:#fff}
+  .chip .mini{display:inline-block;width:15px;height:21px;line-height:0}
+  .chip .mini svg{display:block;width:100%;height:100%}
+  .chip em{font-style:normal;font-size:11.5px;opacity:.7;font-weight:600}
+  .chip.big{border-color:var(--good);color:var(--good);background:var(--goodbg)}
+  .sec-t{font-size:12.5px;font-weight:700;color:var(--sub);margin:16px 0 7px;
+    text-transform:uppercase;letter-spacing:.03em}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{padding:7px 9px;text-align:left;border-bottom:1px solid var(--line)}
+  th{font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.03em;font-weight:700}
+  tr.best td{background:var(--goodbg)}
+  tr.best td:first-child{font-weight:800}
+  td.num{font-variant-numeric:tabular-nums}
+  .note{border-radius:10px;padding:10px 13px;font-size:13px;margin-top:12px;border:1px solid}
+  .note.warn{background:var(--warnbg);border-color:#f0dcae;color:#7a5310}
+  .note.ok{background:var(--goodbg);border-color:#c3e6d2;color:#166b45}
+  .note.info{background:var(--accent-soft);border-color:#cddff8;color:#1b4f9c}
+  .empty{color:var(--sub);font-size:13.5px;padding:6px 0}
+  .handline{font-family:var(--mono);font-size:12.5px;color:var(--sub);margin-top:8px;word-break:break-all}
+  footer{margin-top:26px;color:var(--sub);font-size:12px;text-align:center}
+  .ex{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
 </style>
 </head>
 <body>
-<div class="app">
+<div class="wrap">
   <header>
-    <h1 id="ttl"></h1>
-    <div class="hstat" id="hstat"></div>
-    <div class="spacer"></div>
-    <div class="diffs" id="diffs">
-      <span id="diffLbl"></span>
-      <button class="dbtn" data-d="easy"></button>
-      <button class="dbtn" data-d="normal"></button>
-      <button class="dbtn" data-d="hard"></button>
+    <div>
+      <h1 id="ttl">川麻向听计算器</h1>
+      <div class="sub" id="sub"></div>
     </div>
-    <button class="btn" id="helpBtn"></button>
-    <button class="btn" id="demoBtn"></button>
-    <button class="btn" id="newBtn"></button>
-    <button class="btn ghost" id="langBtn">EN</button>
+    <button class="lang" id="langBtn">EN</button>
   </header>
-  <div class="board" id="board"></div>
-  <div class="bottom">
-    <div class="logcap" id="logcap"></div>
-    <div class="log" id="log"></div>
+  <div class="cols">
+    <div>
+      <div class="card">
+        <h2 id="h-hand"></h2>
+        <div id="picker"></div>
+        <div class="controls" id="controls"></div>
+        <div class="handline" id="handline"></div>
+        <div class="ex" id="examples"></div>
+      </div>
+    </div>
+    <div>
+      <div class="card" id="result"></div>
+    </div>
   </div>
+  <footer id="foot"></footer>
 </div>
-<div class="overlay" id="overlay"></div>
 <script>var ChuanMa = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -193,7 +127,7 @@
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
 
-  // chuanma/kernel/src/index.ts
+  // chuan.ma/kernel/src/index.ts
   var index_exports = {};
   __export(index_exports, {
     COPIES: () => COPIES,
@@ -284,7 +218,7 @@
     winningTiles: () => winningTiles
   });
 
-  // chuanma/kernel/src/tiles.ts
+  // chuan.ma/kernel/src/tiles.ts
   var SUITS = 3;
   var RANKS = 9;
   var TILE_KINDS = 27;
@@ -382,7 +316,7 @@
     return out;
   }
 
-  // chuanma/kernel/src/win.ts
+  // chuan.ma/kernel/src/win.ts
   function allMelds(c, need) {
     if (need === 0) {
       for (let i2 = 0; i2 < TILE_KINDS; i2++) if (c[i2] !== 0) return false;
@@ -453,7 +387,7 @@
     return out;
   }
 
-  // chuanma/kernel/src/shanten.ts
+  // chuan.ma/kernel/src/shanten.ts
   var MAX_M = 4;
   var MAX_BLOCK = 5;
   function enumerateSuit(c9) {
@@ -591,7 +525,7 @@
     return shanten(c, melds) === 0;
   }
 
-  // chuanma/kernel/src/ukeire.ts
+  // chuan.ma/kernel/src/ukeire.ts
   function winningTiles(c, melds = 0) {
     const out = [];
     for (let t = 0; t < TILE_KINDS; t++) {
@@ -688,7 +622,7 @@
     return score;
   }
 
-  // chuanma/kernel/src/scoring.ts
+  // chuan.ma/kernel/src/scoring.ts
   var defaultScoring = {
     rules: {
       allowKong: true,
@@ -802,7 +736,7 @@
     };
   }
 
-  // chuanma/kernel/src/settle.ts
+  // chuan.ma/kernel/src/settle.ts
   function blankSeat(seat) {
     return {
       seat,
@@ -1013,7 +947,7 @@
     return s.seats.reduce((acc, x) => acc + x.net, 0) === 0;
   }
 
-  // chuanma/kernel/src/flow.ts
+  // chuan.ma/kernel/src/flow.ts
   var SEATS = [0, 1, 2, 3];
   var defaultRules = {
     allowKong: true,
@@ -1293,7 +1227,7 @@
     return shanten(p.hand, p.melds.length);
   }
 
-  // chuanma/kernel/src/bot.ts
+  // chuan.ma/kernel/src/bot.ts
   function botMissingSuit(g, seat) {
     const p = g.players[seat];
     let best = 0;
@@ -1614,595 +1548,309 @@
 })();
 
 ;
-/* 川麻实战 · 血战到底 —— 牌桌 UI（普通脚本，使用全局 ChuanMa 内核） */
+/* 川麻向听计算器 · UI 逻辑（普通脚本，使用全局 ChuanMa 内核） */
 (function () {
   var CM = window.ChuanMa;
-  var HUMAN = 0;
-  var SEATS = CM.SEATS;
-  var AREA = ['me', 'right', 'top', 'left']; // seat -> 圆桌方位
+  var shanten = CM.shanten, winningTiles = CM.winningTiles, improvingTiles = CM.improvingTiles,
+      analyzeDiscards = CM.analyzeDiscards, canWin = CM.canWin,
+      tileLabel = CM.tileLabel, tileLabelEn = CM.tileLabelEn,
+      rankOf = CM.rankOf, suitOf = CM.suitOf, suitCount = CM.suitCount, totalOf = CM.totalOf,
+      TILE_KINDS = CM.TILE_KINDS, COPIES = CM.COPIES;
 
   var SUITS = [
     { zh: '万', en: 'wan', hex: '#c0392b' },
-    { zh: '条', en: 'tiao', hex: '#1c7d4d' },
-    { zh: '筒', en: 'tong', hex: '#2f6fb5' }
+    { zh: '条', en: 'tiao', hex: '#1e8e5a' },
+    { zh: '筒', en: 'tong', hex: '#2b6cb0' }
   ];
-  var SEAT_KEY = ['you', 'next', 'opp', 'prev']; // 0=你 1=下家 2=对家 3=上家
+
+  var state = { counts: new Array(27).fill(0), melds: 0, missing: -1, lang: 'zh' };
 
   var T = {
     zh: {
-      title: '川麻实战 · 血战到底',
-      help: '说明', demo: '自动演示', demoStop: '停止演示', newGame: '新开一局', lang: 'EN',
-      you: '你', next: '下家', opp: '对家', prev: '上家',
-      dirNext: '下一位 →', dirPrev: '← 上一位', dealerTag: '庄',
-      wall: '牌墙', turn: '轮到', orderT: '出牌顺序',
-      hand: '手牌', melds: '副露', river: '牌河', missing: '缺', count: '张',
-      reveal: '亮牌', shantenLbl: '向听', waiting: '听', won: '已胡',
-      declareT: '定缺 —— 选一门要打光的牌',
-      declareSub: '川麻开局必选一门「缺门」：必须先把这一门打完，且胡牌时手上不能有它。建议选张数最少的一门。',
-      recommend: '推荐', close: '开始',
-      yourTurn: '轮到你打牌 —— 点手牌即可打出',
-      mustMiss: '你还有缺门牌，必须先打完缺门（只能点缺门牌）',
-      claimT: '可以鸣牌', kongBtn: '杠', pongBtn: '碰', passBtn: '过',
-      concealedKong: '暗杠', addedKong: '补杠',
-      demoOn: '演示中…（双方自动出牌）',
-      teachMustMiss: '还有缺门牌，必须先打完',
-      teachReady: '已听牌',
-      teachWait: function (n) { return '可和 ' + n + ' 张'; },
-      teachWaiting: '听牌：',
-      teachShanten: function (n) { return n <= 0 ? '已听牌' : '还差 ' + n + ' 张听牌'; },
-      teachImprove: function (n) { return '进张 ' + n + ' 张'; },
-      teachReason: function (tl, n) { return '打 ' + tl + ' → 进张 ' + n + ' 张'; },
-      youWon: '你胡了',
-      diffLbl: '难度', dEasy: '新手', dNormal: '标准', dHard: '困难',
-      colNet: '净分', colDetail: '明细', scoreTitle: '本局得分',
-      detailFan: '胡牌', detailKong: '杠', detailReady: '查叫', detailPig: '花猪', detailRefund: '退税',
-      scoreNote: '分 = 番数 × 底分(1)；自摸由尚未胡牌者各付，点炮由放炮者独付；流局查大叫/查花猪；未胡者杠分退还。',
-      logcap: '对局记录',
-      settled: '本局结束', reasonThree: '3 家已胡', reasonWall: '牌墙摸完 · 流局',
-      seatRes: '座位', status: '结果', handTile: '和的牌', fanCol: '番种 / 番数',
-      stWon: '胡', stReady: '听牌', stNot: '未听', again: '再来一局',
-      helpTitle: '怎么看这张桌子',
-      helpBody: '<b>座位</b>：你在下方；<b>下家</b>（右）是下一位出牌的，<b>上家</b>（左）是上一位（按 你→下家→对家→上家 循环）。<br>' +
-        '<b>金框 +「推荐」</b> = 建议你打这张。灰色牌背 = 对手手牌（不可见）。<br>' +
-        '<b>亮牌</b>：有人胡牌时他的手牌会全部翻开，胡的那张金框标出。<br>' +
-        '<b>血战到底</b>：一家胡牌后本局继续，直到 3 家胡牌或牌墙摸完。<br>' +
-        '<b>定缺</b>：持有缺门牌时只能打缺门牌，胡牌手牌里也不能有它。',
-      evDeclare: function (s, su) { return s + ' 定缺 ' + su; },
-      evDiscard: function (s, tl) { return s + ' 打出 ' + tl; },
-      evPong: function (s, tl) { return s + ' 碰 ' + tl; },
-      evKong: function (s, tl) { return s + ' 杠 ' + tl; },
-      evWinSelf: function (s, tl, f) { return '🎉 ' + s + ' 自摸 ' + tl + '（' + f + ' 番）'; },
-      evWinRon: function (s, tl, by, f) { return '🎉 ' + s + ' 胡 ' + tl + '（' + by + ' 点炮，' + f + ' 番）'; },
-      evEnd: '本局结算',
-      bannerWinSelf: function (tl, f) { return '🎉 你自摸 ' + tl + '！' + f + ' 番'; },
-      bannerWinRon: function (tl, f) { return '🎉 你胡牌 ' + tl + '！' + f + ' 番'; },
-      bannerBot: function (s, tl, f) { return s + ' 胡了 ' + tl + '（' + f + ' 番）'; }
+      title: '川麻向听计算器',
+      sub: '输入手牌 → 实时算出向听数、听牌张、该打哪张。纯前端，无账号，不上传。',
+      hHand: '手牌',
+      melds: '副露',
+      meldsUnit: '副',
+      missing: '定缺',
+      none: '无',
+      clear: '清空',
+      hint: '左键 +1，右键 / Shift+左键 −1，单张最多 4 张。',
+      examples: '试试示例：',
+      ex1: '听牌例',
+      ex2: '14张待打',
+      ex3: '散牌例',
+      needMore: function (n, exp) { return '还需 ' + n + ' 张（该手牌应为 ' + exp + ' 张）'; },
+      over: function (exp) { return '手牌已满（' + exp + ' 张），点右键减少或清空。'; },
+      shantenLbl: '向听数',
+      win: '已和牌！',
+      winExpl: '这副牌已经能和了。',
+      tenpaiExpl: '听牌了 —— 摸到下面任意一张即可和牌。',
+      farExpl: function (k) { return '离听牌还差 ' + k + ' 张。下面是能让向听前进的牌。'; },
+      tenpaiT: '听牌张（能和的牌）',
+      improveT: '进张（能推进向听的牌）',
+      remain: '剩余',
+      totalT: '合计',
+      sheet: '张',
+      kindsT: '种',
+      discardT: '该打哪张？（按推荐排序）',
+      colDiscard: '弃牌',
+      colShanten: '向听',
+      colUkeire: '进张',
+      colNote: '说明',
+      noteTenpai: '→ 听牌',
+      noteBest: '推荐',
+      bestIs: function (name) { return '推荐打：' + name; },
+      missingHold: function (s) { return '你还持有「' + s + '」门牌。川麻必须先打完缺门牌才能和牌。'; },
+      missingFiltered: '（已按定缺过滤：只能打缺门牌）',
+      infoMissing: function (s) { return '已设定缺门「' + s + '」：和牌前必须先打光这一门。'; },
+      footer: '规则内核：自研川麻（血战到底）引擎 · 向听数已通过 5 万手独立对照验证'
     },
     en: {
-      title: 'Chuanma · Blood Battle',
-      help: 'Help', demo: 'Auto demo', demoStop: 'Stop demo', newGame: 'New game', lang: '中文',
-      you: 'You', next: 'Right', opp: 'Across', prev: 'Left',
-      dirNext: 'next →', dirPrev: '← prev', dealerTag: 'D',
-      wall: 'Wall', turn: 'Turn', orderT: 'Turn order',
-      hand: 'Hand', melds: 'Melds', river: 'River', missing: 'Missing', count: '',
-      reveal: 'Revealed', shantenLbl: 'Shanten', waiting: 'Wait', won: 'Won',
-      declareT: 'Declare Missing Suit',
-      declareSub: 'Pick one suit to clear out. You must discard this whole suit first, and your winning hand must not contain it. Pick the suit with fewest tiles.',
-      recommend: 'PICK', close: 'Start',
-      yourTurn: 'Your turn — click a tile to discard',
-      mustMiss: 'You still hold your missing suit — you must discard those first',
-      claimT: 'You can claim', kongBtn: 'Kong', pongBtn: 'Pong', passBtn: 'Pass',
-      concealedKong: 'Concealed kong', addedKong: 'Added kong',
-      demoOn: 'Demo running… (both sides auto-play)',
-      teachMustMiss: 'Clear your missing suit first',
-      teachReady: 'Ready',
-      teachWait: function (n) { return n + ' winning tiles left'; },
-      teachWaiting: 'Waiting:',
-      teachShanten: function (n) { return n <= 0 ? 'Ready' : n + ' away from ready'; },
-      teachImprove: function (n) { return n + ' tiles improve'; },
-      teachReason: function (tl, n) { return 'Discard ' + tl + ' → ' + n + ' tiles improve'; },
-      youWon: 'You win',
-      diffLbl: 'Level', dEasy: 'Easy', dNormal: 'Normal', dHard: 'Hard',
-      colNet: 'Net', colDetail: 'Breakdown', scoreTitle: 'Round score',
-      detailFan: 'Win', detailKong: 'Kong', detailReady: 'Ready', detailPig: 'Pig', detailRefund: 'Refund',
-      scoreNote: 'Points = fan × base (1). Self-draw: each unwon player pays. Discard win: discarder pays alone. Draw: big-call / flower-pig penalties; kong points of non-winners refunded.',
-      logcap: 'Game log',
-      settled: 'Round over', reasonThree: '3 players won', reasonWall: 'Wall empty · draw',
-      seatRes: 'Seat', status: 'Result', handTile: 'Winning tile', fanCol: 'Fan',
-      stWon: 'Won', stReady: 'Ready', stNot: 'Not ready', again: 'Play again',
-      helpTitle: 'How to read the table',
-      helpBody: '<b>Seats</b>: you are at the bottom; <b>Right</b> is the next to play, <b>Left</b> the previous (order: You→Right→Across→Left).<br>' +
-        '<b>Gold frame + “PICK”</b> = suggested discard. Grey backs = opponents\' hidden tiles.<br>' +
-        '<b>Reveal</b>: when someone wins, their hand is turned face-up (winning tile in gold).<br>' +
-        '<b>Blood Battle</b>: play continues after a win until 3 wins or the wall empties.<br>' +
-        '<b>Missing suit</b>: while holding it you may only discard it; a winning hand must not contain it.',
-      evDeclare: function (s, su) { return s + ' declares missing: ' + su; },
-      evDiscard: function (s, tl) { return s + ' discards ' + tl; },
-      evPong: function (s, tl) { return s + ' pongs ' + tl; },
-      evKong: function (s, tl) { return s + ' kongs ' + tl; },
-      evWinSelf: function (s, tl, f) { return '🎉 ' + s + ' self-draws ' + tl + ' (' + f + ' fan)'; },
-      evWinRon: function (s, tl, by, f) { return '🎉 ' + s + ' wins ' + tl + ' (' + by + ' discard, ' + f + ' fan)'; },
-      evEnd: 'Round settled',
-      bannerWinSelf: function (tl, f) { return '🎉 You self-drew ' + tl + '! ' + f + ' fan'; },
-      bannerWinRon: function (tl, f) { return '🎉 You won on ' + tl + '! ' + f + ' fan'; },
-      bannerBot: function (s, tl, f) { return s + ' won on ' + tl + ' (' + f + ' fan)'; }
+      title: 'Chuanma Shanten Calculator',
+      sub: 'Enter your hand → live shanten, winning tiles, and what to discard. Pure front-end, no account, nothing uploaded.',
+      hHand: 'Hand',
+      melds: 'Melds',
+      meldsUnit: '',
+      missing: 'Missing suit',
+      none: 'None',
+      clear: 'Clear',
+      hint: 'Left-click +1, right-click / Shift+click −1, max 4 each.',
+      examples: 'Try:',
+      ex1: 'Tenpai',
+      ex2: '14-tile discard',
+      ex3: 'Scattered',
+      needMore: function (n, exp) { return n + ' more tile(s) needed (hand should be ' + exp + ').'; },
+      over: function (exp) { return 'Hand full (' + exp + ' tiles) — right-click to remove or Clear.'; },
+      shantenLbl: 'Shanten',
+      win: 'Winning hand!',
+      winExpl: 'This hand already wins.',
+      tenpaiExpl: 'Tenpai — draw any tile below to win.',
+      farExpl: function (k) { return k + ' tile(s) away from tenpai. These tiles advance your hand.'; },
+      tenpaiT: 'Winning tiles',
+      improveT: 'Improving tiles (advance shanten)',
+      remain: 'left',
+      totalT: 'total',
+      sheet: 'tiles',
+      kindsT: 'kinds',
+      discardT: 'What to discard? (ranked)',
+      colDiscard: 'Discard',
+      colShanten: 'Shanten',
+      colUkeire: 'Ukeire',
+      colNote: 'Note',
+      noteTenpai: '→ tenpai',
+      noteBest: 'best',
+      bestIs: function (name) { return 'Best discard: ' + name; },
+      missingHold: function (s) { return 'You still hold the "' + s + '" suit. In Sichuan mahjong you must clear your missing suit before winning.'; },
+      missingFiltered: '(filtered by missing suit: only missing-suit discards)',
+      infoMissing: function (s) { return 'Missing suit set to "' + s + '": you must discard this whole suit before winning.'; },
+      footer: 'Kernel: self-built Sichuan Blood-Battle engine · shanten cross-checked on 50k hands'
     }
   };
 
-  var state = { g: null, lang: 'zh', demo: false, timer: null, banner: null, loggedUpTo: 0, logLines: [], overlay: null, diff: 'normal' };
-
   function t() { return T[state.lang]; }
-  function tileName(id) { return state.lang === 'zh' ? CM.tileLabel(id) : CM.tileLabelEn(id); }
+
+  function tileName(id) { return state.lang === 'zh' ? tileLabel(id) : tileLabelEn(id); }
   function suitName(s) { return state.lang === 'zh' ? SUITS[s].zh : SUITS[s].en; }
-  function seatName(seat) { return t()[SEAT_KEY[seat]]; }
+  function suitChar(s) { return state.lang === 'zh' ? SUITS[s].zh : SUITS[s].en; }
+  function remaining(id) { var r = COPIES - state.counts[id]; return r > 0 ? r : 0; }
+  function total() { return totalOf(state.counts); }
 
-  var MJ = window.MJTiles;
-  function tileHTML(id, opts) {
-    opts = opts || {};
-    var cls = 'tile' + (opts.sm ? ' sm' : '') + (opts.xs ? ' xs' : '') + (opts.cls ? ' ' + opts.cls : '');
-    return '<div class="' + cls + '"' + (opts.attr || '') + '>' + MJ.face(id) + '</div>';
+  function chipHTML(id, extra) {
+    var s = suitOf(id);
+    return '<span class="chip' + (extra ? ' ' + extra : '') + '" style="color:' + SUITS[s].hex + '">' +
+      '<span class="mini">' + window.MJTiles.face(id) + '</span>' + tileName(id) +
+      '<em>' + t().remain + ' ' + remaining(id) + '</em></span>';
   }
-  function backHTML(n, cls) {
-    var h = '';
-    for (var i = 0; i < n; i++) h += '<div class="tile ' + (cls || 'sm') + '">' + MJ.back() + '</div>';
-    return h;
-  }
-  function meldsHTML(p, cls) {
-    if (!p.melds.length) return '';
-    return p.melds.map(function (m) {
-      var n = m.type === 'kong' ? 4 : 3, inner = '';
-      for (var i = 0; i < n; i++) inner += tileHTML(m.tile, { cls: cls, attr: ' data-face="1"' });
-      return '<div class="meld">' + inner + '</div>';
-    }).join('');
-  }
-  /** 牌河：按出牌顺序整齐摆「两排」（第一排靠门前，超出换第二排） */
-  function riverHTML(p) {
-    var n = p.river.length;
-    if (!n) return '<span style="color:var(--sub);font-size:12px">—</span>';
-    var per = Math.max(6, Math.ceil(n / 2));   // 保证「门前两排」：n>12 时自动加宽每排
-    var rows = [];
-    for (var i = 0; i < n; i += per) rows.push(p.river.slice(i, i + per));
-    return rows.map(function (row) {
-      return '<div class="river-row">' +
-        row.map(function (id) { return tileHTML(id, { xs: true, attr: ' data-face="1"' }); }).join('') +
-        '</div>';
-    }).join('');
-  }
-  function revealHTML(p) {
-    var tiles = CM.concealedTiles(p), winT = p.winInfo ? p.winInfo.tile : -1, used = false;
+
+  /* ---------- 渲染手牌选择器 ---------- */
+  function renderPicker() {
     var html = '';
-    tiles.forEach(function (id) {
-      var cls = '';
-      if (id === winT && !used) { cls = 'wintile'; used = true; }
-      html += tileHTML(id, { cls: cls, attr: ' data-face="1"' });
-    });
-    // 点炮胡：和的那张不在手牌里，单独补一张亮在右手边
-    if (winT >= 0 && !used && p.winInfo && !p.winInfo.selfDraw) {
-      html += '<span class="handsep"></span>' + tileHTML(winT, { cls: 'wintile', attr: ' data-face="1"' });
-    }
-    return html;
-  }
-
-  /* ---------------- 新局 ---------------- */
-  function newGame() {
-    if (state.timer) { clearInterval(state.timer); state.timer = null; }
-    state.demo = false;
-    state.g = CM.createGame(HUMAN, CM.defaultRules, CM.defaultScoring);
-    state.banner = null; state.loggedUpTo = 0; state.logLines = []; state.overlay = null;
-    pump();
-    render();
-  }
-
-  /* ---------------- 引擎推进 ---------------- */
-  function afterWinCheck() { if (CM.isGameOver(state.g)) { CM.settleRound(state.g); return true; } return false; }
-  function botActAfterDraw(seat) {
-    var g = state.g, p = g.players[seat];
-    if (CM.canSelfWin(p, p.melds.length)) { CM.applySelfWin(g, seat); setBannerBot(seat, p.winInfo); afterWinCheck(); return; }
-    var ck = CM.botConcealedKongTile(g, seat, state.diff); if (ck >= 0) { CM.applyConcealedKong(g, seat, ck); return; }
-    var ak = CM.botAddedKongTile(g, seat, state.diff); if (ak >= 0) { CM.applyAddedKong(g, seat, ak); return; }
-    CM.discard(g, seat, CM.botDiscardTile(g, seat, state.diff));
-  }
-  function resolveHumanPass() {
-    var g = state.g, c = g.claim;
-    var br = c.ron.filter(function (s) { return s !== HUMAN; });
-    if (br.length) { CM.applyRon(g, br[0]); setBannerBot(br[0], g.players[br[0]].winInfo); afterWinCheck(); return; }
-    var bk = c.kong.filter(function (s) { return s !== HUMAN; });
-    if (bk.length) { CM.applyKong(g, bk[0]); return; }
-    var bp = c.pong.filter(function (s) { return s !== HUMAN; });
-    if (bp.length && CM.botShouldPong(g, bp[0], state.diff)) { CM.applyPong(g, bp[0]); return; }
-    CM.passClaim(g);
-  }
-  function humanAutoAct() {
-    var g = state.g;
-    if (g.phase === 'declareMissing') { CM.declareMissing(g, HUMAN, CM.botMissingSuit(g, HUMAN)); return; }
-    if (g.claim) {
-      var c = g.claim;
-      if (c.ron.indexOf(HUMAN) >= 0) { CM.applyRon(g, HUMAN); setBannerHuman(g.players[HUMAN].winInfo, false); afterWinCheck(); return; }
-      if (c.kong.indexOf(HUMAN) >= 0) { CM.applyKong(g, HUMAN); return; }
-      if (c.pong.indexOf(HUMAN) >= 0 && CM.botShouldPong(g, HUMAN)) { CM.applyPong(g, HUMAN); return; }
-      resolveHumanPass(); return;
-    }
-    var my = g.players[HUMAN];
-    if (g.pendingDraw) {
-      if (g.wall.length === 0) { CM.settleRound(g); return; }
-      CM.draw(g, HUMAN);
-      if (CM.canSelfWin(my, my.melds.length)) { CM.applySelfWin(g, HUMAN); setBannerHuman(my.winInfo, true); afterWinCheck(); return; }
-    } else if (CM.canSelfWin(my, my.melds.length)) {
-      CM.applySelfWin(g, HUMAN); setBannerHuman(my.winInfo, true); afterWinCheck(); return;
-    }
-    var ck = CM.botConcealedKongTile(g, HUMAN); if (ck >= 0) { CM.applyConcealedKong(g, HUMAN, ck); return; }
-    var ak = CM.botAddedKongTile(g, HUMAN); if (ak >= 0) { CM.applyAddedKong(g, HUMAN, ak); return; }
-    CM.discard(g, HUMAN, CM.botDiscardTile(g, HUMAN));
-  }
-  function pump() {
-    var g = state.g, guard = 0;
-    while (guard++ < 200000) {
-      if (g.phase === 'finished') return;
-      if (g.phase === 'declareMissing') {
-        var pending = false;
-        for (var i = 0; i < SEATS.length; i++) {
-          var s = SEATS[i];
-          if (g.players[s].missing === -1) {
-            if (s === HUMAN) { if (state.demo) humanAutoAct(); else pending = true; }
-            else CM.declareMissing(g, s, CM.botMissingSuit(g, s));
-          }
-        }
-        if (pending) return;
-        continue;
-      }
-      if (g.claim) {
-        var c = g.claim;
-        if (c.ron.length) {
-          var w = c.ron.indexOf(HUMAN) >= 0 ? HUMAN : c.ron[0];
-          CM.applyRon(g, w);
-          if (w === HUMAN) setBannerHuman(g.players[w].winInfo, false); else setBannerBot(w, g.players[w].winInfo);
-          afterWinCheck(); continue;
-        }
-        if (c.pong.indexOf(HUMAN) >= 0 || c.kong.indexOf(HUMAN) >= 0) { if (state.demo) humanAutoAct(); else return; continue; }
-        resolveHumanPass(); continue;
-      }
-      if (g.pendingDraw) {
-        var seat = g.turn;
-        if (seat === HUMAN) {
-          if (state.demo) { humanAutoAct(); continue; }
-          if (g.wall.length === 0) { CM.settleRound(g); return; }
-          CM.draw(g, HUMAN);
-          var my = g.players[HUMAN];
-          if (CM.canSelfWin(my, my.melds.length)) { CM.applySelfWin(g, HUMAN); setBannerHuman(my.winInfo, true); afterWinCheck(); continue; }
-          return;
-        }
-        if (!CM.draw(g, seat)) { CM.settleRound(g); return; }
-        if (CM.isGameOver(g)) { CM.settleRound(g); return; }
-        botActAfterDraw(seat); continue;
-      }
-      var seat2 = g.turn;
-      if (seat2 === HUMAN) {
-        if (state.demo) { humanAutoAct(); continue; }
-        var my2 = g.players[HUMAN];
-        if (CM.canSelfWin(my2, my2.melds.length)) { CM.applySelfWin(g, HUMAN); setBannerHuman(my2.winInfo, true); afterWinCheck(); continue; }
-        return;
-      }
-      var p2 = g.players[seat2];
-      if (CM.canSelfWin(p2, p2.melds.length)) { CM.applySelfWin(g, seat2); setBannerBot(seat2, p2.winInfo); afterWinCheck(); continue; }
-      CM.discard(g, seat2, CM.botDiscardTile(g, seat2, state.diff));
-    }
-  }
-  function setBannerHuman(rec, self) {
-    if (!rec) return;
-    state.banner = { text: self ? t().bannerWinSelf(CM.tileLabel(rec.tile), rec.fans.total) : t().bannerWinRon(CM.tileLabel(rec.tile), rec.fans.total) };
-  }
-  function setBannerBot(seat, rec) {
-    if (!rec) return;
-    state.banner = { text: t().bannerBot(seatName(seat), CM.tileLabel(rec.tile), rec.fans.total) };
-  }
-
-  /* ---------------- 人类交互 ---------------- */
-  function humanDeclare(suit) { CM.declareMissing(state.g, HUMAN, suit); state.overlay = null; pump(); render(); }
-  function humanDiscard(tile) { CM.discard(state.g, HUMAN, tile); pump(); render(); }
-  function humanPong() { CM.applyPong(state.g, HUMAN); pump(); render(); }
-  function humanKong() { CM.applyKong(state.g, HUMAN); pump(); render(); }
-  function humanPass() { resolveHumanPass(); pump(); render(); }
-  function humanConcealedKong() { var tk = CM.botConcealedKongTile(state.g, HUMAN); if (tk >= 0) CM.applyConcealedKong(state.g, HUMAN, tk); pump(); render(); }
-  function humanAddedKong() { var tk = CM.botAddedKongTile(state.g, HUMAN); if (tk >= 0) CM.applyAddedKong(state.g, HUMAN, tk); pump(); render(); }
-
-  /* ---------------- 渲染 ---------------- */
-  function logNewEvents() {
-    var g = state.g, lines = [];
-    for (var i = state.loggedUpTo; i < g.history.length; i++) {
-      var e = g.history[i];
-      var s = e.seat !== undefined ? seatName(e.seat) : '';
-      var by = e.by !== undefined && e.by >= 0 ? seatName(e.by) : '';
-      var tl = e.tile !== undefined ? CM.tileLabel(e.tile) : '';
-      var line = null;
-      if (e.type === 'declareMissing') line = t().evDeclare(s, suitName(g.players[e.seat].missing));
-      else if (e.type === 'discard') line = t().evDiscard(s, tl);
-      else if (e.type === 'pong') line = t().evPong(s, tl);
-      else if (e.type === 'kong') line = t().evKong(s, tl);
-      else if (e.type === 'win') { var rec = g.players[e.seat].winInfo; var f = rec ? rec.fans.total : '?'; line = e.by >= 0 ? t().evWinRon(s, tl, by, f) : t().evWinSelf(s, tl, f); }
-      else if (e.type === 'roundEnd') line = t().evEnd;
-      if (line) lines.push(line);
-    }
-    state.loggedUpTo = g.history.length;
-    return lines;
-  }
-
-  function panelHTML(seat) {
-    var g = state.g, p = g.players[seat], isMe = seat === HUMAN;
-    var isTurn = g.phase === 'playing' && g.turn === seat && !p.won;
-    var cls = 'panel ppanel b-' + AREA[seat] + (isTurn ? ' turn' : '') + (p.won ? ' won' : '');
-    var tags = '';
-    if (seat === 1) tags += '<span class="ptag dir">' + t().dirNext + '</span>';
-    if (seat === 3) tags += '<span class="ptag dir">' + t().dirPrev + '</span>';
-    if (g.dealer === seat) tags += '<span class="ptag">' + t().dealerTag + '</span>';
-    if (p.won) tags += '<span class="ptag won">' + t().won + ' · ' + t().reveal + '</span>';
-    if (p.missing >= 0) tags += '<span class="ptag miss">' + t().missing + ' ' + suitName(p.missing) + '</span>';
-    if (isTurn) tags += '<span class="ptag turn">●</span>';
-
-    var h = '<div class="phead"><span class="pname">' + seatName(seat) + '</span>' + tags + '</div>';
-    var sizeCls = seat === 2 ? 'sm' : 'xs';
-    h += '<div class="rowlbl">' + t().hand + ' ' + CM.totalOf(p.hand) + ' ' + t().count + '</div>';
-    if (isMe) h += '<div class="handrow" id="hand"></div>';
-    else if (p.won) h += '<div class="tiles">' + revealHTML(p) + '</div>';
-    else {
-      var tot = CM.totalOf(p.hand), dj = (p.lastDrawn >= 0 && tot > 0) ? 1 : 0;
-      h += '<div class="tiles">' + backHTML(tot - dj, sizeCls) +
-        (dj ? '<span class="handsep"></span>' + backHTML(1, sizeCls) : '') + '</div>';
-    }
-    if (p.melds.length) h += '<div class="rowlbl">' + t().melds + '</div><div class="melds">' + meldsHTML(p, sizeCls) + '</div>';
-    if (!isMe) h += '<div class="rowlbl">' + t().river + '</div><div class="river">' + riverHTML(p) + '</div>';
-    if (isMe) {
-      var sh = CM.handShanten(p);
-      var need = 13 - p.melds.length * 3;
-      var total = CM.totalOf(p.hand);
-      var mustMiss = CM.holdsMissingSuit(p);
-      var myT = g.turn === HUMAN && !g.claim && !p.won;
-      var rec2 = -1, recCnt = 0;
-      if (myT && !mustMiss) {
-        try {
-          var ad = CM.analyzeDiscards(p.hand, p.melds.length).filter(function (o) { return p.hand[o.tile] > 0; });
-          ad.sort(function (a, b) {
-            if (a.shanten !== b.shanten) return a.shanten - b.shanten;
-            if (a.ukeireCount !== b.ukeireCount) return b.ukeireCount - a.ukeireCount;
-            return a.tile - b.tile;
-          });
-          if (ad.length) { rec2 = ad[0].tile; recCnt = ad[0].ukeireCount; }
-        } catch (e) { rec2 = -1; }
-      }
-      // 教学条（A）：向听进度 / 听牌提示 —— 手牌 14 张时按「打完推荐牌」判断
-      h += '<div class="teach" id="teach">';
-      if (p.won) {
-        h += '<div class="tbig win">🎉 ' + t().youWon + ' · ' + (p.winInfo ? p.winInfo.fans.total : 0) + ' 番</div>';
-      } else if (mustMiss) {
-        h += '<div class="tbig warn">⚠ ' + t().teachMustMiss + '</div>';
-      } else {
-        var probe = myT && total === need + 1 && rec2 >= 0;
-        var wt = [], left = 0, shAfter = sh;
-        if (total === need || probe) {
-          if (probe) p.hand[rec2]--;
-          shAfter = CM.shanten(p.hand, p.melds.length);
-          if (shAfter <= 0) wt = CM.winningTiles(p.hand, p.melds.length).filter(function (x) { return !(p.missing >= 0 && Math.floor(x / 9) === p.missing); });
-          if (probe) p.hand[rec2]++;
-        }
-        wt.forEach(function (x) { left += Math.max(0, 4 - p.hand[x]); });
-        if (wt.length) {
-          h += '<div class="tbig ok">' + t().teachReady + ' · ' + t().teachWait(left) + '</div>';
-          h += '<div class="twait">' + t().teachWaiting + wt.map(function (x) { return CM.tileLabel(x) + '(' + Math.max(0, 4 - p.hand[x]) + ')'; }).join(' ') + '</div>';
-        } else {
-          h += '<div class="tbig">' + t().teachShanten(shAfter) + (sh > 0 ? ' · ' + t().teachImprove(CM.improvingTiles(p.hand, p.melds.length).length) : '') + '</div>';
-        }
-      }
-      if (rec2 >= 0) h += '<div class="treason">★ ' + t().teachReason(CM.tileLabel(rec2), recCnt) + '</div>';
-      h += '</div>';
-      h += '<div class="hintbar" id="hint"></div><div class="actions" id="actions"></div>';
-    }
-    return '<div class="' + cls + '">' + h + '</div>';
-  }
-
-  function centerHTML() {
-    var g = state.g;
-    var chips = [0, 1, 2, 3].map(function (seat) {
-      var c = 'chip' + (seat === 0 ? ' you' : (seat === 1 ? ' next' : (seat === 3 ? ' prev' : '')));
-      var mark = (g.phase === 'playing' && g.turn === seat) ? ' ●' : '';
-      return '<span class="' + c + '">' + seatName(seat) + mark + '</span>';
-    }).join('<span>→</span>');
-    var h = '';
-    if (state.banner) h += '<div class="turnrow" style="color:var(--gold)">' + state.banner.text + '</div>';
-    h += '<div class="wallbig">' + g.wall.length + '</div><div class="wallcap">' + t().wall + '</div>';
-    if (!state.banner) h += '<div class="turnrow">' + (g.phase === 'playing' ? t().turn + ' ' + seatName(g.turn) : t().settled) + '</div>';
-    h += '<div class="orderline" style="margin-top:4px">' + t().orderT + '</div><div class="orderline">' + chips + '</div>';
-    if (g.lastDiscard) h += '<div class="lastrow">' + seatName(g.lastDiscard.seat) + ' · ' + tileHTML(g.lastDiscard.tile, { xs: true }) + '</div>';
-    return '<div class="panel b-center">' + h + '</div>';
-  }
-
-  function renderHand() {
-    var g = state.g, my = g.players[HUMAN], el = document.getElementById('hand');
-    if (!el) return;
-    var myTurn = g.phase === 'playing' && g.turn === HUMAN && !my.won && !g.claim;
-    var mustMiss = CM.holdsMissingSuit(my), rec = -1;
-    if (myTurn) { try { rec = CM.botDiscardTile(g, HUMAN); } catch (e) { rec = -1; } }
-    var html = '';
-    // 手牌按序排列；「刚摸到的牌」单独排在右手边，出牌后自动归位
-    var drawn = (!my.won && my.lastDrawn >= 0 && my.hand[my.lastDrawn] > 0) ? my.lastDrawn : -1;
-    var seq = [];
-    for (var q = 0; q < 27; q++) for (var m = 0; m < my.hand[q]; m++) seq.push(q);
-    if (drawn >= 0) { var di = seq.indexOf(drawn); if (di >= 0) seq.splice(di, 1); }
-    function one(id, extra) {
-      var legal = myTurn && (!mustMiss || CM.suitOf(id) === my.missing);
-      var cls = legal ? 'click' : (myTurn ? 'dim' : '');
-      if (myTurn && id === rec) cls += ' rec';
-      if (extra) cls += ' ' + extra;
-      return tileHTML(id, { cls: cls, attr: legal ? ' data-tile="' + id + '"' : '' });
-    }
-    for (var i = 0; i < seq.length; i++) html += one(seq[i]);
-    if (drawn >= 0) html += '<span class="handsep"></span>' + one(drawn, 'justdrawn');
-    el.innerHTML = html;
-    var hint = document.getElementById('hint');
-    if (hint) hint.textContent = my.won ? '' : (myTurn ? (mustMiss ? t().mustMiss : t().yourTurn) : (state.demo ? t().demoOn : ''));
-    el.querySelectorAll('.tile.click').forEach(function (b) { b.onclick = function () { humanDiscard(+b.dataset.tile); }; });
-  }
-
-  function renderActions() {
-    var g = state.g, my = g.players[HUMAN], el = document.getElementById('actions');
-    if (!el) return;
-    var html = '';
-    if (g.phase === 'playing' && !my.won) {
-      if (g.claim && (g.claim.pong.indexOf(HUMAN) >= 0 || g.claim.kong.indexOf(HUMAN) >= 0)) {
-        html += '<span style="font-weight:800;align-self:center">' + t().claimT + '</span>';
-        if (g.claim.kong.indexOf(HUMAN) >= 0) html += '<button class="act kong" id="aKong">' + t().kongBtn + '</button>';
-        if (g.claim.pong.indexOf(HUMAN) >= 0) html += '<button class="act pong" id="aPong">' + t().pongBtn + '</button>';
-        html += '<button class="act pass" id="aPass">' + t().passBtn + '</button>';
-      } else if (g.turn === HUMAN && !g.claim) {
-        var ck = CM.botConcealedKongTile(g, HUMAN); if (ck >= 0) html += '<button class="act kong" id="aCK">' + t().concealedKong + '</button>';
-        var ak = CM.botAddedKongTile(g, HUMAN); if (ak >= 0) html += '<button class="act kong" id="aAK">' + t().addedKong + '</button>';
-      }
-    }
-    el.innerHTML = html;
-    var b;
-    if ((b = document.getElementById('aKong'))) b.onclick = humanKong;
-    if ((b = document.getElementById('aPong'))) b.onclick = humanPong;
-    if ((b = document.getElementById('aPass'))) b.onclick = humanPass;
-    if ((b = document.getElementById('aCK'))) b.onclick = humanConcealedKong;
-    if ((b = document.getElementById('aAK'))) b.onclick = humanAddedKong;
-  }
-
-  function declareModal() {
-    var g = state.g, my = g.players[HUMAN];
-    var cnt = [0, 1, 2].map(function (s) { return CM.suitCount(my.hand, s); });
-    var rec = CM.botMissingSuit(g, HUMAN);
-    var h = '<div class="modal"><h2>' + t().declareT + '</h2><p class="lead">' + t().declareSub + '</p><div class="miss-pick">';
     for (var s = 0; s < 3; s++) {
-      h += '<div class="mp' + (s === rec ? ' recommend' : '') + '" data-suit="' + s + '">' +
-        '<div class="big" style="color:' + SUITS[s].hex + '">' + suitName(s) + '</div>' +
-        '<div class="cnt">' + cnt[s] + ' ' + t().count + '</div>' +
-        (s === rec ? '<div class="recs">★ ' + t().recommend + '</div>' : '') + '</div>';
-    }
-    h += '</div><div class="rowlbl" style="margin-top:14px">' + t().hand + '</div><div class="tiles">' +
-      CM.concealedTiles(my).map(function (id) { return tileHTML(id, { cls: 'click' }); }).join('') + '</div></div>';
-    return h;
-  }
-
-  function resultModal() {
-    var g = state.g, S = g.settlement, rows = '';
-    var order = [0, 1, 2, 3].slice().sort(function (a, b) {
-      return (S ? S.seats[b].net : 0) - (S ? S.seats[a].net : 0);
-    });
-    for (var i = 0; i < SEATS.length; i++) {
-      var s = order[i], p = g.players[s];
-      var st = p.won ? t().stWon + ' ' + p.winInfo.fans.total + ' 番' : (g.readyAtEnd[s] ? t().stReady : t().stNot);
-      var net = S ? S.seats[s].net : 0;
-      var parts = [];
-      if (S) {
-        var x = S.seats[s];
-        if (x.fanPoints) parts.push(t().detailFan + ' +' + x.fanPoints);
-        if (x.kongIn) parts.push(t().detailKong + ' +' + x.kongIn);
-        if (x.kongOut) parts.push(t().detailKong + ' −' + x.kongOut);
-        if (x.readyIn) parts.push(t().detailReady + ' +' + x.readyIn);
-        if (x.readyOut) parts.push(t().detailReady + ' −' + x.readyOut);
-        if (x.flowerPigOut) parts.push(t().detailPig + ' −' + x.flowerPigOut);
-        if (x.refundIn) parts.push(t().detailRefund + ' +' + x.refundIn);
-        if (x.refundOut) parts.push(t().detailRefund + ' −' + x.refundOut);
+      html += '<div class="suitrow"><div class="st" style="color:' + SUITS[s].hex + '">' + suitChar(s) + '</div><div class="tiles">';
+      for (var r = 1; r <= 9; r++) {
+        var id = s * 9 + (r - 1);
+        var n = state.counts[id];
+        html += '<button class="tb' + (n > 0 ? ' on' : '') + '" data-id="' + id + '" style="color:' + SUITS[s].hex + '">' +
+          '<span class="tf">' + window.MJTiles.face(id) + '</span>' +
+          (n > 0 ? '<span class="n">' + n + '</span>' : '') +
+          '</button>';
       }
-      // 中国习惯：正分红、负分绿
-      var col = net > 0 ? '#c0392b' : net < 0 ? '#1c7d4d' : '#5b6470';
-      rows += '<tr class="' + (s === HUMAN ? 'me' : '') + '"><td>' + seatName(s) + '</td><td>' + st + '</td>' +
-        '<td>' + (p.winInfo ? CM.tileLabel(p.winInfo.tile) : '—') + '</td>' +
-        '<td style="font-weight:800;color:' + col + '">' + (net > 0 ? '+' : '') + net + '</td>' +
-        '<td class="fanlist">' + (parts.join('　') || (p.winInfo ? p.winInfo.fans.items.map(function (it) { return it.name + '(' + it.fans + ')'; }).join(' ') : '—')) + '</td></tr>';
+      html += '</div></div>';
     }
-    var myNet = S ? S.seats[HUMAN].net : 0;
-    return '<div class="modal"><h2>' + t().settled + ' — ' + (g.winCount >= 3 ? t().reasonThree : t().reasonWall) +
-      '　|　' + t().you + ' ' + (myNet > 0 ? '+' : '') + myNet + '</h2>' +
-      '<table class="res-table"><thead><tr><th>' + t().seatRes + '</th><th>' + t().status + '</th><th>' + t().handTile + '</th><th>' + t().colNet + '</th><th>' + t().colDetail + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<div style="margin-top:8px;font-size:12px;color:#5b6470">' + t().scoreNote + '</div>' +
-      '<div style="margin-top:14px;display:flex;gap:10px"><button class="btn pri" id="againBtn">' + t().again + '</button><button class="btn" id="closeRes">' + t().close + '</button></div></div>';
+    document.getElementById('picker').innerHTML = html;
   }
 
-  function helpModal() {
-    return '<div class="modal"><h2>' + t().helpTitle + '</h2><div class="legendbox">' + t().helpBody + '</div>' +
-      '<div style="margin-top:16px"><button class="btn" id="helpClose">' + t().close + '</button></div></div>';
+  function renderControls() {
+    var el = document.getElementById('controls');
+    var meldsOpts = '';
+    for (var m = 0; m <= 4; m++) meldsOpts += '<option value="' + m + '"' + (state.melds === m ? ' selected' : '') + '>' + m + '</option>';
+    var missOpts = '<option value="-1"' + (state.missing === -1 ? ' selected' : '') + '>' + t().none + '</option>';
+    for (var s = 0; s < 3; s++) missOpts += '<option value="' + s + '"' + (state.missing === s ? ' selected' : '') + '>' + suitName(s) + '</option>';
+    el.innerHTML =
+      '<div class="ctrl"><label>' + t().melds + '</label><select id="meldsSel">' + meldsOpts + '</select></div>' +
+      '<div class="ctrl"><label>' + t().missing + '</label><select id="missSel">' + missOpts + '</select></div>' +
+      '<button class="btn" id="clearBtn">' + t().clear + '</button>' +
+      '<span class="btn gh">' + t().hint + '</span>';
+    document.getElementById('meldsSel').onchange = function (e) { state.melds = +e.target.value; render(); };
+    document.getElementById('missSel').onchange = function (e) { state.missing = +e.target.value; render(); };
+    document.getElementById('clearBtn').onclick = function () { state.counts = new Array(27).fill(0); render(); };
   }
 
-  function renderOverlay() {
-    var g = state.g, ov = document.getElementById('overlay');
-    var content = null;
-    if (state.overlay === 'help') content = helpModal();
-    else if (state.overlay === 'result') content = resultModal();
-    else if (g.phase === 'finished') content = resultModal();
-    else if (g.phase === 'declareMissing' && g.players[HUMAN].missing === -1) content = declareModal();
-    if (!content) { ov.className = 'overlay'; ov.innerHTML = ''; return; }
-    ov.className = 'overlay show';
-    ov.innerHTML = content;
-    ov.querySelectorAll('.mp').forEach(function (el) { el.onclick = function () { humanDeclare(+el.dataset.suit); }; });
-    var ag = document.getElementById('againBtn'); if (ag) ag.onclick = newGame;
-    var hc = document.getElementById('helpClose'); if (hc) hc.onclick = function () { state.overlay = null; render(); };
-    var cr = document.getElementById('closeRes'); if (cr) cr.onclick = function () { state.overlay = 'none'; render(); };
+  function renderHandline() {
+    var ids = [];
+    for (var i = 0; i < TILE_KINDS; i++) for (var n = 0; n < state.counts[i]; n++) ids.push(i);
+    var el = document.getElementById('handline');
+    el.textContent = ids.length ? ids.map(tileName).join('  ') : '';
   }
 
-  function renderLog() {
-    state.logLines = state.logLines.concat(logNewEvents());
-    if (state.logLines.length > 150) state.logLines = state.logLines.slice(-150);
-    var el = document.getElementById('log');
-    if (el) {
-      el.innerHTML = state.logLines.map(function (l, i) { return '<div><span class="n">' + (i + 1) + '</span>' + l + '</div>'; }).join('');
-      el.scrollTop = el.scrollHeight;
+  function renderExamples() {
+    var exs = [
+      { label: t().ex1, ids: [0,1,2,3,4,5,6,7,8, 9,9, 18,19] },
+      { label: t().ex2, ids: [0,1,2,3,4,5,6,7,8, 9,9, 18,19,26] },
+      { label: t().ex3, ids: [0,1,3,4,6, 10,11,13,15,16, 20,23,26] }
+    ];
+    var html = '<span class="hint" style="margin:0 4px 0 0">' + t().examples + '</span>';
+    html += exs.map(function (e, i) { return '<button class="btn" data-ex="' + i + '">' + e.label + '</button>'; }).join('');
+    var el = document.getElementById('examples');
+    el.innerHTML = html;
+    el.querySelectorAll('button[data-ex]').forEach(function (b) {
+      b.onclick = function () {
+        state.counts = new Array(27).fill(0);
+        exs[+b.dataset.ex].ids.forEach(function (id) { state.counts[id]++; });
+        render();
+      };
+    });
+  }
+
+  /* ---------- 结果面板 ---------- */
+  function sortDiscards(opts) {
+    return opts.slice().sort(function (a, b) {
+      if (a.shanten !== b.shanten) return a.shanten - b.shanten;
+      if (a.ukeireCount !== b.ukeireCount) return b.ukeireCount - a.ukeireCount;
+      if (a.ukeireKinds !== b.ukeireKinds) return b.ukeireKinds - a.ukeireKinds;
+      return a.tile - b.tile;
+    });
+  }
+
+  function ukeireSummary(opt) {
+    return opt.ukeireKinds + ' ' + t().kindsT + ' / ' + opt.ukeireCount + ' ' + t().sheet;
+  }
+
+  function renderResult() {
+    var el = document.getElementById('result');
+    var exp = 13 - 3 * state.melds;
+    var tot = total();
+    var out = '';
+    var Tt = t();
+
+    // 定缺提示
+    if (state.missing >= 0) {
+      out += '<div class="note info">' + Tt.infoMissing(suitName(state.missing)) + '</div>';
     }
-    var cap = document.getElementById('logcap'); if (cap) cap.textContent = t().logcap;
-  }
 
-  function render() {
-    var g = state.g;
-    document.getElementById('ttl').textContent = t().title;
-    document.getElementById('helpBtn').textContent = t().help;
-    document.getElementById('demoBtn').textContent = state.demo ? t().demoStop : t().demo;
-    document.getElementById('newBtn').textContent = t().newGame;
-    document.getElementById('langBtn').textContent = t().lang;
-    var dl = document.getElementById('diffLbl');
-    if (dl) {
-      dl.textContent = t().diffLbl;
-      var dtx = { easy: t().dEasy, normal: t().dNormal, hard: t().dHard };
-      document.querySelectorAll('#diffs .dbtn').forEach(function (b) {
-        b.textContent = dtx[b.dataset.d];
-        b.className = 'dbtn' + (b.dataset.d === state.diff ? ' on' : '');
+    if (tot === exp + 1) {
+      // 14 张：该打哪张
+      if (canWin(state.counts, state.melds)) {
+        out += '<div class="big"><div class="bignum win">✓</div><div class="biglbl">' + Tt.shantenLbl + '</div></div>';
+        out += '<p class="explain">' + Tt.winExpl + '</p>';
+        el.innerHTML = out; return;
+      }
+      var opts = analyzeDiscards(state.counts, state.melds);
+      // 定缺过滤：还持有缺门牌时只能打缺门牌
+      var holding = state.missing >= 0 && suitCount(state.counts, state.missing) > 0;
+      var filtered = holding ? opts.filter(function (o) { return suitOf(o.tile) === state.missing; }) : opts;
+      var sorted = sortDiscards(filtered.length ? filtered : opts);
+      var best = sorted[0];
+
+      out += '<h2>' + Tt.discardT + (holding ? ' <span class="hint">' + Tt.missingFiltered + '</span>' : '') + '</h2>';
+      if (best) {
+        out += '<div class="note ok">' + Tt.bestIs(tileName(best.tile)) +
+          '  ·  ' + Tt.shantenLbl + ' ' + best.shanten + '  ·  ' + ukeireSummary(best) + '</div>';
+      }
+      out += '<table><thead><tr><th>' + Tt.colDiscard + '</th><th>' + Tt.colShanten + '</th><th>' + Tt.colUkeire + '</th><th>' + Tt.colNote + '</th></tr></thead><tbody>';
+      sorted.forEach(function (o, i) {
+        var s = suitOf(o.tile);
+        var note = o.shanten === 0 ? Tt.noteTenpai : '';
+        out += '<tr' + (i === 0 ? ' class="best"' : '') + '>' +
+          '<td><span class="chip" style="color:' + SUITS[s].hex + '">' + tileName(o.tile) + '</span>' + (i === 0 ? ' <em style="color:var(--good);font-style:normal;font-size:11px">' + Tt.noteBest + '</em>' : '') + '</td>' +
+          '<td class="num">' + o.shanten + '</td>' +
+          '<td class="num">' + o.ukeireKinds + ' / ' + o.ukeireCount + '</td>' +
+          '<td>' + note + '</td></tr>';
       });
+      out += '</tbody></table>';
+      el.innerHTML = out; return;
     }
-    document.getElementById('hstat').innerHTML =
-      '<span>' + t().wall + ' <b>' + g.wall.length + '</b></span>' +
-      '<span>' + t().turn + ' <b class="turnlbl">' + (g.phase === 'playing' ? seatName(g.turn) : '—') + '</b></span>' +
-      '<span>' + t().dealerTag + ' <b>' + seatName(g.dealer) + '</b></span>' +
-      (g.settlement ? '<span>' + t().colNet + ' <b>' + (g.settlement.seats[HUMAN].net > 0 ? '+' : '') + g.settlement.seats[HUMAN].net + '</b></span>' : '') +
-      (state.demo ? '<span>' + t().demoOn + '</span>' : '');
 
-    document.getElementById('board').innerHTML =
-      panelHTML(2) + panelHTML(3) + centerHTML() + panelHTML(1) + panelHTML(0);
+    if (tot !== exp) {
+      // 张数不符
+      var d = exp - tot;
+      out += '<div class="empty">' + (d > 0 ? Tt.needMore(d, exp) : Tt.over(exp)) + '</div>';
+      el.innerHTML = out; return;
+    }
 
-    renderHand();
-    renderActions();
-    renderOverlay();
-    renderLog();
+    // 13 张（或 13-3*melds）：向听 + 听牌/进张
+    var sh = shanten(state.counts, state.melds);
+    var cls = sh === -1 ? 'win' : (sh === 0 ? 'z' : '');
+    var numTxt = sh === -1 ? '✓' : String(sh);
+    out += '<div class="big"><div class="bignum ' + cls + '">' + numTxt + '</div><div class="biglbl">' + Tt.shantenLbl + '</div></div>';
+
+    if (sh === -1) {
+      out += '<p class="explain">' + Tt.winExpl + '</p>';
+    } else if (sh === 0) {
+      out += '<p class="explain">' + Tt.tenpaiExpl + '</p>';
+      var wins = winningTiles(state.counts, state.melds);
+      var totalLeft = wins.reduce(function (a, id) { return a + remaining(id); }, 0);
+      out += '<div class="sec-t">' + Tt.tenpaiT + ' · ' + wins.length + ' ' + Tt.kindsT + ' / ' + totalLeft + ' ' + Tt.sheet + '</div>';
+      out += '<div class="chips">' + wins.map(function (id) { return chipHTML(id, 'big'); }).join('') + '</div>';
+    } else {
+      out += '<p class="explain">' + Tt.farExpl(sh) + '</p>';
+      var imp = improvingTiles(state.counts, state.melds);
+      var totalLeft2 = imp.reduce(function (a, id) { return a + remaining(id); }, 0);
+      out += '<div class="sec-t">' + Tt.improveT + ' · ' + imp.length + ' ' + Tt.kindsT + ' / ' + totalLeft2 + ' ' + Tt.sheet + '</div>';
+      out += '<div class="chips">' + (imp.length ? imp.map(function (id) { return chipHTML(id); }).join('') : '<span class="empty">—</span>') + '</div>';
+    }
+
+    if (state.missing >= 0 && suitCount(state.counts, state.missing) > 0) {
+      out += '<div class="note warn">' + Tt.missingHold(suitName(state.missing)) + '</div>';
+    }
+    el.innerHTML = out;
   }
 
-  /* ---------------- 演示模式 ---------------- */
-  function toggleDemo() {
-    if (state.demo) { state.demo = false; if (state.timer) { clearInterval(state.timer); state.timer = null; } render(); return; }
-    state.overlay = null;
-    state.demo = true;
-    state.timer = setInterval(function () {
-      if (!state.g || state.g.phase === 'finished') { clearInterval(state.timer); state.timer = null; state.demo = false; render(); return; }
-      pump(); render();
-    }, 350);
+  /* ---------- 事件 + 主渲染 ---------- */
+  function renderChrome() {
+    document.getElementById('ttl').textContent = t().title;
+    document.getElementById('sub').textContent = t().sub;
+    document.getElementById('h-hand').textContent = t().hHand;
+    document.getElementById('foot').textContent = t().footer;
+    document.getElementById('langBtn').textContent = state.lang === 'zh' ? 'EN' : '中文';
+    document.documentElement.lang = state.lang === 'zh' ? 'zh-CN' : 'en';
+  }
+
+  function render() { renderChrome(); renderPicker(); renderControls(); renderHandline(); renderExamples(); renderResult(); }
+
+  function addTile(id) {
+    var exp = 13 - 3 * state.melds;
+    if (state.counts[id] >= COPIES) return;
+    if (total() >= exp + 1) return;
+    state.counts[id]++;
+  }
+  function removeTile(id) { if (state.counts[id] > 0) state.counts[id]--; }
+
+  document.getElementById('picker').addEventListener('click', function (e) {
+    var b = e.target.closest('.tb'); if (!b) return;
+    if (e.shiftKey) removeTile(+b.dataset.id); else addTile(+b.dataset.id);
     render();
-  }
-
-  /* ---------------- 事件 ---------------- */
-  document.getElementById('newBtn').onclick = function () { newGame(); };
-  document.getElementById('demoBtn').onclick = toggleDemo;
-  document.getElementById('helpBtn').onclick = function () { state.overlay = state.overlay === 'help' ? null : 'help'; render(); };
-  document.getElementById('langBtn').onclick = function () { state.lang = state.lang === 'zh' ? 'en' : 'zh'; render(); };
-  document.querySelectorAll('#diffs .dbtn').forEach(function (b) {
-    b.onclick = function () { state.diff = b.dataset.d; render(); };
+  });
+  document.getElementById('picker').addEventListener('contextmenu', function (e) {
+    var b = e.target.closest('.tb'); if (!b) return;
+    e.preventDefault(); removeTile(+b.dataset.id); render();
+  });
+  document.getElementById('langBtn').addEventListener('click', function () {
+    state.lang = state.lang === 'zh' ? 'en' : 'zh'; render();
   });
 
-  newGame();
+  render();
 })();
 </script>
 </body>

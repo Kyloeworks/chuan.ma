@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scoring &amp; Fan · Sichuan Mahjong Points — chuan.ma</title>
+<meta name="description" content="How Sichuan mahjong scoring works: the fan table, how pattern bonuses stack, who pays on a self-draw versus a discard, kong money, and the end-of-round penalties.">
+<link rel="stylesheet" href="site.css">
+</head>
+<body>
+<nav><div class="navin">
+  <a class="brand" href="index.html">chuan<b>.</b>ma</a>
+  <a class="nl" href="learn-rules.html">Learn</a>
+  <a class="nl" href="learn-tiles.html">Tiles</a>
+  <a class="nl on" href="learn-scoring.html">Scoring</a>
+  <a class="nl" href="learn-culture.html">Culture</a>
+  <a class="nl" href="glossary.html">Glossary</a>
+  <span class="navspace"></span>
+  <a class="nl cta" href="play.html">&#9654; Play</a>
+  <a class="nl" href="calculator.html">Calculator</a>
+</div></nav>
+
+<div class="wrap">
+<header class="top">
+  <div class="kicker">Lesson 3 · 计算番数</div>
+  <h1>Scoring &amp; Fan</h1>
+  <p class="lede">A win is not just a win. Every winning hand is priced by its <b>fan</b> <span class="zh">番</span> — pattern bonuses that stack on top of each other — and the price decides who pays you what. This lesson walks from a finished hand to the exact number of points that changes hands.</p>
+</header>
+
+<h2>1. From a hand to a number</h2>
+<p>Two steps, in this order:</p>
+<ol class="steps">
+  <li><b>Count the fan</b> — add up every pattern your hand qualifies for. Fan is <b>additive</b>: a hand does not "become" a better pattern, it collects all of them at once.</li>
+  <li><b>Convert to points</b> — <span class="zh">分 = 番 × 底分</span>. The base value <span class="zh">底分</span> is a table convention; on this site it is <b>1</b>, so one fan = one point and the fan count is also the point count.</li>
+</ol>
+<div class="box">
+  <h4>Stacking is where the money is</h4>
+  <p>A plain hand wins 1 point. A plain hand won on your own draw in a single suit wins 6, and if it also contains two four-of-a-kinds it wins 8. Beginners count the shape; good players count the <b>stack</b>.</p>
+</div>
+
+<h2>2. The fan table</h2>
+<h3>Hand-shape fan</h3>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>Pattern</th><th class="n">Chinese</th><th class="n">Fan</th><th>Condition</th></tr></thead>
+  <tbody>
+    <tr><td><b>Base win</b></td><td class="n">平胡</td><td class="n">+1</td><td>Any standard win — four sets plus a pair. The floor, always counted.</td></tr>
+    <tr><td><b>All triplets</b></td><td class="n">碰碰胡</td><td class="n">+2</td><td>All four sets are triplets (or kongs). No runs anywhere.</td></tr>
+    <tr><td><b>All one suit</b></td><td class="n">清一色</td><td class="n">+4</td><td>Every tile in the hand, melds included, is from a single suit. The big one.</td></tr>
+    <tr><td><b>Four of a kind</b></td><td class="n">根</td><td class="n">+1 each</td><td>Per tile you hold four of. Counted in every hand shape, including seven pairs.</td></tr>
+    <tr><td><b>Seven pairs</b></td><td class="n">七对</td><td class="n">+2</td><td>Seven distinct pairs, no melds exposed. <i>Replaces</i> the base win.</td></tr>
+    <tr><td><b>Dragon seven pairs</b></td><td class="n">龙七对</td><td class="n">+2</td><td>Seven pairs that contain a four-of-a-kind. Added on top of 七对.</td></tr>
+    <tr><td><b>All kongs</b></td><td class="n">金钩钓</td><td class="n">+2</td><td>All four of your melds are kongs — a legendary shape most players never see.</td></tr>
+  </tbody>
+</table>
+</div>
+<h3>Situational fan</h3>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>Bonus</th><th class="n">Chinese</th><th class="n">Fan</th><th>Condition</th></tr></thead>
+  <tbody>
+    <tr><td><b>Self-draw</b></td><td class="n">自摸</td><td class="n">+1</td><td>You drew the winning tile yourself rather than taking a discard.</td></tr>
+    <tr><td><b>Kong blossom</b></td><td class="n">杠上花</td><td class="n">+1</td><td>The winning tile was the replacement tile drawn after a kong, and you drew it yourself.</td></tr>
+    <tr><td><b>Kong cannon</b></td><td class="n">杠上炮</td><td class="n">+1</td><td>You won off a tile that someone was forced to discard right after their kong.</td></tr>
+    <tr><td><b>Last tile</b></td><td class="n">海底</td><td class="n">+1</td><td>The win came off the very last tile in the wall.</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Note that <span class="zh">自摸</span> and <span class="zh">杠上花</span> stack: a self-drawn win on a kong replacement is +1 +1. Situational fan is added <i>after</i> the shape fan, so a self-drawn all-one-suit hand is 1 + 4 + 1 = 6, not 4.</p>
+
+<h2>3. Three worked examples</h2>
+
+<h3>Example A — plain hand, self-drawn</h3>
+<div class="hand">
+  1条 2条 3条 &nbsp;·&nbsp; 5条 5条 5条 &nbsp;·&nbsp; 7万 8万 9万 &nbsp;·&nbsp; 2筒 2筒 2筒 &nbsp;·&nbsp; 6筒 6筒
+</div>
+<p>A normal four-sets-plus-a-pair win across three suits, drawn by you.</p>
+<table>
+  <tbody>
+    <tr><td>平胡 base</td><td class="n">1</td></tr>
+    <tr><td>自摸 self-draw</td><td class="n">+1</td></tr>
+    <tr><td><b>Total</b></td><td class="n"><b>2 fan → 2 points</b></td></tr>
+  </tbody>
+</table>
+<p>Nobody has won yet, so <b>all three opponents pay 2 each</b> and you collect 6.</p>
+
+<h3>Example B — all one suit, won off a discard</h3>
+<div class="hand">
+  2筒 3筒 4筒 &nbsp;·&nbsp; 5筒 5筒 5筒 &nbsp;·&nbsp; 6筒 7筒 8筒 &nbsp;·&nbsp; 9筒 9筒 9筒 &nbsp;·&nbsp; 1筒 1筒
+</div>
+<p>Every tile is dots. You take the final tile from an opponent's discard.</p>
+<table>
+  <tbody>
+    <tr><td>平胡 base</td><td class="n">1</td></tr>
+    <tr><td>清一色 all one suit</td><td class="n">+4</td></tr>
+    <tr><td>自摸 (not self-drawn)</td><td class="n">—</td></tr>
+    <tr><td><b>Total</b></td><td class="n"><b>5 fan → 5 points</b></td></tr>
+  </tbody>
+</table>
+<p>On a discard win <b>only the player who discarded the tile pays</b> — 5 points, from one person.</p>
+
+<h3>Example C — dragon seven pairs, all one suit, off a discard</h3>
+<div class="hand">
+  3条 3条 &nbsp;·&nbsp; 3条 3条 (four of a kind) &nbsp;·&nbsp; 5条 5条 &nbsp;·&nbsp; 6条 6条 &nbsp;·&nbsp; 7条 7条 &nbsp;·&nbsp; 8条 8条 &nbsp;·&nbsp; 9条 9条
+</div>
+<p>Seven pairs in one suit, and the four 3条 counts as a four-of-a-kind.</p>
+<table>
+  <tbody>
+    <tr><td>七对 seven pairs</td><td class="n">2</td></tr>
+    <tr><td>龙七对 dragon seven pairs</td><td class="n">+2</td></tr>
+    <tr><td>清一色 all one suit</td><td class="n">+4</td></tr>
+    <tr><td>根 four of a kind</td><td class="n">+1</td></tr>
+    <tr><td><b>Total</b></td><td class="n"><b>9 fan → 9 points</b></td></tr>
+  </tbody>
+</table>
+<p>Notice that 七对 <b>replaces</b> 平胡 rather than adding to it — you either win as seven pairs or as a standard hand, never both.</p>
+
+<h2>4. Who pays</h2>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>How you won</th><th>Who pays</th><th>How much each</th></tr></thead>
+  <tbody>
+    <tr><td><b>Self-draw</b> <span class="zh">自摸</span></td><td>Every player who has <b>not yet won</b> this round</td><td>The full fan value, each</td></tr>
+    <tr><td><b>Off a discard</b> <span class="zh">点炮</span></td><td>Only the player who discarded that tile</td><td>The full fan value, alone</td></tr>
+  </tbody>
+</table>
+</div>
+<p>Two consequences worth internalising. First, self-draw is worth roughly three times a discard win, because three people pay instead of one — which is why <span class="zh">自摸</span> is worth chasing. Second, because this is <b>battle to the end</b> <span class="zh">血战到底</span>, "who has not yet won" shrinks as the round goes on: the third winner is paid by one player, not three.</p>
+
+<h2>5. Kong money is paid on the spot</h2>
+<p>Kong points do not wait for the end of the round. They change hands the moment the kong is made:</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>Kong type</th><th class="n">Chinese</th><th>Who pays</th><th class="n">Each pays</th></tr></thead>
+  <tbody>
+    <tr><td>Exposed kong (from a discard)</td><td class="n">直杠</td><td>The player who discarded the 4th tile</td><td class="n">2</td></tr>
+    <tr><td>Concealed kong (all four in hand)</td><td class="n">暗杠</td><td>All three opponents</td><td class="n">2</td></tr>
+    <tr><td>Added kong (on your own pong)</td><td class="n">补杠</td><td>All three opponents</td><td class="n">1</td></tr>
+  </tbody>
+</table>
+</div>
+<div class="box warn">
+  <h4>The refund clause <span class="zh">退税</span></h4>
+  <p>Kong money is only yours <b>if you eventually win the round</b>. A player who collects kong points and never wins has to give every point back at settlement. This is the single most surprising rule for newcomers — and it is why a kong is a commitment, not free money.</p>
+</div>
+
+<h2>6. When the wall runs out</h2>
+<p>If the round ends without three winners, nobody wins and penalties are charged instead:</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>Settlement</th><th class="n">Chinese</th><th>What happens</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>Ready check</b></td><td class="n">查大叫</td>
+      <td>Every player who is <b>not</b> tenpai pays each tenpai player the fan value of that player's <b>best wait</b> — so the better your wait, the more you collect.</td>
+    </tr>
+    <tr>
+      <td><b>Flower pig</b></td><td class="n">查花猪</td>
+      <td>Anyone still holding tiles of their declared missing suit pays <b>16 points to each player who cleared theirs</b>. The most expensive mistake in the game.</td>
+    </tr>
+    <tr>
+      <td><b>Tax refund</b></td><td class="n">退税</td>
+      <td>Everyone who never won refunds all the kong money they collected.</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>Read those three together and the game's whole incentive structure appears: <b>clear your missing suit, reach tenpai, and keep your wait as fat as possible.</b> Almost every strategic idea in Sichuan mahjong is downstream of that sentence.</p>
+
+<h2>7. Where these rules come from</h2>
+<div class="box good">
+  <h4>One documented preset, not the only one</h4>
+  <p>Sichuan mahjong fan values genuinely differ from table to table and city to city — all-one-suit is worth 2 in some places and 4 in others, and rare fan <i>names</i> shift too. (Some tables use <span class="zh">金钩钓</span> for "every meld exposed, waiting on a single tile"; the engine behind this site records it for a hand whose four melds are all kongs.)</p>
+  <p>Every number on this page is exactly what the <a href="play.html">table</a> and the <a href="calculator.html">calculator</a> on this site will compute, so the lesson and the scores can never disagree. Treat it as one clearly documented preset — then check your local table's house rules before you play for anything that matters.</p>
+</div>
+
+<div class="next">
+  <a href="learn-culture.html"><div class="k">Next lesson</div><div class="t">Culture &amp; Variants &rarr;</div></a>
+  <a href="play.html"><div class="k">Practise</div><div class="t">Play a game &rarr;</div></a>
+</div>
+
+<footer>chuan.ma · a free tool for learning Sichuan mahjong · rules match the engine used by the table</footer>
+</div>
+</body>
+</html>

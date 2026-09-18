@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川麻 UI 资产 · 牌面总览 · Chuanma Tile Set</title>
+<style>
+  :root{--bg:#f5f6f8;--card:#fff;--ink:#1a1d21;--sub:#5b6470;--line:#e4e8ed;
+    --accent:#1f6feb;--wan:#c0392b;--tiao:#1c7d4d;--tong:#2f6fb5;
+    --felt:#2f6b4f;--mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .wrap{max-width:1060px;margin:0 auto;padding:26px 18px 64px}
+  header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
+  .kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--sub);font-weight:700}
+  h1{font-size:24px;margin:8px 0 6px;letter-spacing:-.01em}
+  .sub{color:var(--sub);font-size:14px}
+  .meta{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
+  .pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eef1f5;color:var(--sub)}
+  h2{font-size:15px;margin:26px 0 12px;padding-left:10px;border-left:4px solid var(--ink);
+    display:flex;align-items:center;gap:10px}
+  h2 .badge{font-size:12px;font-weight:800;color:#fff;padding:1px 9px;border-radius:20px}
+  h2 .b0{background:var(--wan)} h2 .b1{background:var(--tiao)} h2 .b2{background:var(--tong)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px}
+  .cell{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 10px 8px;
+    display:flex;flex-direction:column;align-items:center;gap:8px}
+  .cell .cap{font-size:12px;color:var(--sub);font-family:var(--mono)}
+  .tile{width:64px;height:90px;border-radius:9px;box-shadow:0 3px 8px rgba(60,50,30,.14)}
+  .tile.sm{width:30px;height:42px;border-radius:6px}
+  .tile.lg{width:84px;height:118px;border-radius:11px}
+  .felt{background:linear-gradient(160deg,#357453,#245a3f);border-radius:14px;padding:20px 18px;
+    border:1px solid #1e4b34}
+  .felt .rowlbl{color:#cfe6d8;font-size:11.5px;font-weight:700;letter-spacing:.06em;margin:0 0 8px;text-transform:uppercase}
+  .felt .tiles{display:flex;gap:5px;flex-wrap:wrap;align-items:flex-end}
+  .felt .tile{box-shadow:0 3px 7px rgba(0,0,0,.28)}
+  .felt .ops{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+  .note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:13.5px}
+  .note code{font-family:var(--mono);font-size:12.5px;background:#eef1f4;padding:1.5px 6px;border-radius:5px}
+  .sizes{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap}
+  footer{margin-top:32px;color:var(--sub);font-size:12px;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">chuan.ma · UI Assets</div>
+    <h1>川麻牌面资产总览</h1>
+    <div class="sub">33 个程序化 SVG 牌面（万 / 条 / 筒 各 1–9 + 牌背）· 矢量 · 任意尺寸清晰 · 零依赖 · 免授权</div>
+    <div class="meta">
+      <span class="pill">27 张正牌</span><span class="pill">1 张牌背</span>
+      <span class="pill">viewBox 60×84</span><span class="pill">SVG</span><span class="pill">~10 KB</span>
+    </div>
+  </header>
+
+  <h2><span class="badge b0">万</span> Characters · 一萬 – 九萬</h2>
+  <div class="grid" id="gWan"></div>
+
+  <h2><span class="badge b1">条</span> Bamboo · 一索 – 九索（1 索为幺鸡）</h2>
+  <div class="grid" id="gTiao"></div>
+
+  <h2><span class="badge b2">筒</span> Dots · 一筒 – 九筒</h2>
+  <div class="grid" id="gTong"></div>
+
+  <h2>牌背 · Tile Back</h2>
+  <div class="grid" id="gBack"></div>
+
+  <h2>实战尺寸预览 · In-context sizes</h2>
+  <div class="felt">
+    <div class="rowlbl">我的手牌（点击可打，48×68）</div>
+    <div class="tiles" id="fHand"></div>
+    <div class="rowlbl" style="margin-top:16px">牌河 / 副露（28×39）</div>
+    <div class="tiles" id="fSmall"></div>
+    <div class="rowlbl" style="margin-top:16px">对手手牌（牌背）</div>
+    <div class="tiles" id="fBack"></div>
+  </div>
+
+  <div class="note">
+    <b>用法</b>：页面里引入 <code>tiles-ui.js</code> 后，
+    <code>MJTiles.face(tileId)</code> 返回牌面 SVG 字符串（tileId 0–26），
+    <code>MJTiles.back()</code> 返回牌背。<br>
+    容器决定尺寸（SVG 用 <code>width:100%;height:100%</code> + viewBox 自适应），
+    推荐比例 60:84（约 0.714），最小可用 24×34。<br>
+    <b>配色</b>：万＝靛黑字 + 朱红「萬」；条＝竹绿；筒＝蓝环 + 朱红靶心；牌面象牙白。
+  </div>
+
+  <footer>川麻工具集 · UI 资产 · 程序化 SVG 生成，无第三方素材 · 2026-09-17</footer>
+</div>
+<script>/*__APP__*/</script>
+</body>
+</html>

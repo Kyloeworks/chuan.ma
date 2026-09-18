@@ -1,0 +1,28 @@
+{
+  "name": "chuan-ma",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Learn Sichuan mahjong (川麻, 血战到底): beginner lessons, a coached GPU table, a hand calculator, and the deterministic TypeScript rules engine behind them.",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22.6"
+  },
+  "scripts": {
+    "build": "node web/build.mjs",
+    "publish": "node web/build.mjs && node web/publish.mjs",
+    "serve": "node web/serve.mjs 8791",
+    "test": "npm run test:kernel && npm run smoke",
+    "test:kernel": "node --experimental-strip-types kernel/test/win.test.ts && node --experimental-strip-types kernel/test/scoring.test.ts && node --experimental-strip-types kernel/test/flow.test.ts && node --experimental-strip-types kernel/test/settle.test.ts",
+    "verify": "node --experimental-strip-types kernel/test/verify_shanten.ts 20000 && node --experimental-strip-types kernel/test/fuzz.run.ts 20000",
+    "sim": "node --experimental-strip-types kernel/test/sim.run.ts 400",
+    "winrate": "node --experimental-strip-types kernel/test/winrate.run.ts 300 all",
+    "smoke": "node web/smoke.mjs && node web/tiles.smoke.mjs",
+    "probe": "node web/browser-probe.mjs web/dist/play.html",
+    "pixel": "node web/pixel-audit.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.2",
+    "pixi.js": "^8.21.0"
+  }
+}

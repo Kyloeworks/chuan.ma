@@ -1,5 +1,6 @@
 # 构建/部署临时产物
 _site/
+web/dist/
 .tmp-*
 *.tmp
 

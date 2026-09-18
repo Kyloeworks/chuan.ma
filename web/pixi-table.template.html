@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>川麻 2.5D · 血战到底 · Chuanma GPU Table</title>
+<style>
+  :root{
+    --bg:#0f1418;--card:#fff;--ink:#1a1d21;--sub:#5b6470;--line:#dfe3e9;
+    --accent:#1f6feb;--gold:#c9971f;--felt:#2f6b4f;
+    --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{background:#0f1418;color:var(--ink);font-size:14px;line-height:1.45;min-height:100vh;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-font-smoothing:antialiased}
+  .app{min-height:100vh;display:flex;flex-direction:column}
+  header{flex:0 0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap;
+    padding:8px 16px;background:#161c22;color:#e9edf2;border-bottom:1px solid #232b33}
+  h1{font-size:16px;margin:0;white-space:nowrap;color:#fff}
+  .hstat{display:flex;gap:14px;align-items:center;font-size:13px;color:#93a1b0;flex-wrap:wrap}
+  .hstat b{color:#fff;font-variant-numeric:tabular-nums}
+  .diag{font-size:11.5px;font-family:var(--mono);padding:2px 9px;border-radius:20px;
+    background:#232b33;color:#93a1b0;white-space:nowrap}
+  .diag[data-status=ok]{background:#14351f;color:#7fd8a5}
+  .diag[data-status=fail]{background:#3b1717;color:#f19a90}
+  .spacer{flex:1}
+  .diffs{display:flex;align-items:center;gap:6px;padding:2px 8px;border-radius:20px;background:#1b2229}
+  .dlbl{font-size:11.5px;color:#6b7784}
+  .dbtn{border:1px solid transparent;background:transparent;color:#93a1b0;font-size:12px;
+    padding:3px 10px;border-radius:14px;cursor:pointer;font-weight:600}
+  .dbtn:hover{color:#cfe0f0}
+  .dbtn.on{background:#1f6feb;color:#fff;border-color:#1f6feb}
+  .dbtn.on[data-d=easy]{background:#0f6e56;border-color:#0f6e56}
+  .dbtn.on[data-d=hard]{background:#a32d2d;border-color:#a32d2d}
+  .res-table tr.me td{background:#f6f9ff}
+  .res-table tr.me td:first-child{font-weight:800}
+  .btn{border:1px solid #2c353f;background:#1b2229;border-radius:9px;padding:5px 12px;
+    font-size:12.5px;cursor:pointer;color:#dfe6ee;font-weight:600}
+  .btn:hover{border-color:#4b9bff;color:#8ec2ff}
+  .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .btn.pri:hover{background:#1a5fd0;color:#fff}
+  .stage{flex:1;min-height:560px;position:relative;background:#0b2a1c;overflow:hidden}
+  .stage canvas{display:block}
+  .bottom{flex:0 0 auto;background:#161c22;border-top:1px solid #232b33;color:#93a1b0;
+    padding:6px 14px;display:flex;gap:12px;max-height:80px}
+  .logcap{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    padding-top:3px;white-space:nowrap;color:#6b7784}
+  .log{flex:1;overflow-y:auto;font-size:12.5px;max-height:68px}
+  .log .n{color:#6b7784;font-family:var(--mono);font-size:11px;margin-right:6px}
+  .overlay{position:fixed;inset:0;background:rgba(8,12,16,.72);display:none;align-items:center;
+    justify-content:center;padding:20px;z-index:20}
+  .overlay.show{display:flex}
+  .modal{background:var(--card);border-radius:16px;padding:22px 24px;max-width:760px;width:100%;
+    max-height:88vh;overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .modal h2{font-size:18px;margin:0 0 6px}
+  .modal .lead{color:var(--sub);font-size:13.5px;margin:0 0 14px}
+  .miss-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  .mp{border:2px solid var(--line);border-radius:12px;padding:14px;text-align:center;cursor:pointer;background:#fff;transition:.12s}
+  .mp:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .mp .big{font-size:28px;font-weight:900}
+  .mp .cnt{font-size:13px;color:var(--sub);margin-top:4px}
+  .mp .recs{font-size:11.5px;font-weight:800;color:var(--gold);margin-top:5px}
+  .mp.recommend{border-color:var(--gold);background:#fffdf6}
+  .res-table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:10px}
+  .res-table th,.res-table td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left}
+  .res-table th{font-size:11.5px;color:var(--sub);text-transform:uppercase;letter-spacing:.03em}
+  .legendbox{font-size:13px;color:#3a4149;line-height:1.9}
+  .fallback{padding:16px;color:#e9edf2}
+  .fallback code{font-family:var(--mono);font-size:12px;background:#232b33;padding:2px 6px;border-radius:5px}
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1 id="ttl"></h1>
+    <div class="hstat" id="hstat"></div>
+    <span class="diag" id="diag" data-status="init">PixiJS 初始化中…</span>
+    <div class="spacer"></div>
+    <div class="diffs" id="diffs">
+      <span class="dlbl" id="diffLbl"></span>
+      <button class="dbtn" data-d="easy"></button>
+      <button class="dbtn" data-d="normal"></button>
+      <button class="dbtn" data-d="hard"></button>
+    </div>
+    <button class="btn" id="helpBtn"></button>
+    <button class="btn" id="demoBtn"></button>
+    <button class="btn" id="newBtn"></button>
+    <button class="btn" id="langBtn">EN</button>
+  </header>
+  <div class="stage" id="stage"></div>
+  <div class="bottom">
+    <div class="logcap" id="logcap"></div>
+    <div class="log" id="log"></div>
+  </div>
+</div>
+<div class="overlay" id="overlay"></div>
+<script>/*__KERNEL__*/</script>
+<script>/*__PIXI__*/</script>
+<script>/*__APP__*/</script>
+</body>
+</html>

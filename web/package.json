@@ -1,0 +1,18 @@
+{
+  "name": "@chuanma/web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "chuan.ma 前端：学习内容站 + 向听计算器 + 牌面资产 + PixiJS 牌桌（工具页单文件自包含，内核来自 @chuanma/kernel）",
+  "scripts": {
+    "build": "node build.mjs",
+    "publish": "node build.mjs && node publish.mjs",
+    "smoke": "node smoke.mjs && node tiles.smoke.mjs",
+    "smoke:calc": "node smoke.mjs",
+    "smoke:tiles": "node tiles.smoke.mjs",
+    "serve": "node serve.mjs 8791",
+    "probe": "node browser-probe.mjs",
+    "probe:shot": "node browser-probe.mjs dist/play.html ../docs/screenshot-play.png dist/_geom.json",
+    "pixel": "node pixel-audit.mjs ../docs/screenshot-play.png dist/_geom.json"
+  }
+}
