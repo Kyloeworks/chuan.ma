@@ -27,6 +27,7 @@
     "visual:compare": "node web/visual-compare.mjs",
     "ui": "node web/ui-audit.mjs",
     "ui:static": "node web/ui-audit.mjs --static",
+    "ui:shots": "node web/ui-audit.mjs --shots",
     "glyphs": "python web/tools/extract-glyphs.py .cache/LXGWWenKaiTC-Bold.ttf web/glyphs.js"
   },
   "devDependencies": {

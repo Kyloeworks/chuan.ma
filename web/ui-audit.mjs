@@ -25,7 +25,7 @@
  *        node web/ui-audit.mjs --static        → 只跑静态段
  */
 import { spawn } from 'node:child_process';
-import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -34,6 +34,9 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const dist = path.resolve(here, 'dist');
 const ARGV = process.argv.slice(2);
 const STATIC_ONLY = ARGV.includes('--static');
+// --shots：额外把每页 × 每档视口整页截图落盘，供人目视终审（模型读不了图）
+const SHOTS = ARGV.includes('--shots');
+const SHOT_DIR = path.resolve(here, '_ui-shots');
 const PICK = (ARGV.find((a) => !a.startsWith('--')) || '').split(',').filter(Boolean);
 
 const PAGES = PICK.length ? PICK : [
@@ -494,6 +497,18 @@ for (const page of PAGES) {
     for (const k in r.borders) borderAgg[k] = (borderAgg[k] || 0) + r.borders[k];
     for (const k in r.spacings) spaceAgg[k] = (spaceAgg[k] || 0) + r.spacings[k];
     if (r.navCover && r.navCover.gap < 0) say(`      · ⚠ sticky 导航压住首屏内容：gap=${r.navCover.gap}px`);
+    if (SHOTS) {
+      // 整页截图（captureBeyondViewport）——错位/重叠这类问题最终要人眼确认，模型读不了图
+      try {
+        const shotRes = await cmd('Page.captureScreenshot', { format: 'png', captureBeyondViewport: true });
+        const b64 = shotRes && shotRes.result && shotRes.result.data;
+        if (b64) {
+          if (!existsSync(SHOT_DIR)) mkdirSync(SHOT_DIR, { recursive: true });
+          const name = `${page.replace(/\.html$/, '')}__${vp.tag.replace(/\s+/g, '')}.png`;
+          writeFileSync(path.join(SHOT_DIR, name), Buffer.from(b64, 'base64'));
+        }
+      } catch (e) { say(`      · 截图失败：${e.message}`); }
+    }
   }
 }
 
