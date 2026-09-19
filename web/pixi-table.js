@@ -637,6 +637,20 @@
     try { document.documentElement.style.setProperty('--k', String(state.k)); } catch (e) { /* ignore */ }
     return i;
   }
+  /* 只在「舞台尺寸真的变了」时重新定档，返回档位是否发生变化。
+     避免两个问题：① 每帧重算定档没意义；② ResizeObserver 与 --k 改变顶栏高度
+     之间存在回路 —— 档位没变就不重绘，回路自然收敛。 */
+  var lastStageKey = '';
+  function applyTierOnStageChange() {
+    var st = document.getElementById('stage');
+    if (!st) return false;
+    var key = st.clientWidth + 'x' + st.clientHeight;
+    if (key === lastStageKey) return false;
+    lastStageKey = key;
+    var before = state.tier;
+    applyTier();
+    return state.tier !== before;
+  }
 
   function label(text, size, color, weight) {
     return new PIXI.Text({
@@ -1562,7 +1576,7 @@
       rows += '<tr class="' + (s === HUMAN ? 'me' : '') + '"><td>' + seatName(s) + '</td><td>' + status + '</td>' +
         '<td>' + (p.winInfo ? MJT(p.winInfo.tile) : '—') + '</td>' +
         '<td style="font-weight:800;color:' + col + '">' + (net > 0 ? '+' : '') + net + '</td>' +
-        '<td style="color:#5b6470;font-size:12px">' + (parts.join('　') || '—') + '</td></tr>';
+        '<td style="color:var(--sub);font-size:var(--fs-meta)">' + (parts.join('　') || '—') + '</td></tr>';
     }
     var myNet = S ? S.seats[HUMAN].net : 0;
     var headline = t().settled + ' — ' + (G.winCount >= 3 ? t().r3 : t().rw) +
@@ -1570,8 +1584,8 @@
     return '<div class="modal"><h2>' + headline + '</h2>' +
       '<table class="res-table"><thead><tr><th>' + t().colSeat + '</th><th>' + t().status + '</th>' +
       '<th>' + t().winTile + '</th><th>' + t().colNet + '</th><th>' + t().colDetail + '</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-      '<div style="margin-top:8px;font-size:12px;color:#5b6470">' + t().scoreNote + '</div>' +
-      '<div style="margin-top:14px;display:flex;gap:10px"><button class="btn pri" id="againBtn">' + t().again + '</button><button class="btn" id="settingsBtn">' + t().settings + '</button><button class="btn" id="closeRes">' + t().close + '</button></div></div>';
+      '<div style="margin-top:var(--sp-sm);font-size:var(--fs-meta);color:var(--sub)">' + t().scoreNote + '</div>' +
+      '<div style="margin-top:var(--sp-lg);display:flex;gap:var(--sp-md)"><button class="btn pri" id="againBtn">' + t().again + '</button><button class="btn" id="settingsBtn">' + t().settings + '</button><button class="btn" id="closeRes">' + t().close + '</button></div></div>';
   }
   /** 开局设置：难度 / 起手位（庄）/ 教学提示 / 语言 */
   function setupModal() {
@@ -1593,7 +1607,7 @@
       pills('teach', [{ v: '1', t: t().optOn }, { v: '0', t: t().optOff }], state.teachOn ? '1' : '0') + '</div>';
     h += '<div class="sgroup"><div class="slbl">' + t().langLbl + '</div>' +
       pills('lang', [{ v: 'zh', t: '中文' }, { v: 'en', t: 'English' }], state.lang) + '</div>';
-    h += '<div style="margin-top:18px;display:flex;gap:10px">' +
+    h += '<div style="margin-top:var(--sp-xl);display:flex;gap:var(--sp-md)">' +
       '<button class="btn pri" id="startGameBtn">' + t().startGame + '</button>' +
       '<button class="btn" id="helpBtn2">' + t().help + '</button></div></div>';
     return h;
@@ -1610,7 +1624,7 @@
   }
   function helpModal() {
     return '<div class="modal"><h2>' + t().help + '</h2><div class="legendbox">' + t().helpBody + '</div>' +
-      '<div style="margin-top:16px"><button class="btn" id="helpClose">' + t().close + '</button></div></div>';
+      '<div style="margin-top:var(--sp-lg)"><button class="btn" id="helpClose">' + t().close + '</button></div></div>';
   }
   function renderOverlay() {
     var G = state.g, ov = document.getElementById('overlay'), content = null;
@@ -1686,12 +1700,27 @@
       d.dataset.status = 'ok';
       d.textContent = t().diagOk(state.rendererName, state.texCount, 0);
       window.__PIXI_TABLE__ = { ready: true, renderer: state.rendererName, textures: state.texCount };
-      applyTier();                       // 按视口定档（牌与字体同步缩放）
+      applyTierOnStageChange();          // 按舞台尺寸定档（牌与字体同步缩放）
       openSetup();
       render();
+      // ⚠ 档位必须跟着**舞台实际尺寸**走，不能只靠 window.resize。
+      //   踩过的坑：窗口在页面加载完成之后才被改大小（探针的 device-metrics override、
+      //   浏览器恢复会话、或用户把窗口拉大），此时若 resize 事件早于 ready 或被吞掉，
+      //   档位就一直停在首帧的尺寸上 —— 实测舞台已经是 1440×813 仍停留在 xs/k=0.72，
+      //   牌和字全比设计值小 28%，而页面不报任何错。
+      //   另一个反馈回路：--k 本身会改变顶栏高度 → 改变舞台高度 → 又该重新定档。
+      //   ResizeObserver 直接盯舞台，把这个回路闭掉；档位没变就不重绘，避免抖动。
+      if (typeof ResizeObserver === 'function') {
+        var stageEl = document.getElementById('stage');
+        if (stageEl) {
+          new ResizeObserver(function () {
+            if (state.ready && applyTierOnStageChange()) render();
+          }).observe(stageEl);
+        }
+      }
       window.addEventListener('resize', function () {
         if (!state.ready) return;
-        applyTier();
+        applyTierOnStageChange();
         render();
       });
     } catch (e) { fail((e && e.message) || e); }

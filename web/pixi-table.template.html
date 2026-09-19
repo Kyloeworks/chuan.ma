@@ -9,53 +9,71 @@
   /*__TOKENS_CSS__*/
   :root{
     --bg:var(--cm-shell-bg);   /* 牌桌外壳用深色，覆盖 UI 默认浅底 */
-    --k:1;   /* UI 缩放档：由 JS 按视口大小设置（xs/sm/md/lg/xl/xxl/4k 七档） */
+    --k:1;   /* UI 缩放档：由 JS 按视口大小设置（xs/sm/md/lg/xl/xxl/4k 七档，k=0.72~2.5） */
   }
+  /* 版式规则：**基准尺寸取 tokens 的尺度，缩放再由 --k 乘上去**。
+     此前每个尺寸都是字面量 calc(13.5px * var(--k)) 之类，19 个字号各写各的；
+     现在只允许 calc(var(--fs-*) * var(--k))，基准值统一在 tokens.js。
+     例外：触控目标用 max(下限, calc(...)) —— --k 最小档 0.72 时纯乘会缩到 23px，
+     低于 24px 的可点下限（实测牌桌难度按钮只有 17px 高）。 */
   *{box-sizing:border-box}
   html,body{margin:0;height:100%;overflow:hidden}   /* 满屏：永不出现页面滚动条 */
-  body{background:#0f1418;color:var(--ink);font-size:calc(14px * var(--k));line-height:1.45;
+  body{background:var(--cm-shell-bg);color:var(--ink);font-size:calc(var(--fs-dense) * var(--k));
+    line-height:var(--lh-ui);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-    -webkit-font-smoothing:antialiased}
+    -webkit-font-smoothing:antialiased;text-size-adjust:100%}
   .app{height:100%;display:flex;flex-direction:column;overflow:hidden}
-  header{flex:0 0 auto;display:flex;align-items:center;gap:calc(14px * var(--k));
-    padding:calc(8px * var(--k)) calc(16px * var(--k));background:var(--cm-shell-head);color:var(--cm-head-ink);
-    border-bottom:1px solid var(--cm-shell-line);min-height:0}
-  h1{font-size:calc(16px * var(--k));margin:0;white-space:nowrap;color:#fff}
-  .hstat{display:flex;gap:calc(14px * var(--k));align-items:center;font-size:calc(13px * var(--k));
-    color:var(--cm-dim);white-space:nowrap;overflow:hidden}
+  /* 窄屏换行收纳：header 允许折行、行间距由尺度给，次要控件落到第二行，
+     而不是把按钮挤出视口外（实测 375px 下 #newBtn 越出 56px、#langBtn 越出 98px）。 */
+  header{flex:0 0 auto;display:flex;align-items:center;flex-wrap:wrap;
+    column-gap:calc(var(--sp-md) * var(--k));row-gap:calc(var(--sp-sm) * var(--k));
+    padding:calc(var(--sp-sm) * var(--k)) calc(var(--sp-lg) * var(--k));
+    background:var(--cm-shell-head);color:var(--cm-head-ink);border-bottom:var(--bw-hair) solid var(--cm-shell-line);
+    min-height:0}
+  h1{font-size:calc(var(--fs-h3) * var(--k));margin:0;white-space:nowrap;color:#fff}
+  .hstat{display:flex;gap:calc(var(--sp-md) * var(--k));align-items:center;min-width:0;
+    font-size:calc(var(--fs-small) * var(--k));color:var(--cm-dim);white-space:nowrap;overflow:hidden}
   .hstat b{color:#fff;font-variant-numeric:tabular-nums}
-  .diag{font-size:calc(11.5px * var(--k));font-family:var(--mono);padding:calc(2px * var(--k)) calc(9px * var(--k));
-    border-radius:20px;background:var(--cm-shell-line);color:var(--cm-dim);white-space:nowrap;
+  .diag{font-size:calc(var(--fs-meta) * var(--k));font-family:var(--mono);
+    padding:calc(var(--sp-hair) * var(--k)) calc(var(--sp-sm) * var(--k));
+    border-radius:var(--r-full);background:var(--cm-shell-line);color:var(--cm-dim);white-space:nowrap;
     max-width:calc(240px * var(--k));overflow:hidden;text-overflow:ellipsis}
   .diag[data-status=ok]{background:var(--cm-ok-bg);color:var(--cm-ok-ink)}
   .diag[data-status=fail]{background:var(--cm-fail-bg);color:var(--cm-fail-ink)}
   .spacer{flex:1;min-width:0}
-  .diffs{display:flex;align-items:center;gap:calc(6px * var(--k));padding:calc(2px * var(--k)) calc(8px * var(--k));
-    border-radius:20px;background:var(--cm-panel);white-space:nowrap}
-  .dlbl{font-size:calc(11.5px * var(--k));color:var(--cm-faint)}
-  .dbtn{border:1px solid transparent;background:transparent;color:var(--cm-dim);font-size:calc(12px * var(--k));
-    padding:calc(3px * var(--k)) calc(10px * var(--k));border-radius:14px;cursor:pointer;font-weight:600}
+  .diffs{display:flex;align-items:center;gap:calc(var(--sp-xs) * var(--k));
+    padding:calc(var(--sp-hair) * var(--k)) calc(var(--sp-sm) * var(--k));
+    border-radius:var(--r-full);background:var(--cm-panel);white-space:nowrap}
+  .dlbl{font-size:calc(var(--fs-meta) * var(--k));color:var(--cm-faint)}
+  /* 难度档：可点高度有下限，窄屏也不低于 32px（本站统一的可点下限） */
+  .dbtn{border:var(--bw-hair) solid transparent;background:transparent;color:var(--cm-dim);
+    font-size:calc(var(--fs-small) * var(--k));padding:0 calc(var(--sp-sm) * var(--k));
+    min-height:max(32px, calc(var(--sp-3xl) * var(--k)));
+    border-radius:var(--r-full);cursor:pointer;font-weight:600;display:inline-flex;align-items:center}
   .dbtn:hover{color:var(--cm-btn-hi)}
   .dbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
   .dbtn.on[data-d=easy]{background:var(--cm-easy);border-color:var(--cm-easy)}
   .dbtn.on[data-d=hard]{background:var(--cm-hard);border-color:var(--cm-hard)}
   .res-table tr.me td{background:var(--cm-me)}
   .res-table tr.me td:first-child{font-weight:800}
-  .btn{border:1px solid var(--cm-panel-line);background:var(--cm-panel);border-radius:calc(9px * var(--k));
-    padding:calc(5px * var(--k)) calc(12px * var(--k));font-size:calc(12.5px * var(--k));
-    cursor:pointer;color:var(--cm-panel-ink);font-weight:600;white-space:nowrap}
+  .btn{border:var(--bw-hair) solid var(--cm-panel-line);background:var(--cm-panel);
+    border-radius:calc(var(--r-sm) * var(--k));padding:0 calc(var(--sp-md) * var(--k));
+    min-height:max(32px, calc(var(--sp-3xl) * var(--k)));
+    font-size:calc(var(--fs-small) * var(--k));cursor:pointer;color:var(--cm-panel-ink);
+    font-weight:600;white-space:nowrap;display:inline-flex;align-items:center}
   .btn:hover{border-color:var(--cm-link);color:var(--cm-link-hi)}
   .btn.pri{background:var(--accent);color:#fff;border-color:var(--accent)}
   .btn.pri:hover{background:var(--cm-accent-lo);color:#fff}
-  a.btn{text-decoration:none;display:inline-block;color:var(--cm-panel-ink)}
+  a.btn{text-decoration:none;color:var(--cm-panel-ink)}
   /* 桌面动作按钮（胡 / 碰 / 杠 / 过）：随档放大，胡牌额外强调 */
-  #actions{display:flex;gap:calc(14px * var(--k));justify-content:center;align-items:center}
-  #actions .btn{font-size:calc(20px * var(--k));font-weight:900;letter-spacing:.08em;
-    padding:calc(13px * var(--k)) calc(34px * var(--k));border-radius:calc(14px * var(--k));
-    min-width:calc(104px * var(--k));border-width:2px;box-shadow:0 8px 24px rgba(0,0,0,.5)}
+  #actions{display:flex;gap:calc(var(--sp-md) * var(--k));justify-content:center;align-items:center}
+  #actions .btn{font-size:calc(var(--fs-h2) * var(--k));font-weight:900;letter-spacing:.08em;
+    padding:calc(var(--sp-md) * var(--k)) calc(var(--sp-3xl) * var(--k));
+    border-radius:calc(var(--r-md) * var(--k));min-width:calc(104px * var(--k));
+    border-width:var(--bw-rule);box-shadow:0 8px 24px rgba(0,0,0,.5)}
   #actions .btn.pri{background:linear-gradient(180deg,var(--cm-accent-hi),var(--cm-accent-lo));border-color:var(--cm-accent-edge)}
-  #actions .btn.hu{font-size:calc(27px * var(--k));min-width:calc(140px * var(--k));
-    padding:calc(13px * var(--k)) calc(42px * var(--k));color:#3a2600;
+  #actions .btn.hu{font-size:calc(var(--fs-h1) * var(--k));min-width:calc(140px * var(--k));
+    padding:calc(var(--sp-md) * var(--k)) calc(var(--sp-4xl) * var(--k));color:#3a2600;
     background:linear-gradient(180deg,#ffdd72,#e0a418);border-color:#fff3c4;
     animation:hupulse 1s ease-in-out infinite}
   @keyframes hupulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
@@ -64,52 +82,67 @@
   .stage canvas{display:block;position:absolute;inset:0}
   /* 对局记录：浮动抽屉（不再占用牌桌高度） */
   .drawer{position:fixed;right:0;bottom:0;z-index:15;display:flex;flex-direction:column;
-    align-items:flex-end;gap:calc(8px * var(--k));padding:0 calc(12px * var(--k)) calc(12px * var(--k)) 0}
+    align-items:flex-end;gap:calc(var(--sp-sm) * var(--k));
+    padding:0 calc(var(--sp-md) * var(--k)) calc(var(--sp-md) * var(--k)) 0}
   .drawer .panel{display:none;width:min(calc(560px * var(--k)),44vw);max-height:44vh;overflow:auto;
-    background:var(--cm-drawer-bg);border:1px solid var(--cm-drawer-line);border-radius:calc(12px * var(--k));
-    padding:calc(10px * var(--k)) calc(12px * var(--k));color:var(--cm-drawer-ink);
-    box-shadow:0 14px 40px rgba(0,0,0,.55);font-size:calc(12.5px * var(--k))}
+    background:var(--cm-drawer-bg);border:var(--bw-hair) solid var(--cm-drawer-line);
+    border-radius:calc(var(--r-md) * var(--k));padding:calc(var(--sp-md) * var(--k));
+    color:var(--cm-drawer-ink);box-shadow:0 14px 40px rgba(0,0,0,.55);
+    font-size:calc(var(--fs-small) * var(--k))}
   .drawer.open .panel{display:block}
-  .drawer .panel .logcap{font-size:calc(10.5px * var(--k));font-weight:800;letter-spacing:.06em;
-    text-transform:uppercase;color:var(--cm-faint);margin-bottom:calc(6px * var(--k))}
-  .log .n{color:var(--cm-faint);font-family:var(--mono);font-size:calc(11px * var(--k));margin-right:6px}
-  .log div{padding:1px 0}
+  .drawer .panel .logcap{font-size:calc(var(--fs-meta) * var(--k));font-weight:800;letter-spacing:.06em;
+    text-transform:uppercase;color:var(--cm-faint);margin-bottom:calc(var(--sp-sm) * var(--k))}
+  .log .n{color:var(--cm-faint);font-family:var(--mono);font-size:calc(var(--fs-meta) * var(--k));
+    margin-right:calc(var(--sp-xs) * var(--k))}
+  .log div{padding:var(--sp-hair) 0}
   .overlay{position:fixed;inset:0;background:var(--cm-overlay);display:none;align-items:center;
-    justify-content:center;padding:calc(20px * var(--k));z-index:20}
+    justify-content:center;padding:calc(var(--sp-xl) * var(--k));z-index:20}
   .overlay.show{display:flex}
-  .modal{background:var(--card);border-radius:calc(16px * var(--k));padding:calc(22px * var(--k)) calc(24px * var(--k));
-    max-width:min(calc(760px * var(--k)),94vw);width:100%;max-height:92vh;overflow:auto;
-    box-shadow:0 24px 70px rgba(0,0,0,.5)}
-  .modal h2{font-size:calc(18px * var(--k));margin:0 0 calc(6px * var(--k))}
-  .modal .lead{color:var(--sub);font-size:calc(13.5px * var(--k));margin:0 0 calc(14px * var(--k))}
-  .miss-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(12px * var(--k))}
-  .mp{border:2px solid var(--line);border-radius:calc(12px * var(--k));padding:calc(14px * var(--k));
-    text-align:center;cursor:pointer;background:#fff;transition:.12s}
+  .modal{background:var(--card);border-radius:calc(var(--r-lg) * var(--k));
+    padding:calc(var(--sp-xxl) * var(--k));max-width:min(calc(760px * var(--k)),94vw);width:100%;
+    max-height:92vh;overflow:auto;box-shadow:0 24px 70px rgba(0,0,0,.5)}
+  .modal h2{font-size:calc(var(--fs-h3) * var(--k));margin:0 0 calc(var(--sp-sm) * var(--k))}
+  .modal .lead{color:var(--sub);font-size:calc(var(--fs-dense) * var(--k));
+    margin:0 0 calc(var(--sp-lg) * var(--k))}
+  .miss-pick{display:grid;grid-template-columns:repeat(3,1fr);gap:calc(var(--sp-md) * var(--k))}
+  .mp{border:var(--bw-rule) solid var(--line);border-radius:calc(var(--r-md) * var(--k));
+    padding:calc(var(--sp-lg) * var(--k));text-align:center;cursor:pointer;background:#fff;transition:.12s}
   .mp:hover{border-color:var(--accent);transform:translateY(-2px)}
-  .mp .big{font-size:calc(28px * var(--k));font-weight:900}
-  .mp .cnt{font-size:calc(13px * var(--k));color:var(--sub);margin-top:calc(4px * var(--k))}
-  .mp .recs{font-size:calc(11.5px * var(--k));font-weight:800;color:var(--gold);margin-top:calc(5px * var(--k))}
+  .mp .big{font-size:calc(var(--fs-h1) * var(--k));font-weight:900}
+  .mp .cnt{font-size:calc(var(--fs-small) * var(--k));color:var(--sub);
+    margin-top:calc(var(--sp-xs) * var(--k))}
+  .mp .recs{font-size:calc(var(--fs-meta) * var(--k));font-weight:800;color:var(--gold);
+    margin-top:calc(var(--sp-xs) * var(--k))}
   .mp.recommend{border-color:var(--gold);background:#fffdf6}
-  .sgroup{margin-top:calc(16px * var(--k))}
-  .slbl{font-size:calc(12.5px * var(--k));font-weight:800;color:var(--sub);letter-spacing:.04em;
-    margin-bottom:calc(7px * var(--k))}
-  .shint{font-size:calc(12px * var(--k));color:var(--sub);margin-top:calc(6px * var(--k))}
-  .pills{display:flex;gap:calc(8px * var(--k));flex-wrap:wrap}
-  .pill{border:1px solid var(--line);background:#fff;color:#3a4149;font-size:calc(13px * var(--k));
-    font-weight:700;padding:calc(7px * var(--k)) calc(14px * var(--k));border-radius:calc(10px * var(--k));
-    cursor:pointer;transition:.14s}
+  .sgroup{margin-top:calc(var(--sp-lg) * var(--k))}
+  .slbl{font-size:calc(var(--fs-small) * var(--k));font-weight:800;color:var(--sub);letter-spacing:.04em;
+    margin-bottom:calc(var(--sp-sm) * var(--k))}
+  .shint{font-size:calc(var(--fs-meta) * var(--k));color:var(--sub);margin-top:calc(var(--sp-sm) * var(--k))}
+  .pills{display:flex;gap:calc(var(--sp-sm) * var(--k));flex-wrap:wrap}
+  .pill{border:var(--bw-hair) solid var(--line);background:#fff;color:#3a4149;
+    font-size:calc(var(--fs-dense) * var(--k));font-weight:700;
+    padding:0 calc(var(--sp-md) * var(--k));border-radius:calc(var(--r-sm) * var(--k));
+    min-height:max(32px, calc(var(--sp-3xl) * var(--k)));
+    cursor:pointer;transition:.14s;display:inline-flex;align-items:center}
   .pill:hover{border-color:var(--accent);color:var(--accent)}
   .pill.on{background:var(--accent);border-color:var(--accent);color:#fff}
-  .res-table{width:100%;border-collapse:collapse;font-size:calc(13.5px * var(--k));margin-top:calc(10px * var(--k))}
-  .res-table th,.res-table td{padding:calc(7px * var(--k)) calc(9px * var(--k));
-    border-bottom:1px solid var(--line);text-align:left}
-  .res-table th{font-size:calc(11.5px * var(--k));color:var(--sub);text-transform:uppercase;letter-spacing:.03em}
-  .legendbox{font-size:calc(13px * var(--k));color:#3a4149;line-height:1.9}
-  .fallback{padding:16px;color:#e9edf2}
-  .fallback code{font-family:var(--mono);font-size:12px;background:#232b33;padding:2px 6px;border-radius:5px}
-  /* 窄窗口优先保牌桌：先隐藏技术诊断，再隐藏标题 */
+  .res-table{width:100%;border-collapse:collapse;font-size:calc(var(--fs-dense) * var(--k));
+    margin-top:calc(var(--sp-sm) * var(--k))}
+  .res-table th,.res-table td{padding:calc(var(--sp-sm) * var(--k));
+    border-bottom:var(--bw-hair) solid var(--line);text-align:left}
+  .res-table th{font-size:calc(var(--fs-meta) * var(--k));color:var(--sub);
+    text-transform:uppercase;letter-spacing:.03em}
+  .legendbox{font-size:calc(var(--fs-dense) * var(--k));color:#3a4149;line-height:var(--lh-body)}
+  .fallback{padding:var(--sp-lg);color:#e9edf2}
+  .fallback code{font-family:var(--mono);font-size:var(--fs-small);background:var(--cm-shell-line);
+    padding:var(--sp-hair) var(--sp-sm);border-radius:var(--r-sm)}
+  /* 窄窗口优先保牌桌：依次收起技术诊断、标题、状态栏 —— 剩下的换行收纳，不挤出视口 */
   @media (max-width:1180px){ .diag{display:none} }
   @media (max-width:1000px){ h1{display:none} }
+  @media (max-width:640px){
+    .hstat{display:none}              /* 窄屏先把状态数字收起，牌桌本身优先 */
+    header{padding:calc(var(--sp-sm) * var(--k)) calc(var(--sp-md) * var(--k))}
+  }
 </style>
 </head>
 <body>

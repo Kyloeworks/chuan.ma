@@ -25,6 +25,8 @@
     "visual:check": "node web/visual-baseline.mjs --check",
     "visual:table": "node web/visual-baseline.mjs --with-table",
     "visual:compare": "node web/visual-compare.mjs",
+    "ui": "node web/ui-audit.mjs",
+    "ui:static": "node web/ui-audit.mjs --static",
     "glyphs": "python web/tools/extract-glyphs.py .cache/LXGWWenKaiTC-Bold.ttf web/glyphs.js"
   },
   "devDependencies": {

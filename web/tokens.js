@@ -195,6 +195,41 @@
       shadowLayers: 2
     },
 
+    /* ── 版式尺度（全站唯一来源） ──────────────────────────────────────────
+       为什么要有这一节：此前四套样式（site.css / 算牌器 / 牌面页 / 牌桌）各写各的，
+       静态样式里就散出 20 个字号、20 个间距、10 个圆角，同一个语义的元素跨页不一致
+       （h1 分别是 31 / 22 / 24）。「层次」不是靠调某些值做出来的，是靠**只有这几档**做出来的。
+       规则：样式表里不允许出现字面量 px 的字号/间距/圆角，一律引用 --fs-* / --sp-* / --r-* / --lh-*。
+       每档都有明确角色，新增元素时先选角色，不要新造数值。 */
+    scale: {
+      // 字号：9 档 + 1 个显示级数字。小字到正文逐级递增，标题层明确断开
+      fs: {
+        meta: 12,     // 角标 / kicker / pill / 表头 / 页脚 / 图注
+        small: 13,    // 导航链接 / 次级说明 / 小按钮
+        dense: 14,    // 表格正文 / 牌面编码 / 卡片副标题
+        ui: 15,       // 界面正文（工具页，密度优先）
+        body: 16,     // 阅读正文 / 导语
+        h3: 18,       // 三级标题 / 卡片标题
+        h2: 22,       // 二级标题
+        h1: 28,       // 一级标题（全站唯一，跨页一致）
+        num: 40       // 显示级数字（算牌器结果，唯一例外档）
+      },
+      // 间距：4px 体系，hair=2 只用于发丝级微调（如描边内侧留白）
+      // ⚠ 键名直接拼成 CSS 变量名（--sp-<key>），所以带数字的键必须与 CSS 里的写法完全一致。
+      //   踩过：这里写 x3l 生成 --sp-x3l，CSS 里写的是 var(--sp-3xl) —— 全部引用静默失效
+      //   （CSS 变量未定义时整条声明被丢弃，不报错、控制台也不提示）。
+      sp: {
+        hair: 2, xs: 4, sm: 8, md: 12, lg: 16, xl: 20,
+        xxl: 24, '3xl': 32, '4xl': 40, '5xl': 64
+      },
+      // 圆角：3 档 + 胶囊。小控件 / 卡片面板 / 大面板 / 胶囊标签
+      radius: { sm: 6, md: 12, lg: 20, full: 999 },
+      // 边框层次：3 档，含义固定 —— 发丝描边 / 分隔条 / 强调色条
+      bw: { hair: 1, rule: 2, accent: 4 },
+      // 行高：3 档，按「用途」而不是按元素挑
+      lh: { tight: 1.25, ui: 1.5, body: 1.7 }
+    },
+
     /* ── 汉字轮廓（web/glyphs.js，由 tools/extract-glyphs.py 从 OFL 字体抽取） ──
        不再使用系统字体渲染「萬 / 一~九」：跨设备字形不一致，且 SVG 光栅化为
        pixi 纹理时缺字会直接成方块。此处仅记录来源与授权，供审计与再生成。
@@ -212,7 +247,7 @@
 
   /* ── 产出 :root{...}：由 build.mjs 注入模板与 site.css ── */
   T.css = function () {
-    var u = T.ui, f = T.felt, t = T.tile, s = T.shell;
+    var u = T.ui, f = T.felt, t = T.tile, s = T.shell, sc = T.scale;
     var v = [
       // UI 层：沿用既有变量名，样式表可平滑迁移
       ['--bg', u.bg], ['--card', u.card], ['--ink', u.ink], ['--sub', u.sub],
@@ -239,6 +274,17 @@
       ['--cm-drawer-bg', s.drawerBg], ['--cm-drawer-line', s.drawerLine], ['--cm-drawer-ink', s.drawerInk],
       ['--cm-overlay', s.overlay], ['--cm-stage', f.stage]
     ];
+    // 版式尺度：命名与 T.scale 一一对应，样式表只引用这些变量
+    var groups = [
+      ['--fs-', sc.fs, 'px'], ['--sp-', sc.sp, 'px'],
+      ['--r-', sc.radius, 'px'], ['--bw-', sc.bw, 'px'], ['--lh-', sc.lh, '']
+    ];
+    for (var g = 0; g < groups.length; g++) {
+      var pre = groups[g][0], obj = groups[g][1], unit = groups[g][2];
+      for (var k in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, k)) v.push([pre + k, obj[k] + unit]);
+      }
+    }
     var out = ':root{\n';
     for (var i = 0; i < v.length; i++) out += '  ' + v[i][0] + ':' + v[i][1] + ';\n';
     return out + '}\n';

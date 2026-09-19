@@ -182,6 +182,45 @@ npm run glyphs   # regenerate web/glyphs.js (needs fonttools + .cache/NotoSerifT
 
 Which projects this was learned from — and what was deliberately *not* copied — is recorded in [`docs/ui-references.md`](docs/ui-references.md).
 
+### Layout: one scale, and an audit that measures real geometry
+
+The nine pages used to carry four independent type scales — `h1` was 31px on the lessons, 22px in the calculator, 24px on the tile gallery — plus 20 different font sizes, 20 spacing values and 10 corner radii across the stylesheets. Nothing was *wrong*, which is exactly why it read as slightly off everywhere.
+
+Everything now comes from one scale in `tokens.js`:
+
+| Group | Steps | Rule |
+|---|---|---|
+| `--fs-*` | 12 / 13 / 14 / 15 / 16 / 18 / 22 / 28 (+40 for the one display number) | Pick the **role** (meta / small / dense / ui / body / h3 / h2 / h1); do not invent a value |
+| `--sp-*` | 2 / 4 / 8 / 12 / 16 / 20 / 24 / 32 / 40 / 64 | 4px base; `hair` (2px) only for hairlines |
+| `--r-*` | 6 / 12 / 20 / full | Small control / card / large panel / pill |
+| `--bw-*` | 1 / 2 / 4 | Hairline outline / divider rule / accent bar — the meaning is fixed |
+| `--lh-*` | 1.25 / 1.5 / 1.7 | Heading / UI / reading. Chosen by purpose, not by element |
+
+The stylesheets contain **no literal font-size, spacing, radius or border-width** — `npm run ui:static` fails if one appears.
+
+```bash
+npm run ui          # every page × 375/768/1280/1920, real Chrome
+npm run ui:static   # no browser needed: class/CSS consistency, scale, variable closure
+```
+
+`web/ui-audit.mjs` measures the rendered layout rather than reading the CSS, because the failures that matter are the ones you cannot see by reading:
+
+- overflow past the viewport or past a parent's content box
+- **sibling boxes that intersect** (compared per line-fragment, so a wrapped `<b>` does not fake a 75% overlap)
+- text clipped horizontally, line-height tighter than 1.15
+- tap targets below 24px (WCAG 2.5.8), with inline links in running text exempt per that same guideline
+- **CSS custom properties referenced but never defined** — an undefined `var()` makes the whole declaration vanish with no error and no console warning, which is how `--sp-3xl` vs `--sp-x3l` silently disabled every `min-height` in the navigation and both tool pages
+
+SVG internals are excluded from the geometry checks: `<rect>`/`<g>`/`<path>` inside one `<svg>` are *supposed* to overlap. Including them produced 180,000 "overlaps" that were all correct rendering, which is a good way to end up ignoring an audit entirely.
+
+### The table's scale tier follows the stage, not the resize event
+
+`play.html` scales every tile and every label from one factor `--k`, picked from seven tiers by comparing the stage against a 1440×720 design reference. That tier used to be computed on load and on `window.resize` only. If the window changed size *after* the page had initialised — a device-metrics override, a restored session, an early `resize` that arrived before the table was ready — the whole table stayed at the first frame's scale. Measured: stage at 1440×813 but still on the `xs` tier, `k = 0.72`, every tile and label 28% smaller than designed, and nothing reported an error.
+
+The tier now re-derives from the stage's own size through a `ResizeObserver`, with the resulting `--k` closing a feedback loop (the header's padding is itself `--k`-scaled, so the stage height depends on the tier it produced). Re-evaluation is skipped unless the stage size actually changed and the tier actually moved, so the loop converges instead of oscillating.
+
+`browser-probe.mjs` now exports `tier`, `uiK`, `handH` and the stage/window sizes with the screenshot geometry. Diagnosing the case above without them meant guessing at stage dimensions; with them it is one line.
+
 ## The rules engine
 
 The lessons and the tools are driven by the same engine, so a lesson can never disagree with a score:

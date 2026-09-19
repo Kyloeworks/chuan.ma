@@ -7,40 +7,63 @@
 <style>
   /* 设计令牌集中维护在 tokens.js，由 build.mjs 在此展开 :root{...} —— 色值不要硬写 */
   /*__TOKENS_CSS__*/
+  /* 尺度一律引用 --fs-* / --sp-* / --r-* / --bw-* / --lh-*（定义在 tokens.js） */
   *{box-sizing:border-box}
   html,body{margin:0}
-  body{background:var(--bg);color:var(--ink);font-size:15px;line-height:1.6;
+  body{background:var(--bg);color:var(--ink);font-size:var(--fs-ui);line-height:var(--lh-ui);
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
-    -webkit-font-smoothing:antialiased}
-  .wrap{max-width:1060px;margin:0 auto;padding:26px 18px 64px}
-  header{border-bottom:2px solid var(--ink);padding-bottom:14px;margin-bottom:22px}
-  .kicker{font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--sub);font-weight:700}
-  h1{font-size:24px;margin:8px 0 6px;letter-spacing:-.01em}
-  .sub{color:var(--sub);font-size:14px}
-  .meta{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
-  .pill{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;background:#eef1f5;color:var(--sub)}
-  a.pill{text-decoration:none;background:var(--accent);color:#fff}
-  h2{font-size:15px;margin:26px 0 12px;padding-left:10px;border-left:4px solid var(--ink);
-    display:flex;align-items:center;gap:10px}
-  h2 .badge{font-size:12px;font-weight:800;color:#fff;padding:1px 9px;border-radius:20px}
+    -webkit-font-smoothing:antialiased;text-size-adjust:100%}
+  img,svg{max-width:100%}
+  .wrap{max-width:1060px;margin:0 auto;padding:var(--sp-xxl) var(--sp-xl) var(--sp-5xl)}
+  header{border-bottom:var(--bw-rule) solid var(--ink);padding-bottom:var(--sp-md);
+    margin-bottom:var(--sp-xxl)}
+  .kicker{font-size:var(--fs-meta);letter-spacing:.18em;text-transform:uppercase;
+    color:var(--sub);font-weight:700}
+  h1{font-size:var(--fs-h1);line-height:var(--lh-tight);margin:var(--sp-sm) 0;letter-spacing:-.01em}
+  .sub{color:var(--sub);font-size:var(--fs-small);line-height:var(--lh-ui)}
+  .meta{margin-top:var(--sp-md);display:flex;gap:var(--sp-sm);flex-wrap:wrap}
+  .pill{font-size:var(--fs-meta);font-weight:700;padding:var(--sp-xs) var(--sp-md);
+    border-radius:var(--r-full);background:#eef1f5;color:var(--sub);
+    display:inline-flex;align-items:center;min-height:var(--sp-xxl)}
+  /* 静态角标 24px 即可；可点的角标（返回入口）按本站 32px 下限 */
+  a.pill{text-decoration:none;background:var(--accent);color:#fff;min-height:var(--sp-3xl)}
+  a.pill:hover{opacity:.9}
+  h2{font-size:var(--fs-h2);line-height:var(--lh-tight);margin:var(--sp-3xl) 0 var(--sp-md);
+    padding-left:var(--sp-md);border-left:var(--bw-accent) solid var(--ink);
+    display:flex;align-items:center;gap:var(--sp-sm);flex-wrap:wrap}
+  h2 .badge{font-size:var(--fs-meta);font-weight:800;color:#fff;
+    padding:var(--sp-hair) var(--sp-sm);border-radius:var(--r-full)}
   h2 .b0{background:var(--wan)} h2 .b1{background:var(--cm-tiao-tile)} h2 .b2{background:var(--tong)}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:14px}
-  .cell{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 10px 8px;
-    display:flex;flex-direction:column;align-items:center;gap:8px}
-  .cell .cap{font-size:12px;color:var(--sub);font-family:var(--mono)}
-  .tile{width:64px;height:90px;border-radius:9px;box-shadow:0 3px 8px rgba(60,50,30,.14)}
-  .tile.sm{width:30px;height:42px;border-radius:6px}
-  .tile.lg{width:84px;height:118px;border-radius:11px}
-  .felt{background:linear-gradient(160deg,#357453,#245a3f);border-radius:14px;padding:20px 18px;
-    border:1px solid #1e4b34}
-  .felt .rowlbl{color:#cfe6d8;font-size:11.5px;font-weight:700;letter-spacing:.06em;margin:0 0 8px;text-transform:uppercase}
-  .felt .tiles{display:flex;gap:5px;flex-wrap:wrap;align-items:flex-end}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:var(--sp-lg)}
+  .cell{background:var(--card);border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+    padding:var(--sp-md) var(--sp-md) var(--sp-sm);
+    display:flex;flex-direction:column;align-items:center;gap:var(--sp-sm)}
+  .cell .cap{font-size:var(--fs-meta);color:var(--sub);font-family:var(--mono)}
+  .tile{width:64px;height:90px;border-radius:var(--r-sm);box-shadow:0 3px 8px rgba(60,50,30,.14)}
+  .tile.sm{width:30px;height:42px;border-radius:var(--r-sm)}
+  .tile.lg{width:84px;height:118px;border-radius:var(--r-sm)}
+  .felt{background:linear-gradient(160deg,#357453,#245a3f);border-radius:var(--r-lg);
+    padding:var(--sp-xl) var(--sp-lg);border:var(--bw-hair) solid #1e4b34}
+  .felt .rowlbl{color:#cfe6d8;font-size:var(--fs-meta);font-weight:700;letter-spacing:.06em;
+    margin:0 0 var(--sp-sm);text-transform:uppercase}
+  .felt .tiles{display:flex;gap:var(--sp-xs);flex-wrap:wrap;align-items:flex-end}
   .felt .tile{box-shadow:0 3px 7px rgba(0,0,0,.28)}
-  .felt .ops{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
-  .note{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin-top:16px;font-size:13.5px}
-  .note code{font-family:var(--mono);font-size:12.5px;background:#eef1f4;padding:1.5px 6px;border-radius:5px}
-  .sizes{display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap}
-  footer{margin-top:32px;color:var(--sub);font-size:12px;text-align:center}
+  .felt .ops{display:flex;gap:var(--sp-lg);flex-wrap:wrap;align-items:flex-end}
+  .note{background:var(--card);border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+    padding:var(--sp-lg);margin-top:var(--sp-lg);font-size:var(--fs-dense);line-height:var(--lh-body)}
+  .note code{font-family:var(--mono);font-size:var(--fs-small);background:#eef1f4;
+    padding:var(--sp-hair) var(--sp-sm);border-radius:var(--r-sm)}
+  .sizes{display:flex;gap:var(--sp-xl);align-items:flex-end;flex-wrap:wrap}
+  footer{margin-top:var(--sp-3xl);color:var(--sub);font-size:var(--fs-meta);text-align:center}
+
+  /* 窄屏：牌面网格收到两列能放下的宽度，页头间距收紧 */
+  @media(max-width:520px){
+    .wrap{padding:var(--sp-lg) var(--sp-lg) var(--sp-4xl)}
+    h1{font-size:var(--fs-h2)}
+    h2{font-size:var(--fs-h3);margin-top:var(--sp-xxl)}
+    .grid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:var(--sp-md)}
+    .felt{padding:var(--sp-lg) var(--sp-md)}
+  }
 </style>
 </head>
 <body>
@@ -72,9 +95,9 @@
   <div class="felt">
     <div class="rowlbl">我的手牌（点击可打，48×68）</div>
     <div class="tiles" id="fHand"></div>
-    <div class="rowlbl" style="margin-top:16px">牌河 / 副露（28×39）</div>
+    <div class="rowlbl" style="margin-top:var(--sp-lg)">牌河 / 副露（28×39）</div>
     <div class="tiles" id="fSmall"></div>
-    <div class="rowlbl" style="margin-top:16px">对手手牌（牌背）</div>
+    <div class="rowlbl" style="margin-top:var(--sp-lg)">对手手牌（牌背）</div>
     <div class="tiles" id="fBack"></div>
   </div>
 

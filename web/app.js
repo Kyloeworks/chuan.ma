@@ -160,7 +160,7 @@
       { label: t().ex2, ids: [0,1,2,3,4,5,6,7,8, 9,9, 18,19,26] },
       { label: t().ex3, ids: [0,1,3,4,6, 10,11,13,15,16, 20,23,26] }
     ];
-    var html = '<span class="hint" style="margin:0 4px 0 0">' + t().examples + '</span>';
+    var html = '<span class="hint" style="margin:0 var(--sp-xs) 0 0">' + t().examples + '</span>';
     html += exs.map(function (e, i) { return '<button class="btn" data-ex="' + i + '">' + e.label + '</button>'; }).join('');
     var el = document.getElementById('examples');
     el.innerHTML = html;
@@ -223,7 +223,7 @@
         var s = suitOf(o.tile);
         var note = o.shanten === 0 ? Tt.noteTenpai : '';
         out += '<tr' + (i === 0 ? ' class="best"' : '') + '>' +
-          '<td><span class="chip" style="color:' + SUITS[s].hex + '">' + tileName(o.tile) + '</span>' + (i === 0 ? ' <em style="color:var(--good);font-style:normal;font-size:11px">' + Tt.noteBest + '</em>' : '') + '</td>' +
+          '<td><span class="chip" style="color:' + SUITS[s].hex + '">' + tileName(o.tile) + '</span>' + (i === 0 ? ' <em style="color:var(--good);font-style:normal;font-size:var(--fs-meta)">' + Tt.noteBest + '</em>' : '') + '</td>' +
           '<td class="num">' + o.shanten + '</td>' +
           '<td class="num">' + o.ukeireKinds + ' / ' + o.ukeireCount + '</td>' +
           '<td>' + note + '</td></tr>';

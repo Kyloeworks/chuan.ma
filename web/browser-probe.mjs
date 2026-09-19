@@ -461,6 +461,11 @@ try {
       var r = c.getBoundingClientRect(); var L = window.__PIXI_TABLE__.layout || {};
       return JSON.stringify({ dpr: window.devicePixelRatio, rect: { x: r.x, y: r.y, w: r.width, h: r.height },
         W: L.W, H: L.H, boxes: L.boxes, rivers: L.rivers, rows: L.rows,
+        // 档位与缩放系数必须一起导出：牌桌的一切尺寸都随 k 缩放，
+        // 排查「牌变小了」这类问题时，没有 tier/k 就只能靠猜舞台尺寸（踩过）。
+        tier: L.tier, uiK: L.uiK, handH: L.handH, riverH: L.riverH,
+        stage: { w: document.getElementById('stage').clientWidth, h: document.getElementById('stage').clientHeight },
+        win: { w: window.innerWidth, h: window.innerHeight },
         hand: L.handTiles, humanWon: L.humanWon, phase: L.phase });
     })()`);
     const gObj = JSON.parse(geom || '{}');
