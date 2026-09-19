@@ -94,11 +94,28 @@ const tokensCss = new Function('window', tokensSrc + '\n;return window.CMTokens.
 const injectTokens = (text) =>
   text.indexOf('/*__TOKENS_CSS__*/') >= 0 ? text.replace('/*__TOKENS_CSS__*/', () => tokensCss) : text;
 
+// 脚本链顺序有语义：tokens (色板) → glyphs (汉字轮廓) → tiles-ui (牌面) → 页面逻辑。
+// tiles-ui.js 在加载时读取 window.CMTokens / window.CMGlyphs，顺序错了会静默退化
+// （色走兜底、万子无字），构建期无法察觉 —— 由 tiles.smoke.mjs 断言兜住。
+const SCRIPT_CHAIN = ['tokens.js', 'glyphs.js', 'tiles-ui.js'];
+const face = SCRIPT_CHAIN.concat(['app.js']);
+const gallery = SCRIPT_CHAIN.concat(['gallery.js']);
+const table = SCRIPT_CHAIN.concat(['pixi-table.js']);
+
 const targets = [
-  { template: 'template.html', scripts: ['tokens.js', 'tiles-ui.js', 'app.js'], out: 'calculator.html', kernel: true },
-  { template: 'tiles.template.html', scripts: ['tokens.js', 'tiles-ui.js', 'gallery.js'], out: 'tiles.html', kernel: false },
-  { template: 'pixi-table.template.html', scripts: ['tokens.js', 'tiles-ui.js', 'pixi-table.js'], out: 'play.html', kernel: true, pixi: true },
+  { template: 'template.html', scripts: face, out: 'calculator.html', kernel: true },
+  { template: 'tiles.template.html', scripts: gallery, out: 'tiles.html', kernel: false },
+  { template: 'pixi-table.template.html', scripts: table, out: 'play.html', kernel: true, pixi: true },
 ];
+
+for (const tg of targets) {
+  for (const f of tg.scripts) {
+    if (!existsSync(path.resolve(here, f))) {
+      console.error(`ERROR 构建链缺少 web/${f} —— 万子牌面会退化成空白（跑 npm run glyphs 可再生成 glyphs.js）`);
+      process.exit(1);
+    }
+  }
+}
 
 for (const tg of targets) {
   const app = tg.scripts.map(read).join('\n;\n');

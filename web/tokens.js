@@ -187,11 +187,26 @@
     fx: {
       tileGloss: 1,      // 牌身高光/内阴影总开关系数 0~1
       panelDepth: 1,     // 内凹面板的凹陷强度
+      edgeLight: 1,      // 凸起牌身左右内缘的受光/背光强度（统一光源＝左上）
       weave: 1,          // 牌背织纹强度
       feltSlub: 2600,    // 绒布拉丝根数
       feltWeave: 1400,   // 绒布斜织纹根数
       feltVignette: true,
       shadowLayers: 2
+    },
+
+    /* ── 汉字轮廓（web/glyphs.js，由 tools/extract-glyphs.py 从 OFL 字体抽取） ──
+       不再使用系统字体渲染「萬 / 一~九」：跨设备字形不一致，且 SVG 光栅化为
+       pixi 纹理时缺字会直接成方块。此处仅记录来源与授权，供审计与再生成。
+       字体风格选了**楷体**而非宋体：宋体横画天生细（一二三 的墨量只有其他字
+       三分之一），而牌面需要匀重笔画；牌河尺寸下楷体的「一」墨迹是宋体的 1.6 倍。 */
+    glyphs: {
+      source: 'LXGW WenKai TC Bold',
+      upstream: 'https://github.com/lxgw/LxgwWenKai',
+      license: 'SIL Open Font License 1.1',
+      licenseFile: 'docs/OFL.txt',
+      generator: 'web/tools/extract-glyphs.py',
+      chars: '一二三四五六七八九萬'
     }
   };
 

@@ -51,7 +51,7 @@
     <div class="sub">33 个程序化 SVG 牌面（万 / 条 / 筒 各 1–9 + 牌背）· 矢量 · 任意尺寸清晰 · 零依赖 · 免授权</div>
     <div class="meta">
       <span class="pill">27 张正牌</span><span class="pill">1 张牌背</span>
-      <span class="pill">viewBox 60×84</span><span class="pill">SVG</span><span class="pill">~10 KB</span>
+      <span class="pill">viewBox 60×84</span><span class="pill">SVG</span><span class="pill">v3 内嵌字形</span>
       <a class="pill" href="index.html">&#8592; 返回 chuan.ma</a>
     </div>
   </header>
@@ -79,15 +79,26 @@
   </div>
 
   <div class="note">
-    <b>用法</b>：页面里引入 <code>tiles-ui.js</code> 后，
+    <b>用法</b>：页面里按顺序引入 <code>tokens.js</code> → <code>glyphs.js</code> → <code>tiles-ui.js</code> 后，
     <code>MJTiles.face(tileId)</code> 返回牌面 SVG 字符串（tileId 0–26），
     <code>MJTiles.back()</code> 返回牌背。<br>
     容器决定尺寸（SVG 用 <code>width:100%;height:100%</code> + viewBox 自适应），
     推荐比例 60:84（约 0.714），最小可用 24×34。<br>
-    <b>配色</b>：万＝靛黑字 + 朱红「萬」；条＝竹绿；筒＝蓝环 + 朱红靶心；牌面象牙白。
+    <b>配色</b>：万＝靛黑刻字 + 朱红「萬」；条＝竹绿圆柱；筒＝蓝球面 + 朱红靶心；牌面象牙白。<br>
+    <b>v3 实体质感</b>：全牌面共用<b>一个光源（左上 45°）</b>。牌身是<b>凸起</b>
+    （垂直渐变顶亮底暗 + 左上偏置的柔和高光 + 左内缘亮线 / 右内缘暗线 + 底部暗边）；
+    面板是<b>凹陷</b>，四壁明暗与凸起<b>完全相反</b>；万为刻字（下方 0.9 单位亮色副本露边）；
+    条为圆柱（横向暗→亮→暗）；筒为球面（径向渐变 + 左上高光点）；牌背有斜织纹。
+    色板与强度集中在 <code>tokens.js</code>，绘制代码不硬写色值。<br>
+    <b>v3 字体</b>：汉字是<b>内嵌矢量路径</b>（<code>glyphs.js</code>，由
+    <code>tools/extract-glyphs.py</code> 从霞鹜文楷 TC Bold 抽取，SIL OFL 1.1，见
+    <code>docs/OFL.txt</code>）—— 不依赖系统字体，任何设备、任何尺寸下字形一致，
+    光栅化成图片纹理时也不会缺字。<br>
+    <b>改动后请跑</b> <code>npm run smoke</code>、
+    <code>npm run visual</code> 比对视觉指纹、<code>npm run visual:compare</code> 出前后对照图。
   </div>
 
-  <footer>川麻工具集 · UI 资产 · 程序化 SVG 生成，无第三方素材 · 2026-09-17</footer>
+  <footer>川麻工具集 · UI 资产 · 程序化 SVG 生成，无第三方图片素材 · 字形轮廓 OFL 1.1 · v3 · 2026-09-19</footer>
 </div>
 <script>/*__APP__*/</script>
 </body>

@@ -1,26 +1,24 @@
-/* 川麻麻将牌面资产 v3 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背）
+/* 牌面资产 v2 —— 归档快照，仅用于对照与回归，**不是运行时代码**。
+ * 来源：git 4f7fe86:web/tiles-ui.js
+ * 由 web/fix-baseline.cjs 导出。运行时代码是 web/tiles-ui.js。
+ */
+/* 川麻麻将牌面资产 v2 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背）
  * ---------------------------------------------------------------------------
  * 用法：MJTiles.face(tileId) / MJTiles.back() / MJTiles.CN
  *   tileId 0..26 =>  suit = floor(id/9)  rank = id%9+1
  *
- * 视觉契约（v3，2026-09-19 吸收开源资产经验后升级）：
- *   - 统一光源：**左上方**（方位角约 45°）。牌身倒角高光、内凹面板明暗、
- *     条/筒的受光面全部服从这一个方向 —— 此前牌身假设纯顶光、筒心高光却在左上，互相矛盾。
- *   - 牌身是**凸起**：垂直渐变「顶亮 → 底暗」+ 左上偏置的柔和高光 + 底部外缘暗边
+ * 视觉契约（v2，2026-09-19 质感升级）：
+ *   - 牌身是**凸起**：垂直渐变「顶亮 → 底暗」+ 顶部外缘高光 + 底部外缘暗边
  *   - 面板是**凹陷**：顶部内侧暗（上壁背光）+ 底部内侧亮（下壁受光）—— 方向与牌身相反
- *   - 汉字是**内嵌矢量路径**（见下方字形引擎），不再依赖系统字体
- *   - 花色是**实体**：条=圆柱（横向暗→亮→暗）、筒=球面（径向渐变 + 左上高光点）
+ *   - 花色是**实体**：万=刻字（下方 0.9 单位亮色副本露边）、条=圆柱（横向暗→亮→暗）、
+ *     筒=球面（径向渐变 + 左上高光点）
  *   - 色板与强度全部来自 web/tokens.js，本文件不硬写色值
  *
- * ⚠ 三个必须守住的约束（破坏会静默失效）：
+ * ⚠ 两个必须守住的约束（破坏会静默失效）：
  *   1. 外层 <svg> 必须原样保留 `width="100%" height="100%"` ——
  *      pixi-table.js 的 svgToTexture() 靠字符串精确匹配它来换尺寸，换了就渲不出纹理。
  *   2. 每张牌自带的 <defs> 渐变 id 必须**全局唯一**（自增 uid 保证）——
  *      同一页面/同一张联系表里 33 张牌同框时，同名 id 会互相抢渐变（浏览器只认第一个）。
- *   3. 必须在 tiles-ui.js **之前**引入 web/glyphs.js（汉字轮廓数据）——
- *      否则万子退化成空白面板（face() 不报错，只是没字）。
- *
- * 依赖：web/tokens.js（色板）、web/glyphs.js（汉字轮廓）。两者缺失时各自走兜底/跳过。
  * ---------------------------------------------------------------------------
  */
 (function () {
@@ -40,8 +38,7 @@
   var FX = {
     gloss: pick('fx.tileGloss', 1),
     panel: pick('fx.panelDepth', 1),
-    weave: pick('fx.weave', 1),
-    edge: pick('fx.edgeLight', 1)
+    weave: pick('fx.weave', 1)
   };
 
   var COL = {
@@ -112,69 +109,6 @@
   function py(v) { return Y0 + v * (Y1 - Y0); }
   function f1(n) { return (Math.round(n * 10) / 10).toFixed(1); }
 
-  /* ================= 汉字轮廓引擎（内嵌矢量路径，零字体依赖） =================
-   * 为什么不用 <text font-family="KaiTi,SimSun">：
-   *   1. 楷体/宋体是 Windows 专有字体 —— Linux / Android / iOS 上会静默回退成
-   *      黑体或默认 serif，「萬」和数字的字形与字距在每台设备上都不一样。
-   *   2. SVG 被当作图片光栅化时（pixi-table.js 的 svgToTexture 走的就是这条路：
-   *      Image → canvas → 纹理），字体解析更不可控，缺字直接成方块。
-   *   3. 把专有字体的派生轮廓公开发布有授权风险。
-   *
-   * 做法：web/tools/extract-glyphs.py 从 Noto Serif TC Bold（SIL OFL 1.1）抽出
-   * 十个字形的轮廓（字体 em 坐标系，upem=1000），运行期做一次仿射拟合后直接画 <path>。
-   * 这是权威开源牌面资产（FluffyStuff/riichi-mahjong-tiles）的通行做法：
-   * 全部手绘/追踪路径、零字体依赖 —— 跨设备像素一致的前提条件。
-   * ========================================================================= */
-  var GL = (typeof window !== 'undefined' && window.CMGlyphs) || null;
-
-  /* 对路径做仿射拟合。支持的命令集：M L H V C Q Z
-   *   —— 与 web/tools/extract-glyphs.py 的 ALLOWED_CMDS 必须保持同步。
-   * C / Q / L / M 的参数成对（C 三对、Q 两对）；**H / V 是单坐标命令**
-   *   —— CJK 轮廓里横竖笔画大量使用（实测 67 个 H、44 个 V），
-   *     漏掉它们会让后续坐标整体错位，产出一串 NaN：字会整块消失，
-   *     而且页面不报任何错。所以这里不静默兜底，命令不认识 / 参数不成对就抛错。
-   * Z 无参数。仿射变换下贝塞尔控制点同步变换，曲线形状不变。 */
-  var PATH_CMDS = 'MLHVCQZ';
-  function fitPath(d, sx, sy, dx, dy) {
-    var out = '', re = /([A-Za-z])([^A-Za-z]*)/g, m;
-    while ((m = re.exec(d)) !== null) {
-      var c = m[1].toUpperCase();
-      if (PATH_CMDS.indexOf(c) < 0) throw new Error('fitPath: 未支持的路径命令 "' + m[1] + '"');
-      var n = (m[2].match(/-?\d*\.?\d+/g) || []).map(parseFloat);
-      out += c;
-      if (c === 'Z') continue;
-      var i;
-      if (c === 'H') { for (i = 0; i < n.length; i++) out += (i ? ' ' : '') + f1(n[i] * sx + dx); continue; }
-      if (c === 'V') { for (i = 0; i < n.length; i++) out += (i ? ' ' : '') + f1(n[i] * sy + dy); continue; }
-      if (n.length % 2) {
-        throw new Error('fitPath: ' + c + ' 的参数为奇数个（' + n.length + '），命令集假定已变');
-      }
-      for (i = 0; i < n.length; i += 2) {
-        out += (i ? ' ' : '') + f1(n[i] * sx + dx) + ' ' + f1(n[i + 1] * sy + dy);
-      }
-    }
-    return out;
-  }
-
-  /* 把某个字以「墨迹包围盒中心」对齐到 (cx, cy)，字号 size＝em 边长（viewBox 单位）。
-     用墨迹中心而非字体基线：牌面是图形排版，一 / 二 / 萬 的墨迹在 em 里的位置
-     各不相同（「一」只有 0.15em 高、居中在 0.46em 处），按基线对齐会让它明显偏上。 */
-  var pathCache = {};
-  function glyphPath(ch, cx, cy, size) {
-    if (!GL || !GL.glyphs || !GL.glyphs[ch]) return null;
-    var key = ch + '|' + cx + '|' + cy + '|' + size;
-    if (pathCache[key]) return pathCache[key];
-    var g = GL.glyphs[ch], s = size / GL.upem;
-    var bx = (g.b[0] + g.b[2]) / 2, by = (g.b[1] + g.b[3]) / 2;
-    // 字体坐标系 y 轴向上、SVG 向下 —— sy 取负实现翻转
-    var d = fitPath(g.d, s, -s, cx - bx * s, cy + by * s);
-    pathCache[key] = d;
-    return d;
-  }
-  function glyphsReady() {
-    return !!(GL && GL.glyphs && GL.glyphs['萬']);
-  }
-
   /* ---------------- 每张牌一个 defs 收集器（同参数的渐变在本张牌内复用） ---------------- */
   function Defs() { this.list = []; this.cache = {}; }
   Defs.prototype.linear = function (role, x1, y1, x2, y2, stops) {
@@ -215,71 +149,37 @@
     return this.list.length ? '<defs>' + this.list.join('') + '</defs>' : '';
   };
 
-  /* ================= 牌体：凸起牌身 + 凹陷面板 =================
-   * 单一光源：左上方（方位角 45°、略高于水平），全牌面服从这一个方向。
-   * 按朗伯余弦定律，凸起的四壁受光：
-   *   上壁（法线朝上）受光 → 顶部高光；下壁背光 → 底部暗边
-   *   左壁受光 → 左内缘亮线；右壁背光 → 右内缘暗线
-   * 凹陷面板的四壁**方向完全相反**（这正是凹与凸的判据，也是这里唯一不能省的一步）：
-   *   上内壁投影 → 顶部内侧暗；下内壁受光 → 底部内侧亮
-   *   左内壁背光 → 左内缘暗；右内壁受光 → 右内缘亮
-   * 光强用多档渐变而非两档线性 —— 两档会在带边缘留下可见的硬转折。
-   * （参考资产 FluffyStuff/riichi-mahjong-tiles 的 Front.svg 用高斯模糊的白/黑异形色块
-   *   表达同一件事；我们改用多档渐变，因为牌面还要经 canvas 光栅化成 pixi 纹理，
-   *   滤镜在 Image→canvas 这条路上既慢又不可靠。）
-   */
+  /* ================= 牌体：凸起牌身 + 凹陷面板 ================= */
   function shell(D) {
     var bodyG = D.linear('body', 0, 0, 0, 1, [
       [0, COL.bodyTop], [0.5, COL.bodyMid], [1, COL.bodyBot]
     ]);
+    var footG = D.linear('foot', 0, 0, 0, 1, [
+      [0, COL.innerLo, 0], [1, COL.innerLo]
+    ]);
     var panelG = D.linear('panel', 0, 0, 0, 1, [
       [0, COL.pTop], [1, COL.pBot]
     ]);
-    // 凸起 · 顶部高光：轴向略向右下偏置 → 左上更亮，读作「光从左上来」
-    var topHi = D.linear('toplit', 0, 0, 0.3, 1, [
-      [0, COL.innerHi, FX.gloss], [0.45, COL.innerHi, FX.gloss * 0.34], [1, COL.innerHi, 0]
-    ]);
-    // 凸起 · 底部暗边（垂直落回桌面，纯垂直方向才是对的）
-    var footLo = D.linear('foot', 0, 0, 0, 1, [
-      [0, COL.innerLo, 0], [0.55, COL.innerLo, COL.innerLo === '' ? 0 : 1], [1, COL.innerLo]
-    ]);
-    // 凸起 · 左内缘亮线 / 右内缘暗线
-    var edgeHi = D.linear('ledge', 0, 0, 1, 0, [
-      [0, COL.innerHi, FX.edge], [1, COL.innerHi, 0]
-    ]);
-    var edgeLo = D.linear('redge', 0, 0, 1, 0, [
-      [0, COL.innerLo, 0], [1, COL.innerLo, FX.edge]
-    ]);
-    // 凹陷面板 · 上内壁投影 / 下内壁受光
+    // 凹陷面板：上壁背光（暗，向下渐隐）/ 下壁受光（亮，向上渐隐）
     var panTopSh = D.linear('pshade', 0, 0, 0, 1, [
       [0, COL.pInLo, FX.panel], [1, COL.pInLo, 0]
     ]);
     var panBotHi = D.linear('plit', 0, 1, 0, 0, [
       [0, COL.pInHi, FX.panel], [1, COL.pInHi, 0]
     ]);
-    // 凹陷面板 · 左内壁背光 / 右内壁受光（与凸起相反）
-    var panLeftSh = D.linear('pleft', 0, 0, 1, 0, [
-      [0, COL.pInLo, FX.panel], [1, COL.pInLo, 0]
-    ]);
-    var panRightHi = D.linear('pright', 0, 0, 1, 0, [
-      [0, COL.pInHi, 0], [1, COL.pInHi, FX.panel]
-    ]);
     var clip = D.clip('bodyclip', '<rect x="' + BX + '" y="' + BY + '" width="' + BW +
       '" height="' + BH + '" rx="' + BR + '"/>');
-    var pclip = D.clip('panelclip', '<rect x="' + PX + '" y="' + PY +
-      '" width="' + PW + '" height="' + PH + '" rx="' + PR + '"/>');
 
     var s = '';
     // 牌身
     s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="' + BR +
       '" fill="url(#' + bodyG + ')"/>';
     s += '<g clip-path="url(#' + clip + ')">';
+    // 顶部外缘高光（凸起的受光棱）
     s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + f1(9 * FX.gloss) +
-      '" fill="url(#' + topHi + ')"/>';
-    s += '<rect x="' + BX + '" y="' + f1(BY + BH - 11) + '" width="' + BW + '" height="11" fill="url(#' + footLo + ')"/>';
-    s += '<rect x="' + BX + '" y="' + BY + '" width="3" height="' + BH + '" fill="url(#' + edgeHi + ')"/>';
-    s += '<rect x="' + f1(BX + BW - 3.5) + '" y="' + BY + '" width="3.5" height="' + BH +
-      '" fill="url(#' + edgeLo + ')"/>';
+      '" fill="url(#' + D.linear('toplit', 0, 0, 0, 1, [[0, COL.innerHi, FX.gloss], [1, COL.innerHi, 0]]) + ')"/>';
+    // 底部外缘内阴影（凸起落回桌面）
+    s += '<rect x="' + BX + '" y="' + f1(BY + BH - 11) + '" width="' + BW + '" height="11" fill="url(#' + footG + ')"/>';
     s += '</g>';
     // 牌身描边（画在渐变之上，边缘才干净）
     s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="' + BR +
@@ -287,49 +187,34 @@
     // 内凹面板
     s += '<rect x="' + PX + '" y="' + PY + '" width="' + PW + '" height="' + PH + '" rx="' + PR +
       '" fill="url(#' + panelG + ')" stroke="' + COL.pEdge + '" stroke-width="0.9"/>';
-    s += '<g clip-path="url(#' + pclip + ')">';
+    s += '<g clip-path="url(#' + D.clip('panelclip', '<rect x="' + PX + '" y="' + PY +
+      '" width="' + PW + '" height="' + PH + '" rx="' + PR + '"/>') + ')">';
     s += '<rect x="' + PX + '" y="' + PY + '" width="' + PW + '" height="4" fill="url(#' + panTopSh + ')"/>';
     s += '<rect x="' + PX + '" y="' + f1(PY + PH - 3) + '" width="' + PW + '" height="3" fill="url(#' + panBotHi + ')"/>';
-    s += '<rect x="' + PX + '" y="' + PY + '" width="2.5" height="' + PH + '" fill="url(#' + panLeftSh + ')"/>';
-    s += '<rect x="' + f1(PX + PW - 2.5) + '" y="' + PY + '" width="2.5" height="' + PH +
-      '" fill="url(#' + panRightHi + ')"/>';
     s += '</g>';
     return s;
   }
 
   /* ================= 万：刻字 ================= */
   var CN = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
-
-  /* 万子版式：数字占上段、萬占下段，两块墨迹合起来在面板里垂直居中。
-     字号以「最高墨迹」为准统一取一个值 —— 若让每个数字各自撑满，
-     一（墨迹只有 0.15em 高）会胖得离谱、九（0.93em）又会被压小。
-
-     下面的数值是按「墨迹包围盒」而不是 em 框推出来的（Noto Serif TC Bold 实测）：
-       九 墨迹高 0.933em → size 29 时 27.1 单位，是九个字里最高的那个，它决定上段高度；
-       萬 墨迹高 0.937em → size 26 时 24.4 单位。
-     当前排布：数字 12.8~39.8、萬 46.9~71.2，面板内区 5~79 —— 上下各留约 8 单位，
-     两段之间留 7 单位。改字号时务必同步跑 npm run smoke（tiles.smoke 会断言不越界、不重叠）。 */
-  var WAN_LAYOUT = { numSize: 29, numY: 26.3, charSize: 26, charY: 59.1, cx: 30 };
+  var KAI = 'KaiTi,STKaiti,SimSun,STSong,serif';
 
   function engraved(D, glyph, cy, size, fillTop, fillBot, hi, lo, role) {
-    var cx = WAN_LAYOUT.cx;
-    var d = glyphPath(glyph, cx, cy, size);
-    if (d === null) return '';        // 轮廓缺失时整字跳过，不吐出半个字
     var g = D.linear(role, 0, 0, 0, 1, [[0, fillTop], [0.62, fillTop], [1, fillBot]]);
     var s = '';
     // 下移 0.9 的亮色副本：凹刻的下壁受光，在字下方露出亮边
-    s += '<path d="' + glyphPath(glyph, cx, cy + 0.9, size) + '" fill="' + hi + '"/>';
+    s += '<text x="30" y="' + f1(cy + 0.9) + '" text-anchor="middle" font-size="' + size +
+      '" font-weight="700" font-family="' + KAI + '" fill="' + hi + '">' + glyph + '</text>';
     // 上移 0.35 的暗色副本：上壁背光
-    s += '<path d="' + glyphPath(glyph, cx, cy - 0.35, size) + '" fill="' + lo + '"/>';
-    s += '<path d="' + d + '" fill="url(#' + g + ')"/>';
+    s += '<text x="30" y="' + f1(cy - 0.35) + '" text-anchor="middle" font-size="' + size +
+      '" font-weight="700" font-family="' + KAI + '" fill="' + lo + '">' + glyph + '</text>';
+    s += '<text x="30" y="' + cy + '" text-anchor="middle" font-size="' + size +
+      '" font-weight="700" font-family="' + KAI + '" fill="url(#' + g + ')">' + glyph + '</text>';
     return s;
   }
   function wanContent(D, n) {
-    var L = WAN_LAYOUT;
-    return engraved(D, CN[n], L.numY, L.numSize, COL.wanInk, COL.wanInkBot,
-      COL.wanHi, COL.wanInkLo, 'wanink') +
-      engraved(D, '萬', L.charY, L.charSize, COL.wanChar, COL.wanCharBot,
-        COL.wanCharHi, COL.wanCharLo, 'wanchar');
+    return engraved(D, CN[n], 34, 30, COL.wanInk, COL.wanInkBot, COL.wanHi, COL.wanInkLo, 'wanink') +
+      engraved(D, '萬', 70, 27, COL.wanChar, COL.wanCharBot, COL.wanCharHi, COL.wanCharLo, 'wanchar');
   }
 
   /* ================= 条：圆柱竹节 ================= */
@@ -492,9 +377,5 @@
       'width="100%" height="100%" style="display:block;border-radius:8px">' + D.out() + s + '</svg>';
   }
 
-  window.MJTiles = {
-    face: face, back: back, CN: CN, version: '3.0.0',
-    glyphsReady: glyphsReady,      // 万子字形轮廓是否就位（构建链完整性自检用）
-    WAN_LAYOUT: WAN_LAYOUT         // 万子版式参数（冒烟测试据此校验墨迹不越界）
-  };
+  window.MJTiles = { face: face, back: back, CN: CN, version: '2.0.0' };
 })();

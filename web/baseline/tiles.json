@@ -1,6 +1,6 @@
 {
   "__meta": {
-    "builtAt": "2026-09-18T17:35:12.385Z",
+    "builtAt": "2026-09-19T11:17:33.233Z",
     "tiles": 28,
     "raster": "132x185",
     "tokensVersion": "1.0.0",
@@ -8,328 +8,328 @@
   },
   "tiles": {
     "face0": {
-      "ink": 0.912,
-      "lumMean": 239.235,
-      "lumStd": 20.071,
-      "grad": 12.371,
+      "ink": 0.891,
+      "lumMean": 238.688,
+      "lumStd": 20.796,
+      "grad": 12.933,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
         "blue": 0
       },
-      "detail": 5.407
+      "detail": 5.676
     },
     "face1": {
-      "ink": 0.907,
-      "lumMean": 239.136,
-      "lumStd": 20.156,
-      "grad": 12.013,
+      "ink": 0.883,
+      "lumMean": 238.496,
+      "lumStd": 20.943,
+      "grad": 12.235,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
         "blue": 0
       },
-      "detail": 5.752
+      "detail": 6.054
     },
     "face2": {
-      "ink": 0.902,
-      "lumMean": 239.021,
-      "lumStd": 20.24,
-      "grad": 12.047,
+      "ink": 0.874,
+      "lumMean": 238.3,
+      "lumStd": 21.047,
+      "grad": 12.176,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
-        "blue": 0
+        "blue": 0.001
       },
-      "detail": 6.055
+      "detail": 6.454
     },
     "face3": {
-      "ink": 0.892,
-      "lumMean": 238.77,
-      "lumStd": 20.431,
-      "grad": 11.288,
+      "ink": 0.859,
+      "lumMean": 237.912,
+      "lumStd": 21.33,
+      "grad": 11.727,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
-        "blue": 0
+        "blue": 0.001
       },
-      "detail": 6.75
+      "detail": 7.117
     },
     "face4": {
-      "ink": 0.894,
-      "lumMean": 238.82,
-      "lumStd": 20.396,
-      "grad": 11.776,
+      "ink": 0.864,
+      "lumMean": 238.107,
+      "lumStd": 21.199,
+      "grad": 12.127,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
-        "blue": 0
+        "blue": 0.002
       },
-      "detail": 6.476
+      "detail": 6.837
     },
     "face5": {
-      "ink": 0.904,
-      "lumMean": 239.02,
-      "lumStd": 20.24,
-      "grad": 11.676,
+      "ink": 0.875,
+      "lumMean": 238.303,
+      "lumStd": 21.063,
+      "grad": 12.482,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
         "blue": 0
       },
-      "detail": 6.141
+      "detail": 6.594
     },
     "face6": {
-      "ink": 0.9,
-      "lumMean": 238.967,
-      "lumStd": 20.286,
-      "grad": 11.806,
+      "ink": 0.875,
+      "lumMean": 238.338,
+      "lumStd": 21.063,
+      "grad": 12.606,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
-        "blue": 0
+        "blue": 0.001
       },
-      "detail": 6.168
+      "detail": 6.409
     },
     "face7": {
-      "ink": 0.908,
-      "lumMean": 239.149,
-      "lumStd": 20.145,
-      "grad": 12.208,
+      "ink": 0.881,
+      "lumMean": 238.458,
+      "lumStd": 20.973,
+      "grad": 12.534,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
         "blue": 0
       },
-      "detail": 5.838
+      "detail": 6.377
     },
     "face8": {
-      "ink": 0.899,
-      "lumMean": 238.945,
-      "lumStd": 20.303,
-      "grad": 11.641,
+      "ink": 0.871,
+      "lumMean": 238.246,
+      "lumStd": 21.137,
+      "grad": 12.492,
       "chroma": {
-        "red": 0.033,
+        "red": 0.052,
         "green": 0,
         "blue": 0
       },
-      "detail": 6.382
+      "detail": 6.725
     },
     "face9": {
       "ink": 0.737,
-      "lumMean": 237.335,
-      "lumStd": 21.428,
-      "grad": 11.219,
+      "lumMean": 237.068,
+      "lumStd": 21.727,
+      "grad": 11.267,
       "chroma": {
         "red": 0.011,
         "green": 0.196,
         "blue": 0
       },
-      "detail": 5.484
+      "detail": 5.609
     },
     "face10": {
       "ink": 0.907,
-      "lumMean": 239.711,
-      "lumStd": 19.409,
-      "grad": 11.109,
+      "lumMean": 239.494,
+      "lumStd": 19.702,
+      "grad": 11.162,
       "chroma": {
         "red": 0,
         "green": 0.04,
         "blue": 0
       },
-      "detail": 3.939
+      "detail": 4.064
     },
     "face11": {
       "ink": 0.892,
-      "lumMean": 239.465,
-      "lumStd": 19.673,
-      "grad": 10.921,
+      "lumMean": 239.244,
+      "lumStd": 19.965,
+      "grad": 10.969,
       "chroma": {
         "red": 0,
         "green": 0.052,
         "blue": 0
       },
-      "detail": 4.35
+      "detail": 4.476
     },
     "face12": {
       "ink": 0.883,
-      "lumMean": 239.483,
-      "lumStd": 19.627,
-      "grad": 11.052,
+      "lumMean": 239.26,
+      "lumStd": 19.924,
+      "grad": 11.104,
       "chroma": {
         "red": 0,
         "green": 0.062,
         "blue": 0
       },
-      "detail": 4.712
+      "detail": 4.838
     },
     "face13": {
       "ink": 0.877,
-      "lumMean": 239.182,
-      "lumStd": 19.855,
-      "grad": 11.154,
+      "lumMean": 238.957,
+      "lumStd": 20.147,
+      "grad": 11.208,
       "chroma": {
         "red": 0,
         "green": 0.065,
         "blue": 0
       },
-      "detail": 4.982
+      "detail": 5.107
     },
     "face14": {
       "ink": 0.855,
-      "lumMean": 239.039,
-      "lumStd": 20.001,
-      "grad": 11.317,
+      "lumMean": 238.808,
+      "lumStd": 20.297,
+      "grad": 11.373,
       "chroma": {
         "red": 0,
         "green": 0.087,
         "blue": 0
       },
-      "detail": 5.501
+      "detail": 5.626
     },
     "face15": {
       "ink": 0.868,
-      "lumMean": 239.255,
-      "lumStd": 19.937,
-      "grad": 12.387,
+      "lumMean": 239.027,
+      "lumStd": 20.232,
+      "grad": 12.474,
       "chroma": {
         "red": 0,
         "green": 0.074,
         "blue": 0
       },
-      "detail": 5.506
+      "detail": 5.631
     },
     "face16": {
       "ink": 0.85,
-      "lumMean": 238.901,
-      "lumStd": 20.128,
-      "grad": 11.204,
+      "lumMean": 238.669,
+      "lumStd": 20.423,
+      "grad": 11.261,
       "chroma": {
         "red": 0,
         "green": 0.09,
         "blue": 0
       },
-      "detail": 5.963
+      "detail": 6.089
     },
     "face17": {
       "ink": 0.845,
-      "lumMean": 238.911,
-      "lumStd": 20.101,
-      "grad": 11.336,
+      "lumMean": 238.677,
+      "lumStd": 20.398,
+      "grad": 11.393,
       "chroma": {
         "red": 0,
         "green": 0.096,
         "blue": 0
       },
-      "detail": 6.268
+      "detail": 6.393
     },
     "face18": {
       "ink": 0.943,
-      "lumMean": 239.296,
-      "lumStd": 19.953,
-      "grad": 11.081,
+      "lumMean": 239.073,
+      "lumStd": 20.242,
+      "grad": 11.134,
       "chroma": {
         "red": 0.008,
         "green": 0,
         "blue": 0.066
       },
-      "detail": 4.256
+      "detail": 4.381
     },
     "face19": {
       "ink": 0.943,
-      "lumMean": 239.117,
-      "lumStd": 20.023,
-      "grad": 11.062,
+      "lumMean": 238.893,
+      "lumStd": 20.311,
+      "grad": 11.119,
       "chroma": {
         "red": 0.008,
         "green": 0,
         "blue": 0.069
       },
-      "detail": 4.838
+      "detail": 4.964
     },
     "face20": {
       "ink": 0.943,
-      "lumMean": 238.933,
-      "lumStd": 20.235,
-      "grad": 11.027,
+      "lumMean": 238.709,
+      "lumStd": 20.518,
+      "grad": 11.082,
       "chroma": {
         "red": 0.009,
         "green": 0,
         "blue": 0.075
       },
-      "detail": 5.324
+      "detail": 5.449
     },
     "face21": {
       "ink": 0.94,
-      "lumMean": 238.513,
-      "lumStd": 20.591,
-      "grad": 11.051,
+      "lumMean": 238.282,
+      "lumStd": 20.872,
+      "grad": 11.106,
       "chroma": {
         "red": 0.011,
         "green": 0,
         "blue": 0.096
       },
-      "detail": 6.048
+      "detail": 6.173
     },
     "face22": {
       "ink": 0.94,
-      "lumMean": 238.261,
-      "lumStd": 20.875,
-      "grad": 10.87,
+      "lumMean": 238.029,
+      "lumStd": 21.152,
+      "grad": 10.928,
       "chroma": {
         "red": 0.012,
         "green": 0,
         "blue": 0.102
       },
-      "detail": 6.516
+      "detail": 6.641
     },
     "face23": {
       "ink": 0.939,
-      "lumMean": 238.061,
-      "lumStd": 21,
-      "grad": 10.902,
+      "lumMean": 237.827,
+      "lumStd": 21.276,
+      "grad": 10.96,
       "chroma": {
         "red": 0.013,
         "green": 0,
         "blue": 0.111
       },
-      "detail": 6.96
+      "detail": 7.086
     },
     "face24": {
       "ink": 0.94,
-      "lumMean": 238.191,
-      "lumStd": 20.8,
-      "grad": 10.022,
+      "lumMean": 237.96,
+      "lumStd": 21.076,
+      "grad": 10.067,
       "chroma": {
         "red": 0.012,
         "green": 0,
         "blue": 0.098
       },
-      "detail": 7.089
+      "detail": 7.214
     },
     "face25": {
       "ink": 0.94,
-      "lumMean": 237.904,
-      "lumStd": 21.094,
-      "grad": 10.909,
+      "lumMean": 237.671,
+      "lumStd": 21.365,
+      "grad": 10.97,
       "chroma": {
         "red": 0.012,
         "green": 0,
         "blue": 0.107
       },
-      "detail": 7.453
+      "detail": 7.578
     },
     "face26": {
       "ink": 0.939,
-      "lumMean": 237.725,
-      "lumStd": 21.164,
-      "grad": 10.896,
+      "lumMean": 237.488,
+      "lumStd": 21.437,
+      "grad": 10.955,
       "chroma": {
         "red": 0.013,
         "green": 0,
         "blue": 0.12
       },
-      "detail": 8.017
+      "detail": 8.142
     },
     "back": {
       "ink": 0.867,

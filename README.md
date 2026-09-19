@@ -75,11 +75,26 @@ With the honours stripped out, essentially the whole game is about **shape effic
 ├── web/                  # page sources and build tooling
 │   ├── content/          #   lesson page sources + shared CSS
 │   ├── *.template.html   #   tool page templates
-│   ├── *.js              #   page scripts and tile artwork
+│   ├── tokens.js         #   design tokens — the only place colours live
+│   ├── glyphs.js         #   GENERATED: the ten hanzi outlines the tile faces embed
+│   ├── tools/            #   generators that produce the artefacts above
+│   ├── tiles-ui.js       #   the 33 procedural tile faces (SVG)
+│   ├── pixi-table.js     #   the GPU table renderer
 │   ├── build.mjs         #   bundles a page + the engine into one HTML file
-│   └── publish.mjs       #   copies web/dist/ to the repository root
+│   ├── publish.mjs       #   copies web/dist/ to the repository root
+│   └── visual-*.mjs      #   visual fingerprint baseline + before/after compare
 │
-└── docs/screenshot-play.png
+├── web/baseline/         # visual regression baseline (fingerprints + sheets)
+│   ├── tiles.json        #   accepted fingerprint of the current artwork
+│   ├── contact-sheet.png  #   all 33 faces on one sheet
+│   ├── compare-before-after.png   # previous vs current, for eyeballing
+│   ├── tiles-ui-v1.js    #   archived artwork (compare reference only)
+│   └── tiles-ui-v2.js    #   archived artwork (compare reference only)
+│
+├── docs/
+│   ├── ui-references.md  # what we learned from other open-source mahjong projects
+│   ├── OFL.txt           # font licence for the embedded hanzi outlines
+│   └── screenshot-play.png
 ```
 
 The three tool pages (`play.html`, `calculator.html`, `tiles.html`) are **fully self-contained single files** — engine, styles and artwork inlined. You can download one and open it offline with no server.
@@ -125,8 +140,47 @@ npm run probe                  # real-browser check of the table (needs Chrome)
 | `sim.run.ts` | Thousands of full games complete with no deadlocks or rule violations |
 | `winrate.run.ts` | Seat fairness and the strength of each difficulty tier, on paired deals |
 | `browser-probe.mjs` + `pixel-audit.mjs` | The rendered table in a real browser: layout inside the canvas, seat orientation, animation counters, zero script errors — plus a pixel-level check that the left and right hands really are rotated |
+| `visual-baseline.mjs` + `visual-compare.mjs` | The artwork itself: per-face fingerprint (gradient direction, colour share, detail energy) against a stored baseline, and small-size legibility where a tile is only 33 px wide |
 
 ---
+
+## Visual assets, and how they are kept from rotting
+
+All artwork is **generated**, not drawn: 33 SVG tile faces (27 tiles + a back) come out of `web/tiles-ui.js`, and the table itself is painted at runtime by `web/pixi-table.js`. Nothing is an image file, so nothing is stuck at one resolution.
+
+The risk with procedural art is that it degrades silently — a colour drifts, a gradient goes the wrong way, a tile stops being legible at the small size used in the discard river, and no test notices because tests check numbers, not looks.
+
+Four things hold the line:
+
+| Mechanism | What it does |
+|---|---|
+| **`web/tokens.js`** | The single source for every colour and texture strength. The tile faces, the GPU table and all three page stylesheets read from it — the build injects it into the CSS, so a value cannot be changed in one place and left stale in another. |
+| **`web/glyphs.js`** | The ten hanzi the tile faces need (一二三四五六七八九萬) as **embedded vector outlines**, generated from an OFL-licensed font by `web/tools/extract-glyphs.py`. See *Typography* below for why the faces do not use a system font. |
+| **`web/visual-baseline.mjs`** | Rasterises all 33 faces and stores a **fingerprint** per tile — ink coverage, mean luminance, vertical gradient direction, colour-channel share, detail energy — in `web/baseline/tiles.json`. `npm run visual` diffs the current artwork against that baseline and names every offset, so a regression is a number rather than an opinion. |
+| **`web/visual-compare.mjs`** | Emits a before/after contact sheet (`web/baseline/compare-before-after.png`) against the previously accepted artwork, plus a **three-size legibility check** (132×185 / 64×90 / 33×46) — because a tile in the river is only 33 px wide, and that is where added texture can turn into mud. |
+
+```bash
+npm run visual                       # diff artwork against the stored baseline
+npm run visual:accept                # accept the current artwork as the new baseline
+npm run visual:compare               # before/after contact sheet + legibility table
+npm run visual:table                 # also measure the felt / rim / table colour
+```
+
+Tuning materials is done by editing `tokens.js` (`fx.*` scales gloss, felt grain density, weave strength and vignette). The drawing code contains no literal colours.
+
+### Typography: the tile faces embed their own outlines
+
+`萬` and the numerals used to be drawn as `<text font-family="KaiTi,STKaiti,SimSun,STSong,serif">`. That is a Windows-only stack: on Linux, Android or iOS the glyphs silently fall back to a different typeface, so the same tile looked different on every device. It also broke the moment the SVG was rasterised as an image — which is exactly what the GPU table does (`Image` → `canvas` → pixi texture) — and shipping outlines derived from a proprietary font is not ours to do.
+
+So the outlines are extracted ahead of time and embedded:
+
+```bash
+npm run glyphs   # regenerate web/glyphs.js (needs fonttools + .cache/NotoSerifTC-Bold.otf)
+```
+
+`web/tools/extract-glyphs.py` reads a font with fontTools, normalises each glyph to its em box, and refuses to emit anything containing a path command that `fitPath()` in `tiles-ui.js` cannot transform — a mismatch there produces `NaN` coordinates, i.e. a tile that silently loses its whole face with no error anywhere. Font licence: see `docs/OFL.txt`. A consequence worth naming: the regression baseline no longer needs `loadSystemFonts`, so the same source rasterises to the same pixels on any machine.
+
+Which projects this was learned from — and what was deliberately *not* copied — is recorded in [`docs/ui-references.md`](docs/ui-references.md).
 
 ## The rules engine
 

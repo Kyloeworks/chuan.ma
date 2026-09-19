@@ -63,18 +63,23 @@ const tableJson = path.join(baseDir, 'table.json');
 const sheetPng = path.join(baseDir, 'contact-sheet.png');
 
 /* ---------------- 加载被测资产（与页面用同一份源码） ---------------- */
-// ⚠ 关键：tokens.js 与 tiles-ui.js 必须跑在**同一个** window 对象上。
-//   曾经给两者各传一个空 sandbox，结果 tiles-ui.js 读不到 window.CMTokens，
+// ⚠ 关键：tokens.js / glyphs.js / tiles-ui.js 必须跑在**同一个** window 对象上。
+//   曾经给它们各传一个空 sandbox，结果 tiles-ui.js 读不到 window.CMTokens，
 //   静默走了兜底色值 —— 于是「改 tokens 不生效」且指纹对比全是假的。
-//   页面里不存在这个问题（build.mjs 把 tokens.js 内联在 tiles-ui.js 之前，同一个 window）。
+//   页面里不存在这个问题（build.mjs 把三者按顺序内联，同一个 window）。
+//   glyphs.js 同理：漏加载不会有任何报错，只是万子在指纹里静默变成空白面板
+//   （实测会让 9 张万子的 detail 一起掉 45%、chroma.red 归零）。所以下面显式断言。
 const win = {};
 const runIn = (file) => new Function('window', readFileSync(file, 'utf8'))(win);
 runIn(path.resolve(here, 'tokens.js'));
+runIn(path.resolve(here, 'glyphs.js'));
 runIn(tilesFile);
 const MJ = win.MJTiles;
 const TOK = win.CMTokens;
 if (!MJ) { console.error('无法加载 web/tiles-ui.js（应为 IIFE 挂 window.MJTiles）'); process.exit(1); }
 if (!TOK) { console.error('无法加载 web/tokens.js（应为 IIFE 挂 window.CMTokens）'); process.exit(1); }
+if (!win.CMGlyphs) { console.error('无法加载 web/glyphs.js（牌面汉字轮廓）—— 万子会渲染成空白面板，且不会有任何报错'); process.exit(1); }
+if (!MJ.glyphsReady || !MJ.glyphsReady()) { console.error('tiles-ui.js 报告字形未就位 —— 万子会渲染成空白面板'); process.exit(1); }
 if (!MJ.version) console.warn('提示：tiles-ui.js 未报 version，可能是旧版本');
 
 /* ---------------- 光栅化 ---------------- */
@@ -85,7 +90,10 @@ function raster(svg, w, h) {
     : svg.replace('<svg ', `<svg width="${w}" height="${h}" `);
   const r = new Resvg(sized, {
     fitTo: { mode: 'width', value: w },
-    font: { loadSystemFonts: true },   // 必须开，否则万/条里的汉字渲不出来
+    // 不再需要 loadSystemFonts：牌面汉字是内嵌矢量路径，不依赖本机字体。
+    // 这一条很关键 —— 开着它，同一份源码在不同机器上会因字体差异光栅化出不同像素，
+    // 视觉基线就失去了可复现性（会误报为「质量退化」）。
+    font: { loadSystemFonts: false },
     background: '#14503a',             // 绒布底色：牌身象牙白在桌面上才好判背景
   });
   return PNG.sync.read(Buffer.from(r.render().asPng()));

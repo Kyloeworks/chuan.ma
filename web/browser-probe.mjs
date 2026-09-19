@@ -248,10 +248,22 @@ try {
   const auditT = await ev(AUDIT);
   if (auditT && !auditT.err) {
     const tt = auditT.teach;
-    // 注意：advance(40) 可能正好切在「轮到我、但这一摸尚未执行」的回合边界（那一帧只有 13 张），
-    // 所以此处只断言「已打完缺门 + 教学状态自洽」；「给出推荐牌 + 进张数」放在能稳定停在
-    // 人类决策点的 stepToHumanWin 段（见下）里断言。
-    ck('推进十几手后：缺门已打完（进入向听 / 下叫阶段）', tt && tt.mustMiss === false, JSON.stringify(tt));
+    // ⚠ 这里原本是「advance(40) 之后 mustMiss 必须为 false」的单次断言 —— 它会随机失败。
+    //   牌局的随机数是固定种子的 LCG，但**动画/定时器也会消耗随机数**，于是同样的
+    //   advance(40) 在不同时序下停在不同阶段（实测复跑 4 次挂 1 次：need=10、手牌已 10 张，
+    //   说明缺门还差一手没打完）。单次断言测的是「恰好在这一帧成立」，不是「应该发生的事」。
+    //   改成有界收敛：最多再补推进 8×5 步，必须达成「缺门已打完」。这是规则保证必然发生的结果。
+    let cleared = !!(auditT.teach && auditT.teach.mustMiss === false);
+    let used = 40;
+    for (let i = 0; !cleared && i < 8; i++) {
+      await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.advance(5)");
+      await sleep(120);
+      const a = await ev(AUDIT);
+      cleared = !!(a && !a.err && a.teach && a.teach.mustMiss === false);
+      used += 5;
+    }
+    ck('推进十几手后：缺门已打完（进入向听 / 下叫阶段）', cleared,
+      `共推进 ${used} 步；末次状态 ${JSON.stringify(tt)}`);
     ck('教学状态自洽（向听数 / 已听牌+所听之牌 / 缺门 三选一）',
       tt && (tt.shEff > 0 || (tt.waitingKinds > 0 && tt.waitLeft > 0) || tt.mustMiss), JSON.stringify(tt));
     ck('教学状态不与「向听 0」自相矛盾', tt && !(tt.sh <= 0 && !tt.mustMiss && tt.waitingKinds === 0),

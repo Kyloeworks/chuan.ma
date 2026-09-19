@@ -19,10 +19,25 @@
     "winrate": "node --experimental-strip-types kernel/test/winrate.run.ts 300 all",
     "smoke": "node web/smoke.mjs && node web/tiles.smoke.mjs && node web/linkcheck.mjs",
     "probe": "node web/browser-probe.mjs web/dist/play.html",
-    "pixel": "node web/pixel-audit.mjs"
+    "pixel": "node web/pixel-audit.mjs",
+    "visual": "node web/visual-baseline.mjs",
+    "visual:accept": "node web/visual-baseline.mjs --write",
+    "visual:check": "node web/visual-baseline.mjs --check",
+    "visual:table": "node web/visual-baseline.mjs --with-table",
+    "visual:compare": "node web/visual-compare.mjs",
+    "glyphs": "python web/tools/extract-glyphs.py .cache/LXGWWenKaiTC-Bold.ttf web/glyphs.js"
   },
   "devDependencies": {
     "esbuild": "^0.28.2",
     "pixi.js": "^8.21.0"
+  },
+  "visualDeps": {
+    "note": "视觉回归脚本（visual-baseline / visual-compare / pixel-audit）另外需要 @resvg/resvg-js 与 pngjs；它们装在受管工作区，用 CHUANMA_DEPS 指向该 node_modules 目录即可。",
+    "packages": ["@resvg/resvg-js", "pngjs"]
+  },
+  "glyphDeps": {
+    "note": "npm run glyphs 用于再生成 web/glyphs.js（牌面汉字轮廓）。需要一个 OFL 授权的中文 TTF/OTF，默认取 .cache/LXGWWenKaiTC-Bold.ttf；来源与授权见 docs/OFL.txt。只有换字体或改字号体系时才需要跑，生成物已入库。抽取脚本会校验运行期 fitPath() 是否支持该字体用到的全部路径命令，不支持就报错退出。",
+    "python": "fonttools",
+    "font": "LXGW WenKai TC Bold (霞鹜文楷) — https://github.com/lxgw/LxgwWenKai"
   }
 }

@@ -35,19 +35,27 @@ const oldArg = ARGV.indexOf('--old');
 // 仓库有自动化会推进 HEAD 并清理临时文件，靠 HEAD/临时文件取旧版会取到新版，
 // 对照图会变成「自己跟自己比」（实测两版 detail 完全一致 0.0%，白忙一轮）。
 const v1Path = path.resolve(here, 'baseline', 'tiles-ui-v1.js');
+const v2Path = path.resolve(here, 'baseline', 'tiles-ui-v2.js');
+// 默认取**上一个已接受版本**（v2）＝ 这一轮改动的增量；
+// 要看累计变化用 --old baseline/tiles-ui-v1.js。
 let oldFile;
 if (oldArg >= 0 && ARGV[oldArg + 1]) oldFile = path.resolve(here, ARGV[oldArg + 1]);
+else if (existsSync(v2Path)) oldFile = v2Path;
 else if (existsSync(v1Path)) oldFile = v1Path;
 else {
-  console.error('缺少 before 基准：' + v1Path + '\n请先运行 node web/_fix_baseline.cjs 从 git 固化 v1 快照。');
+  console.error('缺少 before 基准（baseline/tiles-ui-v2.js 或 -v1.js）\n' +
+    '请先运行 node web/fix-baseline.cjs <commit> <v1|v2|v3> 从 git 固化快照。');
   process.exit(1);
 }
 if (!existsSync(oldFile)) { console.error('before 资产不存在：' + oldFile); process.exit(1); }
+console.log('对照基准：' + path.relative(here, oldFile));
 
 const tokensSrc = readFileSync(path.resolve(here, 'tokens.js'), 'utf8');
+const glyphsSrc = readFileSync(path.resolve(here, 'glyphs.js'), 'utf8');
 function loadMJ(file) {
   const win = {};
   new Function('window', tokensSrc)(win);
+  new Function('window', glyphsSrc)(win);
   new Function('window', readFileSync(file, 'utf8'))(win);
   if (!win.MJTiles) throw new Error('未挂载 MJTiles: ' + file);
   return win.MJTiles;
@@ -62,13 +70,30 @@ const cases = ids.map((i) => ({ key: 'face' + i, id: i }));
 cases.push({ key: 'back', id: -1 });
 const svgOf = (MJ, id) => (id === -1 ? MJ.back() : MJ.face(id));
 
-function raster(svg, w, h) {
+/* ⚠ before/after 必须用**不同的字体开关**，这不是同口径光栅化，是刻意的：
+ *   before（v2 及更早）用 <text>+系统楷体 → 必须开 loadSystemFonts，否则字是空的；
+ *   after（v3）用内嵌矢量路径 → 关掉 loadSystemFonts，与本机字体彻底无关。
+ *
+ *   这里踩过一个大坑：调用点漏传第四个参数时 sysFonts=undefined，
+ *   before 侧就静默变成「没开字体」—— v2 的数字字形整批不渲染，
+ *   小尺寸表格凭空报出「+113%~217%」的假提升（实测被误导了一轮）。
+ *   所以这里不设默认值，传错类型直接抛错。 */
+function raster(svg, w, h, sysFonts) {
+  if (typeof sysFonts !== 'boolean') {
+    throw new Error('raster: 第 4 个参数 sysFonts 必须是布尔值（漏传会让 before 侧静默不渲染字形）');
+  }
   const sized = svg.replace('width="100%" height="100%"', `width="${w}" height="${h}"`);
   const r = new Resvg(sized, {
-    fitTo: { mode: 'width', value: w }, font: { loadSystemFonts: true }, background: '#14503a',
+    fitTo: { mode: 'width', value: w }, font: { loadSystemFonts: sysFonts }, background: '#14503a',
   });
   return PNG.sync.read(Buffer.from(r.render().asPng()));
 }
+// 版本与其渲染口径绑定在一起 —— 调用点拿不到「忘记配对」的机会
+const VERSIONS = [
+  { tag: 'before', MJ: MJold, sysFonts: true },
+  { tag: 'after', MJ: MJnew, sysFonts: false },
+];
+const renderOne = (v, id, w, h) => raster(svgOf(v.MJ, id), w, h, v.sysFonts);
 
 /* ---------------- ① 三档尺寸的可辨识度 ---------------- */
 const SIZES = [{ tag: '大 132x185', w: 132, h: 185 }, { tag: '中 64x90', w: 64, h: 90 }, { tag: '小 33x46', w: 33, h: 46 }];
@@ -96,9 +121,11 @@ report.push('=== 三档尺寸可辨识度（detail = 相邻像素亮度差均值
 report.push('尺寸          牌      before   after    变化');
 let worst = { key: '', drop: 0 };
 for (const sz of SIZES) {
+  let sa = 0, sb = 0;
   for (const c of cases) {
-    const a = detailOf(raster(svgOf(MJold, c.id), sz.w, sz.h));
-    const b = detailOf(raster(svgOf(MJnew, c.id), sz.w, sz.h));
+    const a = detailOf(renderOne(VERSIONS[0], c.id, sz.w, sz.h));
+    const b = detailOf(renderOne(VERSIONS[1], c.id, sz.w, sz.h));
+    sa += a.detail; sb += b.detail;
     const ratio = a.detail ? (b.detail - a.detail) / a.detail : 0;
     // 只详列「小尺寸 + 变化最大」的牌，避免刷屏
     if (sz.w === 33 && Math.abs(ratio) > 0.08) {
@@ -106,9 +133,6 @@ for (const sz of SIZES) {
     }
     if (sz.w === 33 && ratio < worst.drop) worst = { key: c.key, drop: ratio };
   }
-  // 每档给一个汇总（全部牌均值）
-  let sa = 0, sb = 0;
-  for (const c of cases) { sa += detailOf(raster(svgOf(MJold, c.id), sz.w, sz.h)).detail; sb += detailOf(raster(svgOf(MJnew, c.id), sz.w, sz.h)).detail; }
   report.push(`  ${sz.tag.padEnd(12)} 均值   ${(sa / cases.length).toFixed(2).padStart(6)}  ${(sb / cases.length).toFixed(2).padStart(6)}  ${(((sb - sa) / sa) * 100).toFixed(1).padStart(6)}%`);
 }
 report.push('');

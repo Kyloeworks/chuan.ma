@@ -23,3 +23,6 @@ _dbg*
 *.orig
 _compare_out.txt
 web/_*
+
+# 字形抽取用的字体缓存（8 MB，可从 docs/OFL.txt 的地址重新下载，不入库）
+.cache/
