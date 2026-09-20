@@ -11,6 +11,8 @@ import {
   holdsMissingSuit,
   hasNoMissing,
   applySelfWin,
+  applyAddedKong,
+  robbableSeats,
   defaultRules,
   type GameState,
 } from '../src/flow.ts';
@@ -115,6 +117,42 @@ const T = (r: number) => tileId(1, r);
   ok('庄家首巡待摸（pendingDraw=true）', g.pendingDraw === true);
   const before = g.players[g.dealer].hand.reduce((a, b) => a + b, 0);
   ok('庄家发牌 13 张', before === 13);
+}
+
+// ---- 抢杠胡：补杠的第 4 张被抢 → 杠不成立、按点炮结算、不计杠分 ----
+{
+  const W = (r: number) => tileId(0, r);
+  const T = (r: number) => tileId(1, r);
+  const g = createGame(0, defaultRules, defaultScoring);
+  for (const s of [0, 1, 2, 3] as const) g.players[s].missing = 2; // 缺筒
+  (g as GameState & { phase: string }).phase = 'playing';
+
+  g.players[1].hand = new Array(TILE_KINDS).fill(0);
+  g.players[1].melds = [{ type: 'pong', tile: W(5), concealed: false, added: false, from: 2 }];
+  g.players[1].hand[W(5)] = 1; // 第 4 张 → 可补杠
+  g.players[1].hand[W(9)] = 1;
+
+  g.players[2].hand = new Array(TILE_KINDS).fill(0);
+  for (const t of [W(1), W(1), W(1), W(6), W(6), W(6), T(1), T(1), T(1), T(2), T(2), W(3), W(4)]) {
+    g.players[2].hand[t]++;
+  }
+  g.players[2].melds = [];
+
+  ok('补杠前 seat2 不在胡牌态', g.players[2].won === false);
+  ok('seat2 可抢杠 W5', robbableSeats(g, 1, W(5)).includes(2));
+
+  g.turn = 1;
+  g.pendingDraw = false;
+  g.wall = [W(8), W(8)];
+  applyAddedKong(g, 1, W(5));
+
+  const rec = g.players[2].winInfo;
+  ok('抢杠后 seat2 胡牌', g.players[2].won === true);
+  ok('  └ 记为点炮（非自摸）', rec?.selfDraw === false && rec?.by === 1);
+  ok('  └ 番种含抢杠胡', rec?.fans.fanKeys.includes('qianggang') === true);
+  ok('杠未成立（副露仍是碰）', g.players[1].melds[0].type === 'pong');
+  ok('抢杠不计杠分', g.kongEntries.length === 0);
+  ok('轮到被抢者下家', g.turn !== 1);
 }
 
 console.log(`\n=== ${pass} passed, ${fail} failed ===`);

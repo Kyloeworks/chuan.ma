@@ -231,8 +231,8 @@ The lessons and the tools are driven by the same engine, so a lesson can never d
 | `shanten` | Distance to a winning hand |
 | `ukeire` | Which tiles improve the hand, and which complete it |
 | `win` | Legal winning shapes — standard, seven pairs |
-| `scoring` | Fan composition (平胡 · 大对子 · 清一色 · 七对 · 龙七对 · 根 · 自摸 · 杠上花 · 杠上炮 · 海底 · 十八罗汉) |
-| `flow` | Declaring the missing suit, draws, discards, claims, kong handling, battle-to-the-end |
+| `scoring` | Fan composition — shape tiers (平胡 · 大对子 · 金钩钓 · 七对 · 龙七对 · 十八罗汉 · 清对 · 清金钩钓 · 清七对 · 清龙七对) plus add-ons (清一色 · 带幺九 · 断幺九 · 根 · 自摸 · 杠上花 · 杠上炮 · 抢杠胡 · 海底), capped at 32 fan |
+| `flow` | Declaring the missing suit, draws, discards, claims, kong handling (including 抢杠胡), battle-to-the-end |
 | `bot` | Three opponent personalities (easy / normal / hard) |
 | `settle` | Points, kong accounting, ready check (查叫), flower pig (查花猪), tax refund (退税) |
 

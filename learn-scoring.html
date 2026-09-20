@@ -28,10 +28,11 @@
 </header>
 
 <h2>1. From a hand to a number</h2>
-<p>Two steps, in this order:</p>
+<p>Three steps, in this order:</p>
 <ol class="steps">
-  <li><b>Count the fan</b> — add up every pattern your hand qualifies for. Fan is <b>additive</b>: a hand does not "become" a better pattern, it collects all of them at once.</li>
-  <li><b>Convert to points</b> — <span class="zh">分 = 番 × 底分</span>. The base value <span class="zh">底分</span> is a table convention; on this site it is <b>1</b>, so one fan = one point and the fan count is also the point count.</li>
+  <li><b>Find the shape tier</b> <span class="zh">牌型档</span> — one single tier per hand, from <span class="zh">平胡</span> at the bottom to <span class="zh">清龙七对</span> at the top. The tiers are mutually exclusive: you take the highest one your hand qualifies for, and every tier already includes the base win.</li>
+  <li><b>Add the add-ons</b> — <span class="zh">清一色</span>, <span class="zh">带幺九</span>, <span class="zh">根</span> and the situational bonuses (<span class="zh">自摸</span>, <span class="zh">杠上花</span>, <span class="zh">抢杠胡</span>…). These are <b>additive</b>: a hand collects all of them at once. The one exception is <span class="zh">清一色</span>, which is already baked into the tiers whose name starts with <i>pure</i> <span class="zh">清</span>.</li>
+  <li><b>Convert to points</b> — <span class="zh">分 = 番 × 底分</span>. The base value <span class="zh">底分</span> is a table convention; on this site it is <b>1</b>, so one fan = one point and the fan count is also the point count. A round is capped at <b>32 fan</b> <span class="zh">封顶</span>.</li>
 </ol>
 <div class="box">
   <h4>Stacking is where the money is</h4>
@@ -39,34 +40,44 @@
 </div>
 
 <h2>2. The fan table</h2>
-<h3>Hand-shape fan</h3>
+<h3>Hand-shape tiers <span class="zh">牌型档</span> — pick the highest that applies</h3>
 <div class="tbl-scroll">
 <table>
   <thead><tr><th>Pattern</th><th class="n">Chinese</th><th class="n">Fan</th><th>Condition</th></tr></thead>
   <tbody>
-    <tr><td><b>Base win</b></td><td class="n">平胡</td><td class="n">+1</td><td>Any standard win — four sets plus a pair. The floor, always counted.</td></tr>
-    <tr><td><b>All triplets</b></td><td class="n">大对子 <span class="zh">碰碰胡</span></td><td class="n">+2</td><td>All four sets are triplets (or kongs). No runs anywhere.</td></tr>
-    <tr><td><b>All one suit</b></td><td class="n">清一色</td><td class="n">+4</td><td>Every tile in the hand, melds included, is from a single suit. The big one.</td></tr>
-    <tr><td><b>Four of a kind</b></td><td class="n">根</td><td class="n">+1 each</td><td>Per tile you hold four of. Counted in every hand shape, including seven pairs.</td></tr>
-    <tr><td><b>Seven pairs</b></td><td class="n">七对</td><td class="n">+2</td><td>Seven distinct pairs, no melds exposed. <i>Replaces</i> the base win.</td></tr>
-    <tr><td><b>Dragon seven pairs</b></td><td class="n">龙七对</td><td class="n">+2</td><td>Seven pairs that contain a four-of-a-kind. Added on top of 七对.</td></tr>
-    <tr><td><b>All kongs</b></td><td class="n">十八罗汉</td><td class="n">+2</td><td>All four of your melds are kongs — a legendary shape most players never see.</td></tr>
+    <tr><td><b>Base win</b></td><td class="n">平胡</td><td class="n">1</td><td>Any standard win — four sets plus a pair. The floor of the whole table.</td></tr>
+    <tr><td><b>All triplets</b></td><td class="n">大对子 <span class="zh">碰碰胡</span></td><td class="n">3</td><td>All four sets are triplets or kongs — no runs anywhere. Worth 1 + 2. Exposed melds count.</td></tr>
+    <tr><td><b>Golden hook</b></td><td class="n">金钩钓</td><td class="n">3</td><td>All four melds are exposed (pongs/kongs) and your hand is down to a single pair waiting on one tile.</td></tr>
+    <tr><td><b>Seven pairs</b></td><td class="n">七对</td><td class="n">4</td><td>Seven distinct pairs, no melds exposed. <i>Replaces</i> the base win.</td></tr>
+    <tr><td><b>Dragon seven pairs</b></td><td class="n">龙七对</td><td class="n">8</td><td>Seven pairs that contain a four-of-a-kind. The four-of-a-kind is already inside this number — it is <b>not</b> counted again as <span class="zh">根</span>.</td></tr>
+    <tr><td><b>Eighteen arhats</b></td><td class="n">十八罗汉</td><td class="n">16</td><td>All four of your melds are kongs — a legendary shape most players never see.</td></tr>
+    <tr><td><b>Pure all-triplets</b></td><td class="n">清对</td><td class="n">8</td><td>Package deal: all one suit <i>and</i> all triplets.</td></tr>
+    <tr><td><b>Pure golden hook</b></td><td class="n">清金钩钓</td><td class="n">8</td><td>Package deal: all one suit <i>and</i> a golden-hook shape.</td></tr>
+    <tr><td><b>Pure seven pairs</b></td><td class="n">清七对</td><td class="n">16</td><td>Package deal: all one suit <i>and</i> seven pairs.</td></tr>
+    <tr><td><b>Pure dragon seven pairs</b></td><td class="n">清龙七对</td><td class="n">32</td><td>Package deal: all one suit <i>and</i> dragon seven pairs. This is the cap.</td></tr>
   </tbody>
 </table>
 </div>
-<h3>Situational fan</h3>
+<p>Note the two kinds of number in that table. <span class="zh">平胡</span> → <span class="zh">大对子</span> → <span class="zh">七对</span> … are <b>single tiers</b>: a hand gets exactly one. <span class="zh">清对</span>, <span class="zh">清七对</span> and friends are <b>package prices</b> — they exist because multiplying the two ideas together is worth more than adding them, so the tier is quoted as one number instead of being stacked piece by piece.</p>
+
+<h3>Add-ons <span class="zh">叠加番</span> — add every one that applies</h3>
 <div class="tbl-scroll">
 <table>
-  <thead><tr><th>Bonus</th><th class="n">Chinese</th><th class="n">Fan</th><th>Condition</th></tr></thead>
+  <thead><tr><th>Pattern</th><th class="n">Chinese</th><th class="n">Fan</th><th>Condition</th></tr></thead>
   <tbody>
+    <tr><td><b>All one suit</b></td><td class="n">清一色</td><td class="n">+4</td><td>Every tile in the hand, melds included, is from a single suit. Skipped when your tier is already a <i>pure</i> <span class="zh">清</span> package. The big one.</td></tr>
+    <tr><td><b>Terminals everywhere</b></td><td class="n">带幺九</td><td class="n">+2</td><td>Every set <i>and</i> the pair contains a 1 or a 9.</td></tr>
+    <tr><td><b>No terminals at all</b></td><td class="n">断幺九</td><td class="n">off</td><td>No 1s and no 9s anywhere. <b>Not part of the Sichuan table</b> — it is a national-standard and Japanese-rule pattern. This site ships it as a switch, off by default, so you can see the difference.</td></tr>
+    <tr><td><b>Four of a kind</b></td><td class="n">根</td><td class="n">+1 each</td><td>Per tile you hold four of. Skipped for seven-pairs hands, where <span class="zh">龙七对</span> already pays for it.</td></tr>
     <tr><td><b>Self-draw</b></td><td class="n">自摸</td><td class="n">+1</td><td>You drew the winning tile yourself rather than taking a discard.</td></tr>
     <tr><td><b>Kong blossom</b></td><td class="n">杠上花</td><td class="n">+1</td><td>The winning tile was the replacement tile drawn after a kong, and you drew it yourself.</td></tr>
     <tr><td><b>Kong cannon</b></td><td class="n">杠上炮</td><td class="n">+1</td><td>You won off a tile that someone was forced to discard right after their kong.</td></tr>
+    <tr><td><b>Robbing the kong</b></td><td class="n">抢杠胡</td><td class="n">+1</td><td>Someone tried to add the fourth tile to their pong and you won on it. The kong does not happen — no kong money changes hands.</td></tr>
     <tr><td><b>Last tile</b></td><td class="n">海底</td><td class="n">+1</td><td>The win came off the very last tile in the wall.</td></tr>
   </tbody>
 </table>
 </div>
-<p>Note that <span class="zh">自摸</span> and <span class="zh">杠上花</span> stack: a self-drawn win on a kong replacement is +1 +1. Situational fan is added <i>after</i> the shape fan, so a self-drawn all-one-suit hand is 1 + 4 + 1 = 6, not 4.</p>
+<p>Add-ons are applied <i>after</i> the tier, so a self-drawn all-one-suit hand is 1 + 4 + 1 = 6, not 4. <span class="zh">自摸</span> and <span class="zh">杠上花</span> also stack with each other: a self-drawn win on a kong replacement is +1 +1.</p>
 
 <h2>3. Three worked examples</h2>
 
@@ -75,6 +86,7 @@
   1条 2条 3条 &nbsp;·&nbsp; 5条 5条 5条 &nbsp;·&nbsp; 7万 8万 9万 &nbsp;·&nbsp; 2筒 2筒 2筒 &nbsp;·&nbsp; 6筒 6筒
 </div>
 <p>A normal four-sets-plus-a-pair win across three suits, drawn by you.</p>
+<div class="tbl-scroll">
 <table>
   <tbody>
     <tr><td>平胡 base</td><td class="n">1</td></tr>
@@ -82,6 +94,7 @@
     <tr><td><b>Total</b></td><td class="n"><b>2 fan → 2 points</b></td></tr>
   </tbody>
 </table>
+</div>
 <p>Nobody has won yet, so <b>all three opponents pay 2 each</b> and you collect 6.</p>
 
 <h3>Example B — all one suit, won off a discard</h3>
@@ -89,6 +102,7 @@
   2筒 3筒 4筒 &nbsp;·&nbsp; 5筒 5筒 5筒 &nbsp;·&nbsp; 6筒 7筒 8筒 &nbsp;·&nbsp; 9筒 9筒 9筒 &nbsp;·&nbsp; 1筒 1筒
 </div>
 <p>Every tile is dots. You take the final tile from an opponent's discard.</p>
+<div class="tbl-scroll">
 <table>
   <tbody>
     <tr><td>平胡 base</td><td class="n">1</td></tr>
@@ -97,23 +111,42 @@
     <tr><td><b>Total</b></td><td class="n"><b>5 fan → 5 points</b></td></tr>
   </tbody>
 </table>
+</div>
 <p>On a discard win <b>only the player who discarded the tile pays</b> — 5 points, from one person.</p>
 
-<h3>Example C — dragon seven pairs, all one suit, off a discard</h3>
+<h3>Example C — all triplets with two exposed pongs</h3>
+<div class="hand">
+  碰 5万 &nbsp;·&nbsp; 碰 6万 &nbsp;·&nbsp; 2条 2条 2条 &nbsp;·&nbsp; 3筒 3筒 3筒 &nbsp;·&nbsp; 8筒 8筒
+</div>
+<p>Two of your four sets were claimed from discards, so only eight tiles sit in your hand — the other six are on the table as pongs. This is still all triplets, and nothing in the hand is a 1 or a 9.</p>
+<div class="tbl-scroll">
+<table>
+  <tbody>
+    <tr><td>大对子 all triplets (1 + 2)</td><td class="n">3</td></tr>
+    <tr><td>清一色 (two suits in play)</td><td class="n">—</td></tr>
+    <tr><td>断幺九 (switch is off, and not a Sichuan pattern)</td><td class="n">—</td></tr>
+    <tr><td><b>Total</b></td><td class="n"><b>3 fan → 3 points</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p>Exposed melds never reduce a shape fan: the tier is judged on the <b>shape</b> of the hand, not on how many tiles are left in it. A common confusion, and the reason this page spells it out.</p>
+
+<h3>Example D — dragon seven pairs, all one suit, off a discard</h3>
 <div class="hand">
   3条 3条 &nbsp;·&nbsp; 3条 3条 (four of a kind) &nbsp;·&nbsp; 5条 5条 &nbsp;·&nbsp; 6条 6条 &nbsp;·&nbsp; 7条 7条 &nbsp;·&nbsp; 8条 8条 &nbsp;·&nbsp; 9条 9条
 </div>
-<p>Seven pairs in one suit, and the four 3条 counts as a four-of-a-kind.</p>
+<p>Seven pairs in one suit, and the four 3条 is what makes it a <i>dragon</i>.</p>
+<div class="tbl-scroll">
 <table>
   <tbody>
-    <tr><td>七对 seven pairs</td><td class="n">2</td></tr>
-    <tr><td>龙七对 dragon seven pairs</td><td class="n">+2</td></tr>
-    <tr><td>清一色 all one suit</td><td class="n">+4</td></tr>
-    <tr><td>根 four of a kind</td><td class="n">+1</td></tr>
-    <tr><td><b>Total</b></td><td class="n"><b>9 fan → 9 points</b></td></tr>
+    <tr><td>清龙七对 pure dragon seven pairs</td><td class="n">32</td></tr>
+    <tr><td>根 four of a kind</td><td class="n">— (already inside 龙七对)</td></tr>
+    <tr><td>清一色 all one suit</td><td class="n">— (already inside the 清 package)</td></tr>
+    <tr><td><b>Total</b></td><td class="n"><b>32 fan → 32 points (capped)</b></td></tr>
   </tbody>
 </table>
-<p>Notice that 七对 <b>replaces</b> 平胡 rather than adding to it — you either win as seven pairs or as a standard hand, never both.</p>
+</div>
+<p>Two things to notice. 七对 <b>replaces</b> 平胡 rather than adding to it — you either win as seven pairs or as a standard hand, never both. And the <i>pure</i> tiers are quoted with everything already inside them: this hand does not collect 4 + 8 + 4 + 1 on the way up, it simply lands on 32.</p>
 
 <h2>4. Who pays</h2>
 <div class="tbl-scroll">
@@ -139,6 +172,7 @@
   </tbody>
 </table>
 </div>
+<p>One exception: if someone robs your added kong <span class="zh">抢杠胡</span>, the kong never happens and <b>no kong money changes hands at all</b>. Your pong stays a pong, and the robber takes the tile plus one extra fan.</p>
 <div class="box warn">
   <h4>The refund clause <span class="zh">退税</span></h4>
   <p>Kong money is only yours <b>if you eventually win the round</b>. A player who collects kong points and never wins has to give every point back at settlement. This is the single most surprising rule for newcomers — and it is why a kong is a commitment, not free money.</p>
@@ -170,7 +204,8 @@
 <h2>7. Where these rules come from</h2>
 <div class="box good">
   <h4>One documented preset, not the only one</h4>
-  <p>Sichuan mahjong fan values genuinely differ from table to table and city to city — all-one-suit is worth 2 in some places and 4 in others, and rare fan <i>names</i> shift too. All-triplets is normally <span class="zh">大对子</span> on a Sichuan table (the rest of China says <span class="zh">碰碰胡</span>), and the four-kong hand here is named <span class="zh">十八罗汉</span> — some tables reserve <span class="zh">金钩钓</span> for a different and far more common shape, every meld exposed with a single-tile wait.</p>
+  <p>Sichuan mahjong fan values genuinely differ from table to table and city to city — all-one-suit is worth 2 in some places and 4 in others, and rare fan <i>names</i> shift too. All-triplets is normally <span class="zh">大对子</span> on a Sichuan table (the rest of China says <span class="zh">碰碰胡</span>). <span class="zh">金钩钓</span> and <span class="zh">十八罗汉</span> are kept as two separate patterns here because they are two different shapes — an all-exposed hand with a single-tile wait, versus four kongs — even though some tables use the same name for both.</p>
+  <p><span class="zh">断幺九</span> is deliberately <b>off</b>. It is a real pattern in the Chinese national standard and in Japanese mahjong, but it is not part of the Sichuan game; the Sichuan counterpart is <span class="zh">带幺九</span>. It stays in the rules file as a switch so the difference is visible rather than asserted.</p>
   <p>Where a name is genuinely contested, this site uses the term its own engine computes and says so, rather than quietly teaching one region's vocabulary as if it were universal.</p>
   <p>Every number on this page is exactly what the <a href="play.html">table</a> and the <a href="calculator.html">calculator</a> on this site will compute, so the lesson and the scores can never disagree. Treat it as one clearly documented preset — then check your local table's house rules before you play for anything that matters.</p>
 </div>

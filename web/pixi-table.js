@@ -109,7 +109,7 @@
         '<b>结算</b>：终局按「番数×底分」计分，另算杠分、查叫、查花猪、退税，给出每家净分。<br>' +
         '<b>动作按钮</b>：牌桌中间会弹出「胡 / 碰 / 杠 / 过」——<b>要不要胡由你决定</b>，系统不会替你胡。<br>' +
         '<b>血战到底</b>：一家胡后本局继续，直到 3 家胡或牌墙摸完。<br>' +
-        '<b>川麻用语</b>：下叫＝听牌 · 大对子＝碰碰胡 · 查叫＝查大叫 · 幺鸡＝一条 · 十八罗汉＝四副全杠。',
+        '<b>川麻用语</b>：下叫＝听牌 · 大对子＝碰碰胡 · 金钩钓＝四副全副露单钓将 · 十八罗汉＝四副全杠 · 查叫＝查大叫 · 幺鸡＝一条。',
       evDeclare: function (s, su) { return s + ' 定缺 ' + su; },
       evDiscard: function (s, tl) { return s + ' 打出 ' + tl; },
       evPong: function (s, tl) { return s + ' 碰 ' + tl; },
@@ -138,7 +138,7 @@
       colSeat: '座位', colNet: '净分', colDetail: '明细',
       detailFan: '胡牌', detailKong: '杠', detailReady: '查叫', detailPig: '花猪', detailRefund: '退税',
       youWon: '你赢了', fanUnit: ' 番',
-      scoreNote: '分 = 番数 × 底分(1)；自摸由尚未胡牌者各付一份，点炮由放炮者独付；流局时未下叫者赔下叫者（查叫），未打缺者赔花猪；未胡者收到的杠分退还。',
+      scoreNote: '分 = 番数 × 底分(1)，单局封顶 32 番；自摸由尚未胡牌者各付一份，点炮由放炮者独付；流局时未下叫者赔下叫者（查叫），未打缺者赔花猪；未胡者收到的杠分退还。',
       diagOk: function (r, n, fps) { return 'PixiJS ' + r + ' · ' + n + ' 纹理 · ' + fps + 'fps'; },
       diagFail: 'PixiJS 不可用'
     },
@@ -176,7 +176,7 @@
         '<b>Reveal</b>: on a win the hand turns face-up, winning tile gold and set apart.<br>' +
         '<b>Action buttons</b>: Hu / Pong / Kong / Pass appear mid-table — <b>the decision to win is yours</b>, nothing wins for you automatically.<br>' +
         '<b>Blood Battle</b>: play continues until 3 wins or the wall empties.<br>' +
-        '<b>Sichuan terms</b>: 下叫 (ready) = listening; 大对子 = all triplets; 查叫 = ready check; 幺鸡 = the 1 of bamboo; 十八罗汉 = four kongs.',
+        '<b>Sichuan terms</b>: 下叫 (ready) = listening; 大对子 = all triplets; 金钩钓 = four exposed melds, single-tile wait; 十八罗汉 = four kongs; 查叫 = ready check; 幺鸡 = the 1 of bamboo.',
       evDeclare: function (s, su) { return s + ' missing: ' + su; },
       evDiscard: function (s, tl) { return s + ' discards ' + tl; },
       evPong: function (s, tl) { return s + ' pongs ' + tl; },
@@ -204,7 +204,7 @@
       colSeat: 'Seat', colNet: 'Net', colDetail: 'Breakdown',
       detailFan: 'Win', detailKong: 'Kong', detailReady: 'Ready', detailPig: 'Pig', detailRefund: 'Refund',
       youWon: 'You win', fanUnit: ' fan',
-      scoreNote: 'Points = fan × base (1). Self-draw: each player not yet won pays. Discard win: the discarder pays alone. On a draw, non-ready players pay ready players (big call) and uncleared players pay the flower-pig penalty; kong points received by non-winners are refunded.',
+      scoreNote: 'Points = fan × base (1), capped at 32 fan per round. Self-draw: each player not yet won pays. Discard win: the discarder pays alone. On a draw, non-ready players pay ready players (big call) and uncleared players pay the flower-pig penalty; kong points received by non-winners are refunded.',
       diagOk: function (r, n, fps) { return 'PixiJS ' + r + ' · ' + n + ' tex · ' + fps + 'fps'; },
       diagFail: 'PixiJS unavailable'
     }

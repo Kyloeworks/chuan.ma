@@ -114,6 +114,7 @@ function fanOfWinTile(p: PlayerState, tile: TileId, g: GameState): number {
     tile,
     kongReplacement: false,
     afterKongDiscard: false,
+    robbingKong: false,
     lastTile: false,
   };
   const r = scoringFor(g, p, ctx);

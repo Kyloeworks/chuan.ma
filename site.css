@@ -1,8 +1,14 @@
 /* chuan.ma — 学习内容页共享样式
    工具页（play.html / calculator.html / tiles.html）仍各自内联样式、保持单文件自包含；
    学习内容页共用本文件，便于统一演进设计。
-   色板与质感参数集中维护在 web/tokens.js —— build.mjs 会把下面的占位展开成 :root{...}。
-   （本文件单独打开时没有变量定义，属预期：它是构建源，产物是 web/dist/site.css） */
+
+   两条硬规则（破坏即失去「层次」）：
+   1. **色板与版式尺度集中维护在 web/tokens.js** —— build.mjs 会把下面的占位展开成 :root{...}。
+      本文件里不允许出现字面量的字号 / 间距 / 圆角 / 边框宽，一律引用变量。
+      （本文件单独打开时没有变量定义，属预期：它是构建源，产物是 web/dist/site.css）
+   2. **同语义元素跨页必须同尺寸**（h1 恒为 --fs-h1，卡片恒为 --r-md …）。
+      新增元素先选 --fs-* / --sp-* 里已有的角色，不要新造数值 —— 层次来自「只有这几档」。
+*/
 :root{
   --bg:#f5f6f8;
   --card:#ffffff;
@@ -55,106 +61,159 @@
   --cm-drawer-ink:#c3cdd8;
   --cm-overlay:rgba(8,12,16,.72);
   --cm-stage:#0b2a1c;
+  --fs-meta:12px;
+  --fs-small:13px;
+  --fs-dense:14px;
+  --fs-ui:15px;
+  --fs-body:16px;
+  --fs-h3:18px;
+  --fs-h2:22px;
+  --fs-h1:28px;
+  --fs-num:40px;
+  --sp-hair:2px;
+  --sp-xs:4px;
+  --sp-sm:8px;
+  --sp-md:12px;
+  --sp-lg:16px;
+  --sp-xl:20px;
+  --sp-xxl:24px;
+  --sp-3xl:32px;
+  --sp-4xl:40px;
+  --sp-5xl:64px;
+  --r-sm:6px;
+  --r-md:12px;
+  --r-lg:20px;
+  --r-full:999px;
+  --bw-hair:1px;
+  --bw-rule:2px;
+  --bw-accent:4px;
+  --lh-tight:1.25;
+  --lh-ui:1.5;
+  --lh-body:1.7;
 }
 
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:var(--bg);color:var(--ink);font-size:16px;line-height:1.72;
+body{background:var(--bg);color:var(--ink);
+  font-size:var(--fs-body);line-height:var(--lh-body);
   font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;
-  -webkit-font-smoothing:antialiased}
+  -webkit-font-smoothing:antialiased;text-size-adjust:100%}
 a{color:var(--accent)}
-.wrap{max-width:820px;margin:0 auto;padding:0 20px 64px}
+img,svg,table{max-width:100%}
+.wrap{max-width:820px;margin:0 auto;padding:0 var(--sp-xl) var(--sp-5xl)}
 
-/* ── 顶部导航 ── */
-nav{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:0;z-index:9}
-.navin{max-width:820px;margin:0 auto;padding:12px 20px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
-.brand{font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink)}
+/* ── 顶部导航 ──
+   链接的可点区域用「padding + 等量负 margin」放大到 ≥32px 高：
+   视觉位置与间距完全不变，但满足触控目标下限（此前只有 22px 高）。 */
+nav{background:#fff;border-bottom:var(--bw-hair) solid var(--line);position:sticky;top:0;z-index:9}
+.navin{max-width:820px;margin:0 auto;padding:var(--sp-md) var(--sp-xl);
+  display:flex;align-items:center;gap:var(--sp-lg);flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink);
+  font-size:var(--fs-body);display:inline-flex;align-items:center;min-height:var(--sp-3xl)}
 .brand b{color:var(--accent)}
-nav a.nl{font-size:13.5px;color:var(--sub);text-decoration:none;font-weight:600;white-space:nowrap}
+nav a.nl{font-size:var(--fs-small);color:var(--sub);text-decoration:none;font-weight:600;
+  white-space:nowrap;display:inline-flex;align-items:center;min-height:var(--sp-3xl);
+  padding:0 var(--sp-xs);margin:0 calc(-1 * var(--sp-xs));border-radius:var(--r-sm)}
 nav a.nl:hover,nav a.nl.on{color:var(--accent)}
-nav a.nl.cta{color:#fff;background:var(--accent);padding:5px 11px;border-radius:8px}
+nav a.nl.cta{color:#fff;background:var(--accent);padding:0 var(--sp-md);
+  margin:0;min-height:var(--sp-3xl);border-radius:var(--r-sm)}
 nav a.nl.cta:hover{color:#fff;opacity:.9}
 .navspace{flex:1}
 
 /* ── 页头 ── */
-header.top{padding:38px 0 6px}
-.kicker{font-size:11.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--sub);font-weight:800}
-h1{font-size:31px;line-height:1.25;margin:10px 0 10px;letter-spacing:-.02em}
-.lede{color:var(--sub);font-size:16.5px;margin:0}
+header.top{padding:var(--sp-4xl) 0 var(--sp-sm)}
+.kicker{font-size:var(--fs-meta);letter-spacing:.18em;text-transform:uppercase;
+  color:var(--sub);font-weight:800}
+h1{font-size:var(--fs-h1);line-height:var(--lh-tight);margin:var(--sp-sm) 0;letter-spacing:-.02em}
+.lede{color:var(--sub);font-size:var(--fs-body);line-height:var(--lh-body);margin:0}
 
 /* ── 正文 ── */
-h2{font-size:21px;margin:38px 0 10px;letter-spacing:-.01em;padding-top:8px;border-top:1px solid var(--line)}
+h2{font-size:var(--fs-h2);line-height:var(--lh-tight);margin:var(--sp-4xl) 0 var(--sp-sm);
+  letter-spacing:-.01em;padding-top:var(--sp-sm);border-top:var(--bw-hair) solid var(--line)}
 h2:first-of-type{border-top:0;padding-top:0}
-h3{font-size:16.5px;margin:22px 0 6px}
-h4{font-size:14.5px;margin:16px 0 4px}
-p{margin:10px 0}
-ul,ol{margin:10px 0;padding-left:22px}
-li{margin:5px 0}
+h3{font-size:var(--fs-h3);line-height:var(--lh-tight);margin:var(--sp-xxl) 0 var(--sp-xs)}
+h4{font-size:var(--fs-ui);line-height:var(--lh-ui);margin:var(--sp-lg) 0 var(--sp-xs)}
+p{margin:var(--sp-sm) 0}
+ul,ol{margin:var(--sp-sm) 0;padding-left:var(--sp-xxl)}
+li{margin:var(--sp-xs) 0}
 .zh{font-size:.86em;color:var(--sub);font-family:var(--mono)}
 b,strong{font-weight:700}
 
-/* ── 表格 ── */
-table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px;background:#fff;
-  border:1px solid var(--line);border-radius:10px;overflow:hidden}
-th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--line);vertical-align:top}
-th{background:#f0f2f5;font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--sub)}
+/* ── 表格 ──
+   必须包在 .tbl-scroll 里：窄屏下表格内容撑破容器会让**整页**出现横向滚动条
+   （实测 learn-rules 的 4 个裸表格把 375px 视口撑到 406px）。 */
+.tbl-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;max-width:100%}
+table{width:100%;border-collapse:collapse;margin:var(--sp-lg) 0;font-size:var(--fs-dense);
+  background:#fff;border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);overflow:hidden}
+th,td{text-align:left;padding:var(--sp-md);border-bottom:var(--bw-hair) solid var(--line);vertical-align:top}
+th{background:#f0f2f5;font-size:var(--fs-meta);text-transform:uppercase;letter-spacing:.06em;color:var(--sub)}
 tr:last-child td{border-bottom:0}
 td.n,th.n{font-variant-numeric:tabular-nums;white-space:nowrap}
 td.c,th.c{text-align:center}
-.tbl-scroll{overflow-x:auto}
 
 /* ── 提示框 ── */
-.box{background:#fff;border:1px solid var(--line);border-left:4px solid var(--accent);
-  border-radius:10px;padding:14px 16px;margin:16px 0}
+.box{background:#fff;border:var(--bw-hair) solid var(--line);border-left:var(--bw-accent) solid var(--accent);
+  border-radius:var(--r-md);padding:var(--sp-lg);margin:var(--sp-lg) 0}
 .box.warn{border-left-color:#d9822b}
 .box.good{border-left-color:var(--tiao)}
-.box h4{margin:0 0 6px}
+.box h4{margin:0 0 var(--sp-xs)}
 .box p:last-child{margin-bottom:0}
 
 /* ── 步骤 ── */
 .steps{counter-reset:s;list-style:none;padding:0}
-.steps>li{counter-increment:s;position:relative;padding:0 0 0 42px;margin:16px 0}
-.steps>li::before{content:counter(s);position:absolute;left:0;top:1px;width:26px;height:26px;
-  border-radius:50%;background:var(--accent);color:#fff;font-size:13px;font-weight:800;
+.steps>li{counter-increment:s;position:relative;padding:0 0 0 var(--sp-4xl);margin:var(--sp-lg) 0}
+.steps>li::before{content:counter(s);position:absolute;left:0;top:2px;width:26px;height:26px;
+  border-radius:var(--r-full);background:var(--accent);color:#fff;font-size:var(--fs-small);font-weight:800;
   display:flex;align-items:center;justify-content:center}
 
 /* ── 牌面编码（纯文字表示） ── */
 .tile{display:inline-block;font-family:var(--mono);font-weight:700;background:#fff;
-  border:1px solid var(--line);border-radius:6px;padding:1px 7px;margin:0 1px;font-size:14px}
+  border:var(--bw-hair) solid var(--line);border-radius:var(--r-sm);
+  padding:var(--sp-hair) var(--sp-sm);margin:0 var(--sp-hair);font-size:var(--fs-dense);line-height:var(--lh-ui)}
 .tile.wan{color:var(--wan)} .tile.tiao{color:var(--tiao)} .tile.tong{color:var(--tong)}
-.hand{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:12px 0;
-  font-size:15px;line-height:2.2}
+/* 手牌条：行高按「一整排牌」定，所以用 px 而不是倍数 */
+.hand{background:#fff;border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+  padding:var(--sp-md);margin:var(--sp-md) 0;font-size:var(--fs-ui);line-height:var(--sp-3xl)}
 
 /* ── 下一页 ── */
-.next{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
-.next a{flex:1 1 200px;background:#fff;border:1px solid var(--line);border-radius:12px;
-  padding:14px 16px;text-decoration:none;color:inherit}
+.next{display:flex;gap:var(--sp-md);flex-wrap:wrap;margin-top:var(--sp-3xl)}
+.next a{flex:1 1 200px;background:#fff;border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+  padding:var(--sp-lg);text-decoration:none;color:inherit}
 .next a:hover{border-color:var(--accent)}
-.next .k{font-size:11.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--sub);font-weight:800}
-.next .t{font-weight:700;margin-top:4px}
-footer{color:var(--sub);font-size:12.5px;margin-top:40px;text-align:center}
+.next .k{font-size:var(--fs-meta);letter-spacing:.14em;text-transform:uppercase;color:var(--sub);font-weight:800}
+.next .t{font-weight:700;margin-top:var(--sp-xs);font-size:var(--fs-body)}
+footer{color:var(--sub);font-size:var(--fs-meta);margin-top:var(--sp-4xl);text-align:center}
 
 /* ── 首页：学习路径卡片 ── */
-.path{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:22px 0 0}
-a.step{position:relative;display:block;background:#fff;border:1px solid var(--line);border-radius:14px;
-  padding:20px 20px 18px;text-decoration:none;color:inherit;transition:.16s;overflow:hidden}
+.path{display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-lg);margin:var(--sp-xxl) 0 0}
+a.step{position:relative;display:block;background:#fff;border:var(--bw-hair) solid var(--line);
+  border-radius:var(--r-lg);padding:var(--sp-xl);text-decoration:none;color:inherit;
+  transition:.16s;overflow:hidden}
 a.step:hover{transform:translateY(-3px);box-shadow:0 12px 30px rgba(20,30,50,.10);border-color:var(--accent)}
-a.step::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+a.step::before{content:'';position:absolute;left:0;top:0;bottom:0;width:var(--bw-accent);background:var(--accent)}
 a.step.t2::before{background:var(--tiao)}
 a.step.t3::before{background:var(--gold)}
 a.step.t4::before{background:var(--wan)}
-.stepno{font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--sub);font-weight:800}
-a.step h3{margin:8px 0 6px;font-size:18px}
-a.step p{margin:0 0 10px;color:var(--sub);font-size:14px}
-.hero-dots{letter-spacing:8px;font-weight:800;font-size:19px;margin-top:12px}
+.stepno{font-size:var(--fs-meta);letter-spacing:.16em;text-transform:uppercase;color:var(--sub);font-weight:800}
+a.step h3{margin:var(--sp-sm) 0 var(--sp-xs);font-size:var(--fs-h3)}
+a.step p{margin:0 0 var(--sp-sm);color:var(--sub);font-size:var(--fs-dense);line-height:var(--lh-ui)}
+/* 卡片行动号召：此前 HTML 用了 .go 但样式表里没有这条规则，8 个 CTA 完全裸奔 */
+.go{margin-top:var(--sp-md);font-size:var(--fs-small);font-weight:700;color:var(--accent)}
+a.step:hover .go{text-decoration:underline}
+.hero-dots{letter-spacing:var(--sp-sm);font-weight:800;font-size:var(--fs-h3);
+  margin-top:var(--sp-md);line-height:var(--lh-tight)}
 .hero-dots span:nth-child(1){color:var(--wan)}
 .hero-dots span:nth-child(2){color:var(--tiao)}
 .hero-dots span:nth-child(3){color:var(--tong)}
 
-@media(max-width:680px){.path{grid-template-columns:1fr}}
+@media(max-width:680px){
+  .path{grid-template-columns:1fr}
+  /* 窄屏 h1 退到二级标题尺寸 —— 仍取自同一套尺度，不新造数值 */
+  h1{font-size:var(--fs-h2)}
+}
 @media(max-width:600px){
-  body{font-size:15.5px}
-  h1{font-size:26px}
-  .navin{gap:12px;padding:10px 16px}
-  nav a.nl{font-size:13px}
+  .navin{gap:var(--sp-md);padding:var(--sp-sm) var(--sp-lg)}
+  .wrap{padding:0 var(--sp-lg) var(--sp-4xl)}
+  header.top{padding:var(--sp-xxl) 0 var(--sp-sm)}
+  h2{margin-top:var(--sp-3xl)}
 }

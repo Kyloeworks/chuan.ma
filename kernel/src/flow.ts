@@ -135,7 +135,7 @@ export interface Rules {
   checkReadyHand: boolean; // 查大叫（流局时听牌未胡者获赔）
   checkFlowerPig: boolean; // 查花猪（未打缺者赔付）
   taxRefund: boolean; // 退税（未胡者的杠分退还）
-  cap: number; // 单局封顶番（0 = 不封顶）
+  cap: number; // 单局封顶番（0 = 不封顶）；预设 32
   mustDeclareTenpai?: boolean; // 查叫：流局时未听牌者赔付（合并到 checkReadyHand）
 }
 
@@ -145,7 +145,7 @@ export const defaultRules: Rules = {
   checkReadyHand: true,
   checkFlowerPig: true,
   taxRefund: true,
-  cap: 0,
+  cap: 32,
 };
 
 /** 新建一局（洗牌 + 发牌，未定缺） */
@@ -352,13 +352,53 @@ export function applyConcealedKong(g: GameState, seat: Seat, tile: TileId): void
   draw(g, seat); // 杠后补牌
 }
 
-/** 补杠：在自己碰的基础上加第 4 张（自己摸到或手里有），杠后立即补牌 */
+/**
+ * 补杠前的抢杠候选：其他未胡家能否和这张牌。
+ * 抢杠胡不计杠分 —— 杠没成立，牌被抢走。
+ */
+export function robbableSeats(g: GameState, seat: Seat, tile: TileId): Seat[] {
+  const out: Seat[] = [];
+  for (const s of SEATS) {
+    if (s === seat) continue;
+    const q = g.players[s];
+    if (q.won) continue;
+    if (canRon(q, tile, q.melds.length)) out.push(s);
+  }
+  return out;
+}
+
+/**
+ * 补杠：在自己碰的基础上加第 4 张（自己摸到或手里有），杠后立即补牌。
+ *
+ * 抢杠优先：若这张牌能被其他未胡家和，则**杠不成立**，改为按点炮结算
+ * （番种里 +1「抢杠胡」）。血战到底支持一炮多响，多家可同时胡。
+ */
 export function applyAddedKong(g: GameState, seat: Seat, tile: TileId): void {
   const p = g.players[seat];
   if (!g.config.rules.allowAddedKong) throw new Error('added kong disabled');
   const m = p.melds.find((x) => x.type === 'pong' && x.tile === tile);
   if (!m) throw new Error('no pong to add kong');
   if (p.hand[tile] < 1) throw new Error('no tile to add');
+
+  const robbers = robbableSeats(g, seat, tile);
+  if (robbers.length > 0) {
+    p.hand[tile] -= 1; // 第 4 张被抢走；副露保持「碰」，不转杠，不计杠分
+    g.history.push({ type: 'kong', seat, tile, note: 'added robbed (抢杠胡)' });
+    g.lastKongSeat = -1;
+    g.replacementPending = false;
+    g.pendingDraw = false;
+    g.claim = null;
+    for (const r of robbers) {
+      const q = g.players[r];
+      q.hand[tile]++;
+      finalizeWin(g, r, tile, false, seat, true);
+      q.hand[tile]--;
+    }
+    g.turn = nextActiveSeat(g, seat);
+    g.pendingDraw = true;
+    return;
+  }
+
   p.hand[tile] -= 1;
   m.type = 'kong';
   m.added = true;
@@ -401,13 +441,14 @@ export function applyRon(g: GameState, seat: Seat): WinRecord {
   return rec;
 }
 
-/** 结算一次胡牌（自摸/点炮通用），写入 player.winInfo，处理杠分与血战持续推进 */
+/** 结算一次胡牌（自摸/点炮/抢杠通用），写入 player.winInfo，处理杠分与血战持续推进 */
 function finalizeWin(
   g: GameState,
   seat: Seat,
   tile: TileId,
   selfDraw: boolean,
   by: Seat,
+  robbingKong = false,
 ): WinRecord {
   const p = g.players[seat];
   const kind = canWin(p.hand, p.melds.length) === 'sevenPairs' ? 'sevenPairs' : 'standard';
@@ -418,6 +459,7 @@ function finalizeWin(
     tile,
     kongReplacement: g.replacementPending && selfDraw,
     afterKongDiscard: g.replacementPending && !selfDraw && g.lastKongSeat === (g.claim?.discardSeat ?? -2),
+    robbingKong,
     lastTile: g.wall.length === 0,
   };
   const fans = scoringFor(g, p, ctx);
