@@ -161,8 +161,14 @@
     margin-bottom:calc(var(--sp-lg) * var(--k))}
   .bootbar{height:max(6px,calc(8px * var(--k)));border-radius:var(--r-full);
     background:var(--cm-shell-line);overflow:hidden}
-  .bootbar i{display:block;height:100%;width:0%;border-radius:var(--r-full);background:var(--gold);
-    transition:width .18s ease}
+  /* 宽度由 JS 每帧写入（rAF 平滑逼近），**不能**再加 transition —— 两者叠加会变成双重缓动，
+     看起来发黏、还追不上真实进度。
+     脚本执行前有一段空窗（HTML 下载 + 1.9MB 内联脚本的解析），那时 JS 还没接管，
+     进度条会一直钉在 0%，然后"啪"地跳到几十个点 —— 这就是「前半程不动、最后一下满格」。
+     用一段纯 CSS 预动画把空窗顶掉：从页面第一帧起就在缓慢爬升，JS 接管时读取当前宽度接着走。 */
+  .bootbar i{display:block;height:100%;width:0%;border-radius:var(--r-full);background:var(--gold)}
+  .bootbar i.creep{animation:bootcreep 2.2s cubic-bezier(.22,.68,.32,1) forwards}
+  @keyframes bootcreep{from{width:0%}to{width:12%}}
   .bootmeta{display:flex;justify-content:space-between;margin-top:calc(var(--sp-sm) * var(--k));
     font-size:calc(var(--fs-meta) * var(--k));color:var(--cm-faint);font-variant-numeric:tabular-nums}
   .booterr{margin-top:calc(var(--sp-md) * var(--k));font-size:calc(var(--fs-small) * var(--k));
@@ -202,7 +208,7 @@
   <div class="bootin">
     <div class="bootlogo">chuan<b>.</b>ma</div>
     <div class="bootttl" id="bootTtl"></div>
-    <div class="bootbar"><i id="bootBar"></i></div>
+    <div class="bootbar"><i id="bootBar" class="creep"></i></div>
     <div class="bootmeta"><span id="bootStep"></span><span id="bootPct">0%</span></div>
     <div class="booterr" id="bootErr" hidden></div>
   </div>

@@ -182,16 +182,31 @@ try {
 
   // ── 首屏资产加载进度：加载期间要有可见进度，加载完才能进开局界面 ──
   {
+    // ⚠️ 先等进度条自己收尾再读采样：真机上靠 rAF 平滑走完最后的收尾段，
+    //   但无头环境/后台标签的 rAF 会被节流甚至停跑 —— 那时由 bootFinish 里的 900ms
+    //   兜底定时器把进度落定到 100%。读早了只能看到 90% 出头的那一笔。
+    let fin = null;
+    for (let i = 0; i < 16; i++) {
+      fin = await evJSON(`(function(){
+        var b = window.__PIXI_TABLE__ && window.__PIXI_TABLE__.boot;
+        return JSON.stringify(b ? [b.pct, b.done, b.label || ''] : null);
+      })()`);
+      if (fin && fin[1] === true) break;
+      await sleep(150);
+    }
     const trace = (await evJSON('JSON.stringify(window.__bootTrace || [])')) || [];
     const pcts = trace.map((x) => x[0]);
     const mono = pcts.every((v, i) => i === 0 || v >= pcts[i - 1]);
-    const last = trace[trace.length - 1] || [];
     ck('首屏加载进度可见（采样到 0 与 100 之间的中间态）',
       pcts.length > 0 && pcts.some((p) => p > 0 && p < 100), JSON.stringify(trace.slice(0, 6)));
+    ck('进度不是「一开始就 0、最后一下满」（采样到 ≥8 级台阶）',
+      pcts.length >= 8, `台阶数=${pcts.length} ${JSON.stringify(pcts)}`);
     ck('进度单调不减（并行完成的纹理不会让进度条回退）', mono, JSON.stringify(pcts));
     ck('逐张牌面素材计入进度（出现 x/28 的阶段文案）',
       trace.some((x) => /(^|\D)\d+\/28/.test(x[2] || '')), JSON.stringify(trace.map((x) => x[2]).filter(Boolean).slice(0, 4)));
-    ck('加载完成到 100% 且标记 done', last[0] === 100 && last[1] === true, JSON.stringify(last));
+    const last = trace[trace.length - 1] || [];
+    ck('加载完成到 100% 且标记 done', fin && fin[0] === 100 && fin[1] === true,
+      'trace末笔=' + JSON.stringify(last) + ' 终态=' + JSON.stringify(fin));
     // 加载层有「最短展示时长」（否则 ~400ms 的加载会让进度条一闪而过），所以要轮询等它淡出
     let BS = null;
     for (let i = 0; i < 14; i++) {
