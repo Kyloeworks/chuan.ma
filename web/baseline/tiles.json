@@ -1,6 +1,6 @@
 {
   "__meta": {
-    "builtAt": "2026-09-20T06:36:54.883Z",
+    "builtAt": "2026-09-20T10:13:21.524Z",
     "tiles": 28,
     "raster": "132x185",
     "tokensVersion": "1.0.0",
@@ -117,15 +117,15 @@
     },
     "face9": {
       "ink": 0.737,
-      "lumMean": 237.068,
-      "lumStd": 21.727,
-      "grad": 11.267,
+      "lumMean": 236.747,
+      "lumStd": 21.854,
+      "grad": 12.866,
       "chroma": {
-        "red": 0.011,
-        "green": 0.196,
+        "red": 0.029,
+        "green": 0.179,
         "blue": 0
       },
-      "detail": 5.609
+      "detail": 6.065
     },
     "face10": {
       "ink": 0.907,
@@ -200,16 +200,16 @@
       "detail": 5.63
     },
     "face16": {
-      "ink": 0.741,
-      "lumMean": 236.937,
-      "lumStd": 21.774,
-      "grad": 11.43,
+      "ink": 0.779,
+      "lumMean": 237.758,
+      "lumStd": 21.155,
+      "grad": 11.277,
       "chroma": {
         "red": 0,
-        "green": 0.197,
+        "green": 0.156,
         "blue": 0
       },
-      "detail": 7.858
+      "detail": 7.472
     },
     "face17": {
       "ink": 0.842,

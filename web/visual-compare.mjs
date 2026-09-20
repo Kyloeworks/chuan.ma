@@ -40,8 +40,10 @@ const oldArg = ARGV.indexOf('--old');
 // 资产当基准（本轮实际踩到：v3 已入库，但默认仍指向 v2，对照的是两轮前的画法）。
 const dir = path.resolve(here, 'baseline');
 const snapshots = existsSync(dir)
-  ? readdirSync(dir).filter((f) => /^tiles-ui-v\d+\.js$/.test(f))
-    .sort((a, b) => (+a.match(/\d+/)[0]) - (+b.match(/\d+/)[0]))
+  // 快照名允许带小档（tiles-ui-v3.1.js）—— 版本一旦有 3.1 / 3.2，只认 \d+ 会让新快照
+  // 被静默忽略，对照基准又退回上一档，diff 里混进两轮改动。
+  ? readdirSync(dir).filter((f) => /^tiles-ui-v[\d.]+\.js$/.test(f))
+    .sort((a, b) => parseFloat(a.match(/([\d.]+)\.js/)[1]) - parseFloat(b.match(/([\d.]+)\.js/)[1]))
   : [];
 let oldFile;
 if (oldArg >= 0 && ARGV[oldArg + 1]) oldFile = path.resolve(here, ARGV[oldArg + 1]);

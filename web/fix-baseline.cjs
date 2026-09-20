@@ -19,11 +19,14 @@ const repo = path.join(__dirname, '..');
 const REF = process.argv[2];
 const LABEL = process.argv[3];
 
-// 每个版本的识别特征 —— 防止「取到的 commit 其实装的是另一版」这类静默错配
+// 每个版本的识别特征 —— 防止「取到的 commit 其实装的是另一版」这类静默错配。
+// 版本号带小档（3.1 / 3.2 …）时按同样规则在此登记一条，别只更新 SIGNATURE 的键名而
+// 忘了写 has —— 特征写不出来的快照，下一轮就分不清它到底是哪一版。
 const SIGNATURE = {
   v1: { has: ['MJTiles'], lacks: ['nid(', 'glyphPath'] },
   v2: { has: ['nid(', "version: '2."], lacks: ['glyphPath'] },
-  v3: { has: ['glyphPath', "version: '3."], lacks: [] },
+  v3: { has: ['glyphPath', "version: '3.0"], lacks: [] },
+  'v3.1': { has: ['glyphPath', "version: '3.1", 'RED_STICKS'], lacks: [] },
 };
 
 const dir = path.join(__dirname, 'baseline');

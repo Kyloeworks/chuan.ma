@@ -149,47 +149,76 @@ for (const rank of [2, 3, 4, 5, 6, 7, 8, 9]) {
 }
 check('1 条是鸟、不是竹节（红冠用 comb 色，不计入红节）', redCanes(9).length === 0 && greenCanes(9) === 0);
 
-console.log('\n--- v3.1 条子：8 条传统锯齿版式 ---');
+console.log('\n--- v3.2 条子：8 条「两竖 + 山形」×2 ---');
 {
   const svg8 = MJ.face(16);
   const n8 = (svg8.match(/fill="url\(#[^"]*?-tiao\)"/g) || []).length;
   check('8 条共 8 根竹节', n8 === 8, '实际 ' + n8);
-  const rot8 = (svg8.match(/<g transform="rotate\(/g) || []).length;
-  check('8 条的 8 根竹节都带旋转（锯齿版式）', rot8 === 8, '实际 ' + rot8);
-  check('其余条子不带旋转（旧版式输出逐字节不变）',
-    [11, 12, 13, 14, 15, 17].every((i) => !/<g transform="rotate\(/.test(MJ.face(i))));
+
+  // 从解算结果断言「形状语义」而不是只断言数字 —— 这样「竖杆被改成斜的」「山形翻面」
+  // 这类会毁掉辨识度的错，才会被抓住（它们不会让任何数值越界）。
+  const segs = MJ.tiao8Segments();
+  const verticals = segs.filter((s) => s.kind === 'v');
+  const apex = segs.filter((s) => s.kind === 'apex');
+  check('8 条 = 4 根竖杆 + 4 根山形斜杆', verticals.length === 4 && apex.length === 4,
+    `竖 ${verticals.length} / 斜 ${apex.length}`);
+  check('8 条的 4 根竖杆完全竖直（rot = 0）', verticals.every((s) => s.rot === 0),
+    verticals.map((s) => s.rot).join(','));
+  const angs = apex.map((s) => Math.abs(s.rot));
+  check('8 条山形斜杆比竖直方向斜得多（35°~50°）', angs.every((a) => a > 35 && a < 50),
+    angs.map((a) => a.toFixed(1) + '°').join(','));
+  check('8 条山形左右镜像（±角成对）',
+    Math.abs(angs[0] - angs[1]) < 1e-6 && Math.abs(angs[2] - angs[3]) < 1e-6,
+    angs.map((a) => a.toFixed(2)).join(','));
+  const vLen = verticals[0].len;
+  check('8 条山形斜杆比竖杆短（0.6~0.9 倍）',
+    apex.every((s) => s.len / vLen > 0.6 && s.len / vLen < 0.9),
+    (apex[0].len / vLen).toFixed(3) + ' 倍');
+  check('8 条两根竖杆撑到整幅左右两端（比常规内区更外）',
+    MJ.TIAO8.uSide[0] < 0 && MJ.TIAO8.uSide[1] > 1, MJ.TIAO8.uSide.join(','));
+  // 上下两组镜像：斜杆的 cy 分别落在自己的组带内，且两组方向相反（上 ∧ / 下 ∨）
+  check('8 条上组是 ∧、下组是 ∨（上下镜像，中间留空）',
+    apex[0].rot > 0 && apex[2].rot < 0 && apex[0].cy < apex[2].cy,
+    `rot ${apex[0].rot.toFixed(1)} / ${apex[2].rot.toFixed(1)}，cy ${apex[0].cy.toFixed(1)} / ${apex[2].cy.toFixed(1)}`);
 
   // 独立复算：把 8 根的旋转矩形四角算出来，断言全部落在内凹面板内（5..55 / 5..79）。
   // 越界的话牌面会被面板裁掉一角 —— 这类问题在指纹里几乎看不出来（面积占比太小）。
-  const U = MJ.ZIG_U, ROW = MJ.ZIG_ROW, S = MJ.STICK8;
-  const pxf = (u) => 12 + u * 36, pyf = (v) => 12 + v * 60;
-  const outside = [], mids = [];
-  for (const vs of [ROW.w, ROW.m]) {
-    for (let i = 0; i < U.length - 1; i++) {
-      const x1 = pxf(U[i]), y1 = pyf(vs[i]), x2 = pxf(U[i + 1]), y2 = pyf(vs[i + 1]);
-      const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy) * (1 + S.over * 2);
-      const ux = dx / Math.hypot(dx, dy), uy = dy / Math.hypot(dx, dy);
-      const cx = (x1 + x2) / 2, cy = (y1 + y2) / 2;
-      mids.push({ u: (U[i] + U[i + 1]) / 2, v: (vs[i] + vs[i + 1]) / 2 });
-      for (const sl of [-1, 1]) for (const sw of [-1, 1]) {
-        const px = cx + sl * (len / 2) * ux + sw * (S.w / 2) * -uy;
-        const py = cy + sl * (len / 2) * uy + sw * (S.w / 2) * ux;
-        if (px < 5 || px > 55 || py < 5 || py > 79) outside.push(`(u${i},${sl},${sw})=${px.toFixed(1)},${py.toFixed(1)}`);
-      }
+  const outside = [];
+  for (const s of segs) {
+    const th = s.rot * Math.PI / 180;
+    const ux = Math.sin(th), uy = Math.cos(th);      // 长度方向
+    const wx = Math.cos(th), wy = -Math.sin(th);     // 宽度方向
+    for (const sl of [-1, 1]) for (const sw of [-1, 1]) {
+      const px = s.cx + sl * (s.len / 2) * ux + sw * (MJ.TIAO8.w / 2) * wx;
+      const py = s.cy + sl * (s.len / 2) * uy + sw * (MJ.TIAO8.w / 2) * wy;
+      if (px < 5 || px > 55 || py < 5 || py > 79) outside.push(`${s.kind}=${px.toFixed(1)},${py.toFixed(1)}`);
     }
   }
   check('8 条 8 根竹节全部落在面板内（不被裁角）', outside.length === 0, outside.join(' '));
 
-  // 版式语义：上行是倒 M（首顶点在高位）、下行是 M（首顶点在低位），且两行峰谷横向对齐 ——
-  // 这正是「上四条倒 M + 下四条 M」的传统画法；一旦某行的 first 写反，整张 8 条会上下颠倒。
-  check('8 条上行首顶点在高位（倒 M / W 形）', ROW.w[0] < ROW.w[1], 'w=' + ROW.w.join(','));
-  check('8 条下行首顶点在低位（M 形）', ROW.m[0] > ROW.m[1], 'm=' + ROW.m.join(','));
-  const topV = [ROW.w[0], ROW.w[1]].sort((a, b) => a - b);
-  const botV = [ROW.m[0], ROW.m[1]].sort((a, b) => a - b);
-  check('8 条上下两行的峰谷都落在中线上（中部收腰成沙漏）',
-    topV[0] < botV[0] && botV[1] > topV[1] && topV[1] < botV[0],
-    `上行 ${topV.join('..')} / 下行 ${botV.join('..')}`);
-  check('8 条锯齿横向覆盖整幅（两端接近面板内区边缘）', U[0] <= 0.07 && U[U.length - 1] >= 0.93, U.join(','));
+  // 竖杆与斜杆必须互不重叠（叠在一起会糊成一团，M 就读不出来了）
+  const vxs = verticals.map((s) => s.cx).sort((a, b) => a - b);
+  const legIn = apex.map((s) => s.cx).sort((a, b) => a - b);
+  check('8 条斜杆整体落在两根竖杆之间（不糊在一起）',
+    legIn[0] - MJ.TIAO8.w / 2 > vxs[0] + MJ.TIAO8.w / 2 && legIn[3] + MJ.TIAO8.w / 2 < vxs[3] - MJ.TIAO8.w / 2,
+    `竖杆 ${vxs.join(',')} / 斜杆 ${legIn.join(',')}`);
+
+  check('其余条子不带旋转（输出逐字节不变）',
+    [11, 12, 13, 14, 15, 17].every((i) => !/<g transform="rotate\(/.test(MJ.face(i))));
+}
+
+console.log('\n--- v3.2 条子：1 条 = 幺鸡 ---');
+{
+  const svg1 = MJ.face(9);
+  check('1 条没有竹节（唯一不按数量表达的条子）', greenCanes(9) === 0 && redCanes(9).length === 0);
+  // 简笔画（几个基本图元）与「整幅彩绘」的区别，用图元数量兜住：
+  // 冠 3 根 + 喙 2 瓣 + 眼 2 + 尾羽 3 + 翅 1 + 体 1 + 头 1 + 结 3 + 足 5 + 影 1 ≈ 20+
+  const shapes = (svg1.match(/<(path|ellipse|circle)\b/g) || []).length;
+  check('1 条是整幅彩绘（≥ 16 个图元：冠/喙/眼/颈/翅/尾/足/结）', shapes >= 16, '实际 ' + shapes);
+  // 红件数量用**令牌里的朱红**来数，不写死色值：色板改了（tokens.js 一处），断言仍成立。
+  const red = (dom.window.CMTokens && dom.window.CMTokens.tiao.comb) || '#c0392b';
+  const redParts = (svg1.match(new RegExp('fill="' + red + '"', 'gi')) || []).length;
+  check('1 条的红贯穿头尾（三根红冠 + 尾根红结 ≥ 5 件）', redParts >= 5, '实际 ' + redParts + ' 件');
 }
 
 /* ==========================================================================

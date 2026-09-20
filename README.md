@@ -164,17 +164,25 @@ Four things hold the line:
 
 The artwork is not free-form: real sets draw the bamboo suit in a specific way, and the differences are
 usable information at a table. Four of the nine bamboo tiles carry a **red locating cane** — 5 bamboo
-(middle cane red), 7 bamboo (top cane red) and 9 bamboo (the whole middle row red) — and 8 bamboo is the
-only tile in the game laid out as **two zigzags** (four canes forming an M underneath, four forming an
-inverted M on top), which is why it is recognisable at a glance and why it has nicknames like BMW and
-坦克. `tiles-ui.js` draws them that way: `RED_STICKS` names which cane is red per rank, `ZIG_U`/`ZIG_ROW`
-define the 8-bamboo zigzag, and the red canes share the green ones' material and lighting exactly — they
-are the same cane in another colour, not a sticker.
+(middle cane red), 7 bamboo (top cane red) and 9 bamboo (the whole middle row red). 8 bamboo is the only
+tile in the game drawn as **two verticals plus a mountain**: in each half, one cane at each side stands
+straight up while two shorter, steeply-angled canes (~42°) meet in the middle — a ∧ in the top half, a ∨
+in the bottom half, mirrored, with the band between them left empty. That is why it is recognisable at a
+glance and why it has nicknames like BMW and 坦克. And 1 bamboo is the one tile that does not count
+anything at all: it is a whole bird (幺鸡) — crest, beak, eye, wing, long tail plumes, feet, and the red
+knot at the base of the tail that survives from the tile's origin as a string of coins.
+
+Those proportions were **measured off a real tile render, not eyeballed**: the reference artwork is
+rasterised, then scanned row by row for ink runs to recover where the canes actually sit, how far they
+lean and how their lengths relate. `tiles-ui.js` keeps the results as `RED_STICKS` (which cane is red per
+rank) and `TIAO8` / `tiao8Segments()` (the 8-bamboo layout), and the red canes share the green ones'
+material and lighting exactly — they are the same cane in another colour, not a sticker.
 
 This is what makes the artwork teach. A player who knows the red mark reads 9 bamboo off a discard
-without counting; a player who only knows "nine canes somewhere" loses that half-second every round.
-`web/tiles.smoke.mjs` asserts the count and placement of the red canes and the zigzag geometry, and
-`docs/ui-references.md` records where the conventions come from.
+without counting; a player who knows that 8 bamboo is the only one with straight sides finds it without
+counting at all. `web/tiles.smoke.mjs` asserts the count and placement of the red canes and the whole
+8-bamboo geometry (four verticals, four mirrored ~42° legs, legs shorter than verticals, nothing
+overlapping or clipped), and `docs/ui-references.md` records where the conventions come from.
 
 ```bash
 npm run visual                       # diff artwork against the stored baseline

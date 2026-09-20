@@ -169,8 +169,9 @@
 
   <h2><span class="badge b1">条</span> Bamboo · 一索 – 九索（1 索为幺鸡）</h2>
   <div class="grid" id="gTiao"></div>
-  <p class="cap">按实体牌面画法：<b>5 条</b>正中一根红、<b>7 条</b>最上一根红、<b>9 条</b>中间一行三根红 ——
-    这三张不看数字也能认；<b>8 条</b>是唯一按锯齿排布的一张（上四条倒 M、下四条 M，中部收腰）。</p>
+  <p class="cap">按实体牌面画法：<b>1 条</b>是一整只幺鸡（唯一不按数量表达的条子）；
+    <b>5 条</b>正中一根红、<b>7 条</b>最上一根红、<b>9 条</b>中间一行三根红 —— 这三张不看数字也能认；
+    <b>8 条</b>是唯一左右各一根<b>竖杆</b>、中间一个「山形」的（上组 ∧、下组 ∨，中间留空）。</p>
 
   <h2><span class="badge b2">筒</span> Dots · 一筒 – 九筒</h2>
   <div class="grid" id="gTong"></div>
@@ -203,10 +204,15 @@
     色板与强度集中在 <code>tokens.js</code>，绘制代码不硬写色值。<br>
     <b>v3.1 条子实体画法</b>：红色定位节（<code>RED_STICKS</code>：5 条正中 / 7 条最上 /
     9 条中间一行）与绿节<b>同结构、同受光</b>，只换色系 —— 换色板的实现是
-    <code>stick()</code> 收一个色板参数，不是另写一套画法。
-    <b>8 条</b>改传统锯齿版式（<code>ZIG_U / ZIG_ROW</code>）：两组共用一条 5 顶点折线，
-    每段一根竹节并按段角旋转、两端各外延 10% 使相邻搭接；上行是倒 M（W）、下行是 M，
-    中部收腰成沙漏 —— 这是实体牌面的通行画法（BMW / 坦克 / 脚开开）。<br>
+    <code>stick()</code> 收一个色板参数，不是另写一套画法。<br>
+    <b>v3.2 八条与幺鸡</b>：<b>8 条</b>改成「两根竖杆 + 中间一个山形」×2（<code>TIAO8</code> /
+    <code>tiao8Segments()</code>）—— 每组左右各一根<b>完全竖直</b>的杆，中间两根约 <b>42°</b> 的
+    短斜杆合成 ∧（上组）/ ∨（下组），上下镜像、中间留空。这组比例是<b>从实体牌面的位图量出来的</b>
+    （逐行扫墨迹段得到竖杆位置、倾角、斜杆/竖杆的长度比），不是照感觉调的；
+    斜杆比竖杆短约 24%，顶点距本组近端 36%。
+    <b>1 条</b>从「椭圆身体 + 圆脑袋」重绘成整幅彩绘幺鸡：冠（3 根红羽）· 上下两瓣金喙 · 眼+高光
+    · 颈胸身体（左上受光球面渐变）· 亮绿翅羽（3 道羽线）· 三根向左下散开的长尾羽 · 金双足
+    · <b>尾根红结</b>（源自「一条＝一串贯钱 + 一个红结」的来历）。<br>
     <b>v3 字体</b>：汉字是<b>内嵌矢量路径</b>（<code>glyphs.js</code>，由
     <code>tools/extract-glyphs.py</code> 从霞鹜文楷 TC Bold 抽取，SIL OFL 1.1，见
     <code>docs/OFL.txt</code>）—— 不依赖系统字体，任何设备、任何尺寸下字形一致，
@@ -217,7 +223,7 @@
     （讲哪张牌就画哪张牌），并带两个用真实牌面出题的随堂练习。
   </div>
 
-  <footer>川麻工具集 · UI 资产 · 程序化 SVG 生成，无第三方图片素材 · 字形轮廓 OFL 1.1 · v3.1 · 2026-09-20</footer>
+  <footer>川麻工具集 · UI 资产 · 程序化 SVG 生成，无第三方图片素材 · 字形轮廓 OFL 1.1 · v3.2 · 2026-09-20</footer>
 </div>
 <script>/* 川麻视觉设计令牌 · 单一源 (single source of truth)
  * ---------------------------------------------------------------------------
@@ -544,7 +550,7 @@
 })(typeof window !== 'undefined' ? window : this);
 
 ;
-/* 川麻麻将牌面资产 v3.1 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背）
+/* 川麻麻将牌面资产 v3.2 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背）
  * ---------------------------------------------------------------------------
  * 用法：MJTiles.face(tileId) / MJTiles.back() / MJTiles.CN
  *   tileId 0..26 =>  suit = floor(id/9)  rank = id%9+1
@@ -562,8 +568,11 @@
  *   - **红色定位节**：5 条正中一根红、7 条最上一根红、9 条中间一行三根红
  *     （见 RED_STICKS）。这是实体牌的通行画法，也是新手最快建立「颜色 → 牌名」
  *     条件反射的三张牌。红色节与绿色节**同结构、同受光**，只换色系。
- *   - **8 条改传统锯齿版式**：顶部四条倒 M（W）+ 底部四条 M，中间收腰成沙漏轮廓
- *     （见 ZIG_U / ZIG_ROW / zigSegments8）。此前是 2×4 的平铺方阵，与实体牌不符。
+ *   - **8 条 = 「两根竖杆 + 中间一个山形」×2**（见 TIAO8 / segments8）：每组左右各一根
+ *     **完全竖直**的杆、中间两根约 42° 的短斜杆合成 ∧（上组）/ ∨（下组），上下镜像、
+ *     中间留空。这是实体八条的画法（坦克 / BMW / 脚开开）。
+ *   - **1 条 = 幺鸡**：整幅彩绘的鸟（冠 / 喙 / 眼 / 翅羽 / 长尾羽 / 双足 + 尾根红结），
+ *     不是「一根竹子加个鸟头」。它是唯一不按数量表达的条子。
  *
  * ⚠ 三个必须守住的约束（破坏会静默失效）：
  *   1. 外层 <svg> 必须原样保留 `width="100%" height="100%"` ——
@@ -906,7 +915,7 @@
   /* ================= 条：圆柱竹节 =================
    * 版式遵循实体牌面的通行画法（不是随便摆满）：
    *   2 条两竖 · 3 条上一下二 · 4 条两列各二 · 5 条四角 + 正中 · 6 条上三下三
-   *   7 条上一下三下三 · 8 条上四下四锯齿（见下方 zigSegments8）· 9 条三行三列
+   *   7 条上一下三下三 · 8 条「两竖 + 山形」×2（见 TIAO8 / segments8）· 9 条三行三列
    * 坐标是面板内区的归一值（u 横向、v 纵向，0..1），**行优先**：先上后下、同行先左后右。
    * 索引顺序有意义 —— RED_STICKS 就是按索引指定「哪几根是红节」。 */
   var STICKS = {
@@ -928,42 +937,76 @@
    *      三张牌各占一种「红的位置类型」（点 / 顶 / 带），互不混淆。 */
   var RED_STICKS = { 5: { 2: 1 }, 7: { 0: 1 }, 9: { 3: 1, 4: 1, 5: 1 } };
 
-  /* ---- 8 条：传统「顶部四条倒 M（W 形）+ 底部四条 M 形」锯齿版式
-   *      （实体牌面的通行画法：俗称坦克 / BMW / 脚开开 —— 下方 M、上方 W）
+  /* ---- 8 条：传统版式 =「两根竖杆 + 中间一个山形」×2（上下镜像）
    *
-   *      做法：两组共用同一条横向锯齿折线（5 个顶点 → 4 段），每段摆一根竹节并
-   *      按段的方向旋转。两个关键细节，少一个就散架：
-   *        ① 竹节**两端各外延 10%**，使相邻两根在折点处搭接 —— 否则折点处有豁口，
-   *           4 根各自转了点角度的短棒读不出连续的 M / W。
-   *        ② 上行为倒 M（首顶点在高位）、下行为 M（首顶点在低位），两行的峰谷
-   *           横向对齐 —— 于是中间收腰，整体呈「沙漏」轮廓，这正是八条的辨识特征。 */
-  var ZIG_U = [0.06, 0.28, 0.5, 0.72, 0.94];        // 折线顶点横向位置（等距，两端略内收）
-  var ZIG_ROW = {
-    w: [0.055, 0.435, 0.055, 0.435, 0.055],          // 上行 = 倒 M（谷在中列，指向下）
-    m: [0.945, 0.565, 0.945, 0.565, 0.945]           // 下行 = M（峰在中列，指向上）
+   *  几何是**从实体牌面量出来的**，不是猜的：把参考资产（FluffyStuff/riichi-mahjong-tiles 的
+   *  Sou8）光栅化后逐行扫墨迹段，得到三组可复核的关系 ——
+   *    ① 每组 4 根：左右两根**完全竖直**（u 不随行变化），中间两根斜杆合成一个
+   *       「∧」（上组）/「∨」（下组），顶点在整幅中线上（u=0.5）。
+   *    ② 斜杆与竖直方向约 **42°**（比"均匀锯齿"陡得多），长度只有竖杆的 **~0.77**。
+   *    ③ 斜杆尖端离本组**近端**约 36%、远端约 93% —— 即山形不顶到两端的边。
+   *  面积复核：中间区域的墨迹面积 ≈ 2 根斜杆，证实中间是 2 根而不是 3~4 根
+   *  （3~4 根就成了锯齿，也就是上一版做错的地方 —— 那版没有竖杆、四根等斜，读不出 M）。
+   *
+   *  上下两组互为镜像、中间留空，这正是「坦克 / BMW / 脚开开」那张牌。
+   *  ⚠ 竖杆比其它点数更靠外（u 取到 -0.015 / 1.015，即撑出常规内区）—— 实体八条就是
+   *    撑满的；面板 5..55 留有约 3.7 单位余量，改宽度或位置时要重新核对这条。 */
+  var TIAO8 = {
+    bandTop: [0.05, 0.44],    // 上组竖杆的起止（归一 v）
+    bandBot: [0.56, 0.95],    // 下组
+    uSide: [-0.015, 1.015],   // 两根竖杆的横向位置
+    uApex: 0.5,               // 山形顶点（整幅中线）
+    uFoot: 0.17,              // 斜杆外端横向位置（镜像即 0.83）
+    insetNear: 0.36,          // 山形顶点距本组「近端」的比例
+    insetFar: 0.93,           // 斜杆外端距本组「近端」的比例
+    w: 5.6                    // 竹节宽度
   };
-  var STICK8 = { w: 5.8, over: 0.10 };
 
-  /** 生成 8 条的 8 段竹节坐标：cx/cy 段中点、len 段长（含两端外延）、rot 旋转角（度） */
-  function zigSegments8() {
-    var segs = [], rows = [ZIG_ROW.w, ZIG_ROW.m], r, i;
-    for (r = 0; r < rows.length; r++) {
-      var vs = rows[r];
-      for (i = 0; i < ZIG_U.length - 1; i++) {
-        var x1 = px(ZIG_U[i]), y1 = py(vs[i]), x2 = px(ZIG_U[i + 1]), y2 = py(vs[i + 1]);
-        var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
-        segs.push({
+  /** 解算 8 条的 8 根竹节：{cx, cy, len, rot, kind}
+   *  kind = 'v'（竖杆）/ 'apex'（山形斜杆），供测试断言形状语义而不只是数值。 */
+  function segments8() {
+    var out = [], bands = [
+      // 上组：近端=上边，山形是 ∧（顶点在上方）
+      { from: TIAO8.bandTop[0], to: TIAO8.bandTop[1], apexAt: 'from' },
+      // 下组：近端=下边，山形是 ∨（顶点在下方）
+      { from: TIAO8.bandBot[0], to: TIAO8.bandBot[1], apexAt: 'to' }
+    ], b, i;
+    for (b = 0; b < bands.length; b++) {
+      var band = bands[b], span = band.to - band.from;
+      // ① 两根竖杆：贯穿本组全高，不旋转
+      for (i = 0; i < 2; i++) {
+        out.push({
+          cx: px(TIAO8.uSide[i]),
+          cy: py((band.from + band.to) / 2),
+          len: span * (Y1 - Y0),
+          rot: 0, kind: 'v'
+        });
+      }
+      // ② 两根斜杆：外端在 insetFar、顶点在 insetNear（近端取本组的上/下边）
+      var vApex = band.apexAt === 'from' ? band.from + TIAO8.insetNear * span
+        : band.to - TIAO8.insetNear * span;
+      var vFoot = band.apexAt === 'from' ? band.from + TIAO8.insetFar * span
+        : band.to - TIAO8.insetFar * span;
+      for (i = 0; i < 2; i++) {
+        var uf = i === 0 ? TIAO8.uFoot : 1 - TIAO8.uFoot;
+        var x1 = px(uf), y1 = py(vFoot), x2 = px(TIAO8.uApex), y2 = py(vApex);
+        var dx = x2 - x1, dy = y2 - y1;
+        out.push({
           cx: (x1 + x2) / 2, cy: (y1 + y2) / 2,
-          len: len * (1 + STICK8.over * 2),
-          // 竹节默认竖着画（长度沿 +y）。要把 (0,1) 转到 (dx,dy)，SVG 顺时针旋转角为
-          // atan2(-dx, dy)；写成 atan2(dx, dy) 会让整个锯齿反向（M 变 W），不报错。
-          rot: Math.atan2(-dx, dy) * 180 / Math.PI
+          len: Math.sqrt(dx * dx + dy * dy),
+          // 竹节默认竖画（长度沿 +y）。要把 (0,1) 转到 (dx,dy)，SVG 顺时针旋转角为
+          // atan2(-dx, dy)；写成 atan2(dx, dy) 会让整个山形朝外翻（∧ 变 ∨），且不报任何错。
+          // 矩形绕中心旋转 180° 与不旋转等价，所以这里把角度归一化到 ±90°，便于断言。
+          rot: norm180(Math.atan2(-dx, dy) * 180 / Math.PI),
+          kind: 'apex'
         });
       }
     }
-    return segs;
+    return out;
   }
+  function norm180(a) { return a > 90 ? a - 180 : (a < -90 ? a + 180 : a); }
 
+  /** 生成 8 条的 8 段竹节坐标：cx/cy 段中点、len 段长（含两端外延）、rot 旋转角（度） */
   function stick(D, cx, cy, w, h, rot, pal) {
     var P = pal || PAL_TIAO;
     // 横向渐变：圆柱受光 —— 两侧收暗，但亮区要够宽，否则整根竹子发沉（实测过：
@@ -993,9 +1036,9 @@
 
   function tiaoSticks(D, n) {
     if (n === 8) {
-      var segs = zigSegments8(), s8 = '', k;
+      var segs = segments8(), s8 = '', k;
       for (k = 0; k < segs.length; k++) {
-        s8 += stick(D, segs[k].cx, segs[k].cy, STICK8.w, segs[k].len, segs[k].rot, null);
+        s8 += stick(D, segs[k].cx, segs[k].cy, TIAO8.w, segs[k].len, segs[k].rot, null);
       }
       return s8;
     }
@@ -1006,24 +1049,68 @@
     return s;
   }
 
-  /* 一索 = 幺鸡 */
+  /* ================= 一索 = 幺鸡 =================
+   * 一条是**唯一不按数量表达**的条子：其它八张画 n 根竹子，它画一只完整的鸟。
+   * v3.2 从「椭圆身体 + 圆脑袋 + 一个三角嘴」重绘成整幅彩绘，部件与来历都对齐实体牌：
+   *   冠（红，三根羽）· 上下两瓣喙（金）· 眼 + 高光 · 颈胸与身体（左上受光的球面渐变）
+   *   · 翅羽（亮绿叶片 + 三道羽线）· 三根向左下散开的长尾羽 · 双足（金）· 影子
+   *   · **尾根一枚红结** —— 这不是装饰随手加的：早期「一条」的图案是一串用绳穿的贯钱
+   *     加一个红结，后来红结被画成鸟头、贯钱被画成鸟身，红结就留在尾根成了固定形制。
+   * 受光服从整副牌的左上 45°：头/身用左上偏心径向渐变，翅羽高光在上缘，腹部压暗。
+   * 坐标主要在面板内区（x 12..48）；尾巴与喙允许小幅外扩，面板是 5..55，不会越界。 */
   function tiaoBird(D) {
-    var bodyG = D.radial('birdbody', 0.38, 0.32, 0.78, 0.36, 0.3, [
+    var bodyG = D.radial('birdbody', 0.34, 0.28, 0.9, 0.32, 0.24, [
+      [0, COL.birdWing], [0.52, COL.birdBody], [1, COL.birdDark]
+    ]);
+    var headG = D.radial('birdhead', 0.34, 0.26, 0.95, 0.32, 0.22, [
       [0, COL.birdWing], [0.55, COL.birdBody], [1, COL.birdDark]
     ]);
-    return '<g>' +
-      '<ellipse cx="30" cy="46" rx="12" ry="15" fill="url(#' + bodyG + ')"/>' +
-      '<path d="M30 31 q-9 -6 -6 -16 q7 4 9 12 z" fill="' + COL.birdDark + '"/>' +
-      '<circle cx="30" cy="25" r="8.5" fill="' + COL.birdBody + '"/>' +
-      '<circle cx="27.2" cy="22.6" r="3.4" fill="' + COL.birdWing + '" opacity="0.55"/>' +
-      '<path d="M30 17 q3 -7 8 -8 q-1 6 -5 9 z" fill="' + COL.comb + '"/>' +
-      '<circle cx="27" cy="24" r="1.7" fill="' + COL.eye + '"/>' +
-      '<circle cx="26.5" cy="23.3" r="0.6" fill="#ffffff" opacity="0.8"/>' +
-      '<path d="M38 26 l7 3 l-7 3 z" fill="' + COL.beak + '"/>' +
-      '<path d="M18 50 q-8 6 -10 16 q10 -2 14 -9 z" fill="' + COL.birdWing + '" opacity="0.85"/>' +
-      '<path d="M42 50 q8 6 10 16 q-10 -2 -14 -9 z" fill="' + COL.birdWing + '" opacity="0.85"/>' +
-      '<path d="M22 60 l-3 12 M38 60 l3 12" stroke="' + COL.birdDark + '" stroke-width="2" stroke-linecap="round"/>' +
-      '</g>';
+    var tailG = D.linear('birdtail', 0, 0, 0.4, 1, [
+      [0, COL.birdBody], [1, COL.birdDark]
+    ]);
+    var ink = COL.tiaoNode;   // 羽线用的深墨（与竹节暗部同色，保持条子整体同族）
+    var s = '';
+    // ① 尾羽：三根向左下散开的長羽，最深的一根在最外层做轮廓，短的叠出层次
+    s += '<path d="M23.6 49 C15.2 54.4 10.4 61.4 10 71.4 C17.8 70.2 24.4 63.4 27.2 55.4 Z" fill="url(#' + tailG + ')"/>';
+    s += '<path d="M24.2 51.2 C17.6 55.8 14 61.4 13.6 68.4 C19.2 67.2 24.2 61.6 26.8 55.2 Z" fill="' + COL.birdBody + '"/>';
+    s += '<path d="M25.2 53.4 C20.4 57.4 17.6 61.4 17.4 66.4 C21.4 65.2 25.2 60.6 27 55.8 Z" fill="' + COL.birdWing + '" opacity="0.9"/>';
+    s += '<path d="M23 61 C19 63.4 15.6 66.4 13.8 70" stroke="' + ink + '" stroke-width="0.5" fill="none" opacity="0.45"/>';
+    // ② 身体：蛋形（胸在下右、尾根在左），底部压暗
+    s += '<path d="M30.5 30.6 C38 30.6 43.7 36.6 43.9 44.2 C44.1 52.6 38.8 59.6 30.4 60 C22 60.4 16.8 52.8 16.8 44.4 C16.8 36.6 22.8 30.6 30.5 30.6 Z" fill="url(#' + bodyG + ')"/>';
+    // ③ 尾根红结（贯钱遗意）——必须画在身体**之后**：结就系在尾羽钻出身体的那一点，
+    //    画在身体之前会被身体整个盖住（踩过：字符图里那一块只剩 G，红结凭空消失）。
+    s += '<path d="M19 53.4 l-4 -2.8 l0.3 4.8 z" fill="' + COL.comb + '"/>';
+    s += '<path d="M19 53.4 l4 -2.8 l-0.3 4.8 z" fill="' + COL.comb + '"/>';
+    s += '<circle cx="19" cy="53.4" r="1.5" fill="' + COL.comb + '"/>';
+    // ④ 翅羽：亮绿叶形 + 三道羽线（自上向下压暗，读作羽毛分层）
+    s += '<path d="M27.2 37.2 C34.8 36.2 40.2 41.4 40 47.6 C39.8 53.8 35 58.4 28.4 58.2 C24.2 53.6 23.8 44.4 27.2 37.2 Z" fill="' + COL.birdWing + '" opacity="0.95"/>';
+    s += '<path d="M28.8 41.4 C33.6 41.6 37 44.6 37.8 48.6" stroke="' + ink + '" stroke-width="0.65" fill="none" opacity="0.45"/>';
+    s += '<path d="M28.4 45.8 C32.8 46.2 35.6 48.8 36.6 52.6" stroke="' + ink + '" stroke-width="0.65" fill="none" opacity="0.45"/>';
+    s += '<path d="M28.6 50.4 C32 51 34.2 53 35 55.6" stroke="' + ink + '" stroke-width="0.65" fill="none" opacity="0.45"/>';
+    // ⑤ 头（与身体叠出颈部，不是浮在旁边的圆）
+    s += '<path d="M36.4 16.4 C41.8 17 45 21.4 44.6 26.6 C44.2 31.4 41 34.6 36.8 34.6 C32.2 34.6 28.8 30.8 28.8 25.8 C28.8 21 31.8 16.8 36.4 16.4 Z" fill="url(#' + headG + ')"/>';
+    // ⑥ 冠：三根红羽（左倒、正中、右上）
+    s += '<path d="M35.4 17.8 C32.6 15.6 28.8 14.8 25.6 15.6 C27.2 18.8 30.8 20.8 34.2 20.6 Z" fill="' + COL.comb + '"/>';
+    s += '<path d="M36.6 17 C36.2 14.6 37.2 12.6 39 11.8 C40 14.4 39.4 17 38 19 Z" fill="' + COL.comb + '"/>';
+    s += '<path d="M38 17.8 C40.4 15.4 43.4 14.8 46 15.6 C44 18.2 41 19.6 38.6 19.4 Z" fill="' + COL.comb + '"/>';
+    // ⑦ 喙：上下两瓣（金），中缝一道暗线
+    s += '<path d="M43.4 22.4 Q47.2 23.2 48.4 25.4 Q46.2 25.8 43.2 25.8 Z" fill="' + COL.beak + '"/>';
+    s += '<path d="M43.2 26.4 Q46 26.8 47.2 27.8 Q45 28.8 43 28.8 Z" fill="' + COL.beak + '" opacity="0.88"/>';
+    s += '<path d="M43.3 26.1 L47.4 26" stroke="' + ink + '" stroke-width="0.4" opacity="0.5"/>';
+    // ⑧ 眼 + 高光 + 颊部亮羽
+    s += '<ellipse cx="39.6" cy="28.4" rx="3.2" ry="2.1" fill="' + COL.birdWing + '" opacity="0.3"/>';
+    s += '<circle cx="38.6" cy="23.2" r="2.2" fill="' + COL.eye + '"/>';
+    s += '<circle cx="37.8" cy="22.4" r="0.8" fill="#ffffff" opacity="0.85"/>';
+    // ⑨ 双足（金）+ 三趾
+    s += '<path d="M27.4 58.8 L26.8 67.4 M33.8 59.2 L34.4 67.4" stroke="' + COL.beak +
+      '" stroke-width="1.5" stroke-linecap="round" fill="none"/>';
+    s += '<path d="M26.8 67.6 l-3.4 2.2 M26.8 67.6 l-0.2 2.8 M26.8 67.6 l3.2 2.2" stroke="' + COL.beak +
+      '" stroke-width="1.1" stroke-linecap="round" fill="none"/>';
+    s += '<path d="M34.4 67.6 l-3.4 2.2 M34.4 67.6 l0.2 2.8 M34.4 67.6 l3.2 2.2" stroke="' + COL.beak +
+      '" stroke-width="1.1" stroke-linecap="round" fill="none"/>';
+    // ⑩ 落影：把鸟压在牌面上（很淡，只是不让它飘）
+    s += '<ellipse cx="30.4" cy="71.2" rx="10.6" ry="1.5" fill="' + COL.birdDark + '" opacity="0.16"/>';
+    return '<g>' + s + '</g>';
   }
 
   /* ================= 筒：球面靶心 ================= */
@@ -1125,12 +1212,12 @@
   }
 
   window.MJTiles = {
-    face: face, back: back, CN: CN, version: '3.1.0',
+    face: face, back: back, CN: CN, version: '3.2.0',
     glyphsReady: glyphsReady,      // 万子字形轮廓是否就位（构建链完整性自检用）
     WAN_LAYOUT: WAN_LAYOUT,        // 万子版式参数（冒烟测试据此校验墨迹不越界）
     RED_STICKS: RED_STICKS,        // 条子红色定位节（哪几根是红的）——牌面契约，冒烟测试据此断言
-    STICK8: STICK8,                // 8 条单节宽度与外延比例
-    ZIG_U: ZIG_U, ZIG_ROW: ZIG_ROW // 8 条锯齿折线（横向顶点 + 两行的峰谷位置）
+    TIAO8: TIAO8,                  // 8 条版式参数（竖杆位置 / 山形顶点与斜杆外端）
+    tiao8Segments: segments8       // 8 条的 8 根竹节解算结果（中点 / 长度 / 转角 / 类型）
   };
 })();
 
