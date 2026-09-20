@@ -226,6 +226,30 @@
     .hstat{display:none}              /* 窄屏先把状态数字收起，牌桌本身优先 */
     header{padding:calc(var(--sp-sm) * var(--k)) calc(var(--sp-md) * var(--k))}
   }
+
+  /* ── 首屏资产加载层 ──
+     28 张牌面纹理（SVG→canvas→Texture）与渲染器初始化都是异步的，早先这段是纯空白，
+     用户分不清「在加载」还是「卡死了」。这里把进度摆出来，加载完再淡出露出开局界面。
+     色值全部走设计令牌，只有径向渐变的两个 rgba 是 --cm-shell-line 的近似（渐变不支持变量插值）。 */
+  .boot{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;
+    background:var(--cm-shell-bg);
+    background-image:radial-gradient(circle at 50% 36%, rgba(255,255,255,.05) 0%, rgba(255,255,255,0) 62%);
+    transition:opacity .34s ease}
+  .boot.gone{opacity:0;pointer-events:none}
+  .bootin{width:min(78vw,420px);text-align:center;color:var(--cm-head-ink)}
+  .bootlogo{font-size:calc(var(--fs-h2) * var(--k));font-weight:800;letter-spacing:.02em;
+    margin-bottom:calc(var(--sp-sm) * var(--k))}
+  .bootlogo b{color:var(--gold)}
+  .bootttl{font-size:calc(var(--fs-small) * var(--k));color:var(--cm-dim);
+    margin-bottom:calc(var(--sp-lg) * var(--k))}
+  .bootbar{height:max(6px,calc(8px * var(--k)));border-radius:var(--r-full);
+    background:var(--cm-shell-line);overflow:hidden}
+  .bootbar i{display:block;height:100%;width:0%;border-radius:var(--r-full);background:var(--gold);
+    transition:width .18s ease}
+  .bootmeta{display:flex;justify-content:space-between;margin-top:calc(var(--sp-sm) * var(--k));
+    font-size:calc(var(--fs-meta) * var(--k));color:var(--cm-faint);font-variant-numeric:tabular-nums}
+  .booterr{margin-top:calc(var(--sp-md) * var(--k));font-size:calc(var(--fs-small) * var(--k));
+    color:var(--cm-fail-ink);line-height:1.5}
 </style>
 </head>
 <body>
@@ -257,6 +281,15 @@
   </div>
 </div>
 <div class="overlay" id="overlay"></div>
+<div class="boot" id="boot">
+  <div class="bootin">
+    <div class="bootlogo">chuan<b>.</b>ma</div>
+    <div class="bootttl" id="bootTtl"></div>
+    <div class="bootbar"><i id="bootBar"></i></div>
+    <div class="bootmeta"><span id="bootStep"></span><span id="bootPct">0%</span></div>
+    <div class="booterr" id="bootErr" hidden></div>
+  </div>
+</div>
 <script>var ChuanMa = (() => {
   var __defProp = Object.defineProperty;
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
@@ -48101,7 +48134,13 @@ ${parts.join("\n")}
       youWon: '你赢了', fanUnit: ' 番',
       scoreNote: '分 = 番数 × 底分(1)，单局封顶 32 番；自摸由尚未胡牌者各付一份，点炮由放炮者独付；流局时未下叫者赔下叫者（查叫），未打缺者赔花猪；未胡者收到的杠分退还。',
       diagOk: function (r, n, fps) { return 'PixiJS ' + r + ' · ' + n + ' 纹理 · ' + fps + 'fps'; },
-      diagFail: 'PixiJS 不可用'
+      diagFail: 'PixiJS 不可用',
+      bootTtl: '正在加载牌桌素材…',
+      bootTex: function (d, n) { return '牌面素材 ' + d + '/' + n; },
+      bootGpu: '初始化渲染器（GPU）',
+      bootScene: '准备牌桌',
+      bootReady: '就绪',
+      bootFail: '素材加载失败，牌桌无法启动。'
     },
     en: {
       title: 'Chuanma 2.5D · Blood Battle',
@@ -48170,7 +48209,13 @@ ${parts.join("\n")}
       youWon: 'You win', fanUnit: ' fan',
       scoreNote: 'Points = fan × base (1), capped at 32 fan per round. Self-draw: each player not yet won pays. Discard win: the discarder pays alone. On a draw, non-ready players pay ready players (big call) and uncleared players pay the flower-pig penalty; kong points received by non-winners are refunded.',
       diagOk: function (r, n, fps) { return 'PixiJS ' + r + ' · ' + n + ' tex · ' + fps + 'fps'; },
-      diagFail: 'PixiJS unavailable'
+      diagFail: 'PixiJS unavailable',
+      bootTtl: 'Loading table assets…',
+      bootTex: function (d, n) { return 'Tile art ' + d + '/' + n; },
+      bootGpu: 'Starting the renderer (GPU)',
+      bootScene: 'Preparing the table',
+      bootReady: 'Ready',
+      bootFail: 'Assets failed to load — the table cannot start.'
     }
   };
 
@@ -48395,6 +48440,83 @@ ${parts.join("\n")}
     pump(); render();
   }
 
+  /* ================= 首屏资产加载进度 ================= */
+  /**
+   * 牌面纹理（28 张 SVG→canvas→Texture）与 Pixi 渲染器初始化都是异步的。
+   * 早先这段就是一片空白，用户分不清「正在加载」还是「卡死了」—— 现在把进度摆出来，
+   * 加载完再淡出，露出下面已经画好的「开局设置」。
+   * 阶段权重：牌面素材 0→80%（每张 +1）· 渲染器 80→92% · 首帧 92→100%。
+   */
+  // ⚠️ 这个对象**不能**叫 `boot` —— 文件末尾有 `async function boot()`，同作用域下
+  //   `var boot = {...}` 会覆盖掉那个函数声明，`boot()` 一调用就 "not a function"，
+  //   整个页面脚本静默死掉（`__PIXI_TABLE__` 永远是 undefined，而构建与 jsdom 都发现不了）。
+  var bootUI = { el: null, bar: null, pct: null, step: null, ttl: null, err: null, ratio: 0, t0: 0, done: false };
+
+  function bootEls() {
+    if (!bootUI.el) {
+      bootUI.el = document.getElementById('boot');
+      bootUI.bar = document.getElementById('bootBar');
+      bootUI.pct = document.getElementById('bootPct');
+      bootUI.step = document.getElementById('bootStep');
+      bootUI.ttl = document.getElementById('bootTtl');
+      bootUI.err = document.getElementById('bootErr');
+    }
+    return !!bootUI.el;
+  }
+  function bootReset() {
+    if (!bootEls()) return;
+    bootUI.t0 = performance.now();
+    bootUI.done = false;
+    bootUI.el.classList.remove('gone');
+    bootUI.el.style.display = '';
+    bootUI.ttl.textContent = t().bootTtl;
+    bootPaint(0.03, t().bootTtl);
+  }
+  function bootPaint(ratio, label) {
+    if (!bootEls()) return;
+    // 进度只增不减：28 张纹理是并行生成的，完成顺序不保证，否则进度条会来回跳
+    bootUI.ratio = Math.max(bootUI.ratio, Math.max(0, Math.min(1, ratio)));
+    var p = Math.round(bootUI.ratio * 100);
+    bootUI.bar.style.width = p + '%';
+    bootUI.pct.textContent = p + '%';
+    if (label) bootUI.step.textContent = label;
+    // 结构化出口：DOM 文本之外再镜像一份，供真机探针断言（不依赖文案）
+    window.__PIXI_TABLE__ = window.__PIXI_TABLE__ || {};
+    window.__PIXI_TABLE__.boot = {
+      ratio: +bootUI.ratio.toFixed(3), pct: p, done: bootUI.done,
+      label: bootUI.step.textContent, ms: Math.round(performance.now() - bootUI.t0),
+    };
+  }
+  /**
+   * 加载完成：先把进度条走满并显示「就绪」，再淡出加载层。
+   *
+   * 最短展示时长 BOOT_MIN_MS：本机实测整套素材只要 ~400ms，不加下限的话进度条一闪而过，
+   * 比不显示更容易被误认为「页面卡了一下」。停留到下限再淡出，读起来才像一次正常的加载。
+   * 注意 done 是**立刻**标记的（供探针判定加载已完成），只有淡出被推迟。
+   */
+  var BOOT_MIN_MS = 520;
+  function bootFinish() {
+    if (!bootEls()) return;
+    bootUI.done = true;
+    bootPaint(1, t().bootReady);
+    var wait = Math.max(0, BOOT_MIN_MS - (performance.now() - bootUI.t0));
+    setTimeout(function () {
+      bootUI.el.classList.add('gone');
+      setTimeout(function () { if (bootUI.el) bootUI.el.style.display = 'none'; }, 420);
+    }, wait);
+  }
+  /** 加载失败：把加载层留在屏幕上并写明原因，而不是让它一直转 */
+  function bootError(msg) {
+    if (!bootEls()) return;
+    bootUI.err.hidden = false;
+    bootUI.err.textContent = t().bootFail + ' ' + msg;
+    window.__PIXI_TABLE__ = window.__PIXI_TABLE__ || {};
+    window.__PIXI_TABLE__.boot = {
+      ratio: +bootUI.ratio.toFixed(3), pct: Math.round(bootUI.ratio * 100),
+      done: false, label: bootUI.step.textContent, error: String(msg),
+    };
+  }
+
   /* ================= 纹理：SVG → canvas → Texture ================= */
   function svgToTexture(svg, w, h) {
     return new Promise(function (resolve) {
@@ -48411,12 +48533,14 @@ ${parts.join("\n")}
       img.src = url;
     });
   }
-  async function buildTextures() {
-    var TW = 132, TH = 185, n = 0, jobs = [];
+  /** 逐张生成牌面纹理；onStep(done,total) 用于首屏进度（并行完成，顺序不保证） */
+  async function buildTextures(onStep) {
+    var TW = 132, TH = 185, n = 0, jobs = [], done = 0, total = 28;
+    function stepTex() { done++; if (onStep) onStep(done, total); }
     for (var id = 0; id < 27; id++) {
-      jobs.push((function (i) { return svgToTexture(MJ.face(i), TW, TH).then(function (tx) { return [i, tx]; }); })(id));
+      jobs.push((function (i) { return svgToTexture(MJ.face(i), TW, TH).then(function (tx) { stepTex(); return [i, tx]; }); })(id));
     }
-    jobs.push(svgToTexture(MJ.back(), TW, TH).then(function (tx) { return ['back', tx]; }));
+    jobs.push(svgToTexture(MJ.back(), TW, TH).then(function (tx) { stepTex(); return ['back', tx]; }));
     var res = await Promise.all(jobs);
     for (var k = 0; k < res.length; k++) { if (res[k][1]) { state.tex[res[k][0]] = res[k][1]; n++; } }
     state.texCount = n;
@@ -49705,25 +49829,30 @@ ${parts.join("\n")}
     var d = document.getElementById('diag');
     d.dataset.status = 'fail';
     d.textContent = t().diagFail + '：' + msg;
-    window.__PIXI_TABLE__ = { ready: false, error: String(msg) };
+    window.__PIXI_TABLE__ = Object.assign(window.__PIXI_TABLE__ || {}, { ready: false, error: String(msg) });
+    bootError(msg);   // 加载层留在屏幕上写明原因，别让用户对着一个转不完的进度条
   }
 
   /* ================= 启动 ================= */
   async function boot() {
     window.__PIXI_TABLE__ = { ready: false };
+    bootReset();                                    // 首屏加载层：先把进度摆出来
     try {
       if (!PIXI) throw new Error('PIXI bundle missing');
-      await buildTextures();
+      await buildTextures(function (d, n) { bootPaint(0.80 * d / n, t().bootTex(d, n)); });
+      bootPaint(0.82, t().bootGpu);
       await initPixi();
       state.rendererName = (state.app.renderer && (state.app.renderer.name || (state.app.renderer.constructor && state.app.renderer.constructor.name))) || 'renderer';
       state.ready = true;
       var d = document.getElementById('diag');
       d.dataset.status = 'ok';
       d.textContent = t().diagOk(state.rendererName, state.texCount, 0);
-      window.__PIXI_TABLE__ = { ready: true, renderer: state.rendererName, textures: state.texCount };
+      window.__PIXI_TABLE__ = Object.assign(window.__PIXI_TABLE__ || {}, { ready: true, renderer: state.rendererName, textures: state.texCount });
+      bootPaint(0.94, t().bootScene);
       applyTierOnStageChange();          // 按舞台尺寸定档（牌与字体同步缩放）
       openSetup();
       render();
+      bootFinish();                      // 资产齐了、首帧也画完了，才淡出加载层进入开局界面
       // ⚠ 档位必须跟着**舞台实际尺寸**走，不能只靠 window.resize。
       //   踩过的坑：窗口在页面加载完成之后才被改大小（探针的 device-metrics override、
       //   浏览器恢复会话、或用户把窗口拉大），此时若 resize 事件早于 ready 或被吞掉，

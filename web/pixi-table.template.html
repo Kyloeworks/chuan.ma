@@ -143,6 +143,30 @@
     .hstat{display:none}              /* 窄屏先把状态数字收起，牌桌本身优先 */
     header{padding:calc(var(--sp-sm) * var(--k)) calc(var(--sp-md) * var(--k))}
   }
+
+  /* ── 首屏资产加载层 ──
+     28 张牌面纹理（SVG→canvas→Texture）与渲染器初始化都是异步的，早先这段是纯空白，
+     用户分不清「在加载」还是「卡死了」。这里把进度摆出来，加载完再淡出露出开局界面。
+     色值全部走设计令牌，只有径向渐变的两个 rgba 是 --cm-shell-line 的近似（渐变不支持变量插值）。 */
+  .boot{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;
+    background:var(--cm-shell-bg);
+    background-image:radial-gradient(circle at 50% 36%, rgba(255,255,255,.05) 0%, rgba(255,255,255,0) 62%);
+    transition:opacity .34s ease}
+  .boot.gone{opacity:0;pointer-events:none}
+  .bootin{width:min(78vw,420px);text-align:center;color:var(--cm-head-ink)}
+  .bootlogo{font-size:calc(var(--fs-h2) * var(--k));font-weight:800;letter-spacing:.02em;
+    margin-bottom:calc(var(--sp-sm) * var(--k))}
+  .bootlogo b{color:var(--gold)}
+  .bootttl{font-size:calc(var(--fs-small) * var(--k));color:var(--cm-dim);
+    margin-bottom:calc(var(--sp-lg) * var(--k))}
+  .bootbar{height:max(6px,calc(8px * var(--k)));border-radius:var(--r-full);
+    background:var(--cm-shell-line);overflow:hidden}
+  .bootbar i{display:block;height:100%;width:0%;border-radius:var(--r-full);background:var(--gold);
+    transition:width .18s ease}
+  .bootmeta{display:flex;justify-content:space-between;margin-top:calc(var(--sp-sm) * var(--k));
+    font-size:calc(var(--fs-meta) * var(--k));color:var(--cm-faint);font-variant-numeric:tabular-nums}
+  .booterr{margin-top:calc(var(--sp-md) * var(--k));font-size:calc(var(--fs-small) * var(--k));
+    color:var(--cm-fail-ink);line-height:1.5}
 </style>
 </head>
 <body>
@@ -174,6 +198,15 @@
   </div>
 </div>
 <div class="overlay" id="overlay"></div>
+<div class="boot" id="boot">
+  <div class="bootin">
+    <div class="bootlogo">chuan<b>.</b>ma</div>
+    <div class="bootttl" id="bootTtl"></div>
+    <div class="bootbar"><i id="bootBar"></i></div>
+    <div class="bootmeta"><span id="bootStep"></span><span id="bootPct">0%</span></div>
+    <div class="booterr" id="bootErr" hidden></div>
+  </div>
+</div>
 <script>/*__KERNEL__*/</script>
 <script>/*__PIXI__*/</script>
 <script>/*__APP__*/</script>

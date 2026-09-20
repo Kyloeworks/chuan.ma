@@ -53,6 +53,13 @@ async function ev(expression) {
   return rr ? rr.value : undefined;
 }
 
+/** 求值并把结果当 JSON 解 —— 页面报错/未就绪时返回 null，而不是让 JSON.parse 抛 "[object Object]" */
+async function evJSON(expression) {
+  const r = await ev(expression);
+  if (typeof r !== 'string') return null;
+  try { return JSON.parse(r); } catch { return null; }
+}
+
 /** 在真实页面上点一下（CDP 合成鼠标事件 → Pixi 的 pointerdown 会收到） */
 async function click(x, y) {
   const base = { x: Math.round(x), y: Math.round(y), button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' };
@@ -135,10 +142,34 @@ try {
   await cmd('Page.enable', {});
   await cmd('Emulation.setDeviceMetricsOverride', { width: 1440, height: 860, deviceScaleFactor: 1, mobile: false });
 
+  // ── 首屏资产加载进度：先注入采样器再重载，否则连上 CDP 时页面早已加载完 ──
+  //    （采样器在页面脚本之前运行，靠 16ms 轮询抓 __PIXI_TABLE__.boot 的变化）
+  await cmd('Page.addScriptToEvaluateOnNewDocument', {
+    source: `window.__bootTrace = [];
+(function(){
+  var n = 0;
+  var h = setInterval(function(){
+    var b = window.__PIXI_TABLE__ && window.__PIXI_TABLE__.boot;
+    if (b) {
+      var last = window.__bootTrace[window.__bootTrace.length - 1];
+      if (!last || last[0] !== b.pct || last[1] !== b.done) window.__bootTrace.push([b.pct, b.done, b.label || '']);
+      if (b.done) clearInterval(h);
+    }
+    if (++n > 1200) clearInterval(h);
+  }, 16);
+})();`,
+  });
+  await cmd('Page.reload', { ignoreCache: true });
+
   let st = '';
-  for (let i = 0; i < 120; i++) {
+  // ⚠️ Page.reload 是异步的：旧 document 会在一小段时间里仍然可读，此时读到的是**上一轮**的
+  //    ready=true（于是「画布已创建」之类的后续断言全挂）。必须等新 document 出现 ——
+  //    上面注入的脚本会建 window.__bootTrace，旧 document 没有这个字段。
+  let freshDoc = false;
+  for (let i = 0; i < 150; i++) {
     st = await ev("window.__PIXI_TABLE__ ? JSON.stringify(window.__PIXI_TABLE__) : 'pending'");
-    if (st && (st.indexOf('"ready":true') >= 0 || st.indexOf('error') >= 0)) break;
+    freshDoc = (await ev('!!window.__bootTrace')) === true;
+    if (freshDoc && st && (st.indexOf('"ready":true') >= 0 || st.indexOf('"error"') >= 0)) break;
     await sleep(200);
   }
   const ready = st.indexOf('"ready":true') >= 0;
@@ -148,6 +179,34 @@ try {
   ck('Pixi 初始化 ready', ready, st ? st.slice(0, 120) : '');
   ck('画布已创建', canvas !== 'no-canvas', canvas);
   ck('纹理全部生成（28）', /28 /.test(diag0 || ''), diag0);
+
+  // ── 首屏资产加载进度：加载期间要有可见进度，加载完才能进开局界面 ──
+  {
+    const trace = (await evJSON('JSON.stringify(window.__bootTrace || [])')) || [];
+    const pcts = trace.map((x) => x[0]);
+    const mono = pcts.every((v, i) => i === 0 || v >= pcts[i - 1]);
+    const last = trace[trace.length - 1] || [];
+    ck('首屏加载进度可见（采样到 0 与 100 之间的中间态）',
+      pcts.length > 0 && pcts.some((p) => p > 0 && p < 100), JSON.stringify(trace.slice(0, 6)));
+    ck('进度单调不减（并行完成的纹理不会让进度条回退）', mono, JSON.stringify(pcts));
+    ck('逐张牌面素材计入进度（出现 x/28 的阶段文案）',
+      trace.some((x) => /(^|\D)\d+\/28/.test(x[2] || '')), JSON.stringify(trace.map((x) => x[2]).filter(Boolean).slice(0, 4)));
+    ck('加载完成到 100% 且标记 done', last[0] === 100 && last[1] === true, JSON.stringify(last));
+    // 加载层有「最短展示时长」（否则 ~400ms 的加载会让进度条一闪而过），所以要轮询等它淡出
+    let BS = null;
+    for (let i = 0; i < 14; i++) {
+      BS = await evJSON(`(function(){
+        var b = document.getElementById('boot'); if (!b) return null;
+        var s = getComputedStyle(b);
+        return JSON.stringify({ gone: b.className.indexOf('gone') >= 0, op: s.opacity, pe: s.pointerEvents });
+      })()`);
+      if (BS && BS.gone === true) break;
+      await sleep(150);
+    }
+    ck('加载完整后才进入开玩界面（加载层已淡出、不再挡点击）',
+      BS && BS.gone === true && BS.pe === 'none',
+      JSON.stringify(BS));
+  }
 
   // ── ★ 开局流程：打开后绝不自动发牌，必须先过「开局设置」 ──
   const idle = await ev(AUDIT);
