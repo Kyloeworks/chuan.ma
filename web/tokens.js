@@ -79,7 +79,22 @@
       birdWing: '#6cc896',
       beak: '#d99a2b',
       comb: '#c0392b',
-      eye: '#0d2e1c'
+      eye: '#0d2e1c',
+
+      /* 红色定位节（2026-09-20）——真实牌面用红色标出条子的「锚点」，
+       * 让玩家不看数字也能秒认这四张牌：
+       *   5 条 = 正中一根红   · 7 条 = 最上面一根红
+       *   9 条 = 中间一整行三根红
+       * 结构与绿竹节完全同构（同一条圆柱横向渐变 + 同款竹节线），只换色系。
+       * 红选**朱红**而不是警示红：牌面是奶油底，亮度不够的红会读成脏褐色。
+       * 暗端沿用筒心暗部 #8f2a1f，使全牌面的红属于同一族。 */
+      red: {
+        dark: '#8f2a1f',
+        mid: '#a92e1f',
+        lit: '#c0392b',
+        hi: '#e8907c',
+        nodeDark: '#5c130a'
+      }
     },
 
     /* ── 筒：蓝环 + 朱红靶心（环面径向渐变 + 高光弧） ── */
@@ -152,6 +167,7 @@
       wan: '#c0392b',
       tiao: '#1e8e5a',
       tiaoTile: '#1c7d4d',   // 牌面竹绿（比文字绿深一档，用于色块/徽章）
+      tiaoRed: '#c0392b',    // 牌面红竹节（5/7/9 条的定位节，用于图例与说明文字）
       tong: '#2b6cb0',
       // 牌桌深色外壳
       shellBg: '#0f1418',
@@ -256,6 +272,7 @@
       ['--mono', u.mono],
       // 质感层
       ['--cm-tiao-tile', u.tiaoTile],
+      ['--cm-tiao-red', u.tiaoRed],
       ['--cm-accent-hi', u.accentHi], ['--cm-accent-lo', u.accentLo],
       ['--cm-tile-top', t.top], ['--cm-tile-mid', t.mid], ['--cm-tile-bot', t.bot],
       ['--cm-tile-edge', t.edge], ['--cm-panel-top', t.pTop], ['--cm-panel-bot', t.pBot],

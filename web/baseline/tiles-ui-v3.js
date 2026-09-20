@@ -1,4 +1,8 @@
-/* 川麻麻将牌面资产 v3.1 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背）
+/* 牌面资产 v3 —— 归档快照，仅用于对照与回归，**不是运行时代码**。
+ * 来源：git HEAD:web/tiles-ui.js
+ * 由 web/fix-baseline.cjs 导出。运行时代码是 web/tiles-ui.js。
+ */
+/* 川麻麻将牌面资产 v3 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背）
  * ---------------------------------------------------------------------------
  * 用法：MJTiles.face(tileId) / MJTiles.back() / MJTiles.CN
  *   tileId 0..26 =>  suit = floor(id/9)  rank = id%9+1
@@ -11,13 +15,6 @@
  *   - 汉字是**内嵌矢量路径**（见下方字形引擎），不再依赖系统字体
  *   - 花色是**实体**：条=圆柱（横向暗→亮→暗）、筒=球面（径向渐变 + 左上高光点）
  *   - 色板与强度全部来自 web/tokens.js，本文件不硬写色值
- *
- * 视觉契约（v3.1，2026-09-20 条子对齐实体牌面画法）：
- *   - **红色定位节**：5 条正中一根红、7 条最上一根红、9 条中间一行三根红
- *     （见 RED_STICKS）。这是实体牌的通行画法，也是新手最快建立「颜色 → 牌名」
- *     条件反射的三张牌。红色节与绿色节**同结构、同受光**，只换色系。
- *   - **8 条改传统锯齿版式**：顶部四条倒 M（W）+ 底部四条 M，中间收腰成沙漏轮廓
- *     （见 ZIG_U / ZIG_ROW / zigSegments8）。此前是 2×4 的平铺方阵，与实体牌不符。
  *
  * ⚠ 三个必须守住的约束（破坏会静默失效）：
  *   1. 外层 <svg> 必须原样保留 `width="100%" height="100%"` ——
@@ -80,12 +77,6 @@
     tiaoLit: pick('tiao.lit', '#2aa86a'),
     tiaoHi: pick('tiao.hi', '#6cc896'),
     tiaoNode: pick('tiao.nodeDark', '#0b3d26'),
-    /* 条 · 红色定位节（5 / 7 / 9 条用来「一眼认出」的那几根） */
-    tiaoRedDark: pick('tiao.red.dark', '#8f2a1f'),
-    tiaoRedMid: pick('tiao.red.mid', '#a92e1f'),
-    tiaoRedLit: pick('tiao.red.lit', '#c0392b'),
-    tiaoRedHi: pick('tiao.red.hi', '#e8907c'),
-    tiaoRedNode: pick('tiao.red.nodeDark', '#5c130a'),
     birdBody: pick('tiao.birdBody', '#1c7d4d'),
     birdDark: pick('tiao.birdDark', '#0f5233'),
     birdWing: pick('tiao.birdWing', '#6cc896'),
@@ -110,18 +101,6 @@
     bkWeave: pick('back.weave', 'rgba(232,238,247,.13)'),
     bkWeft: pick('back.weft', 'rgba(12,36,66,.20)'),
     bkHi: pick('back.hi', 'rgba(255,255,255,.32)')
-  };
-
-  /* 竹节的两套色板。除了色系不同，**结构与画法必须完全一致** ——
-     红色定位节是「同一根竹子换了个颜色」，不是另一种材质；一旦亮度层次不一样，
-     5/7/9 条上的红节会像贴上去的贴纸。role 用于渐变 id 命名，便于调试时分辨。 */
-  var PAL_TIAO = {
-    dark: COL.tiaoDark, mid: COL.tiaoMid, lit: COL.tiaoLit,
-    hi: COL.tiaoHi, node: COL.tiaoNode, role: 'tiao'
-  };
-  var PAL_TIAO_RED = {
-    dark: COL.tiaoRedDark, mid: COL.tiaoRedMid, lit: COL.tiaoRedLit,
-    hi: COL.tiaoRedHi, node: COL.tiaoRedNode, role: 'tiaored'
   };
 
   /* ---------------- id 唯一化（同页多张牌不抢渐变） ---------------- */
@@ -357,12 +336,7 @@
         COL.wanCharHi, COL.wanCharLo, 'wanchar');
   }
 
-  /* ================= 条：圆柱竹节 =================
-   * 版式遵循实体牌面的通行画法（不是随便摆满）：
-   *   2 条两竖 · 3 条上一下二 · 4 条两列各二 · 5 条四角 + 正中 · 6 条上三下三
-   *   7 条上一下三下三 · 8 条上四下四锯齿（见下方 zigSegments8）· 9 条三行三列
-   * 坐标是面板内区的归一值（u 横向、v 纵向，0..1），**行优先**：先上后下、同行先左后右。
-   * 索引顺序有意义 —— RED_STICKS 就是按索引指定「哪几根是红节」。 */
+  /* ================= 条：圆柱竹节 ================= */
   var STICKS = {
     2: [[0.5, 0.25], [0.5, 0.75]],
     3: [[0.5, 0.2], [0.26, 0.74], [0.74, 0.74]],
@@ -370,61 +344,17 @@
     5: [[0.2, 0.2], [0.8, 0.2], [0.5, 0.5], [0.2, 0.8], [0.8, 0.8]],
     6: [[0.3, 0.16], [0.7, 0.16], [0.3, 0.5], [0.7, 0.5], [0.3, 0.84], [0.7, 0.84]],
     7: [[0.5, 0.12], [0.22, 0.5], [0.5, 0.5], [0.78, 0.5], [0.22, 0.88], [0.5, 0.88], [0.78, 0.88]],
+    8: [[0.16, 0.26], [0.39, 0.26], [0.61, 0.26], [0.84, 0.26], [0.16, 0.76], [0.39, 0.76], [0.61, 0.76], [0.84, 0.76]],
     9: [[0.16, 0.16], [0.5, 0.16], [0.84, 0.16], [0.16, 0.5], [0.5, 0.5], [0.84, 0.5], [0.16, 0.84], [0.5, 0.84], [0.84, 0.84]]
   };
-  var STICK_H = { 2: 17, 3: 16, 4: 15, 5: 14, 6: 14.5, 7: 12.5, 9: 12.5 };
+  var STICK_H = { 2: 17, 3: 16, 4: 15, 5: 14, 6: 14.5, 7: 12.5, 8: 13, 9: 12.5 };
 
-  /* ---- 红色定位节（2026-09-20）：真实牌面用红色标出条子的锚点，
-   *      让玩家不看数字也能秒认这三张牌。索引对应 STICKS 的行优先顺序。
-   *        5 条 → 正中一根（索引 2）          视觉中心一个红点
-   *        7 条 → 最上面一根（索引 0）        顶部一个红点
-   *        9 条 → 中间一整行三根（索引 3,4,5）横向一条红带
-   *      三张牌各占一种「红的位置类型」（点 / 顶 / 带），互不混淆。 */
-  var RED_STICKS = { 5: { 2: 1 }, 7: { 0: 1 }, 9: { 3: 1, 4: 1, 5: 1 } };
-
-  /* ---- 8 条：传统「顶部四条倒 M（W 形）+ 底部四条 M 形」锯齿版式
-   *      （实体牌面的通行画法：俗称坦克 / BMW / 脚开开 —— 下方 M、上方 W）
-   *
-   *      做法：两组共用同一条横向锯齿折线（5 个顶点 → 4 段），每段摆一根竹节并
-   *      按段的方向旋转。两个关键细节，少一个就散架：
-   *        ① 竹节**两端各外延 10%**，使相邻两根在折点处搭接 —— 否则折点处有豁口，
-   *           4 根各自转了点角度的短棒读不出连续的 M / W。
-   *        ② 上行为倒 M（首顶点在高位）、下行为 M（首顶点在低位），两行的峰谷
-   *           横向对齐 —— 于是中间收腰，整体呈「沙漏」轮廓，这正是八条的辨识特征。 */
-  var ZIG_U = [0.06, 0.28, 0.5, 0.72, 0.94];        // 折线顶点横向位置（等距，两端略内收）
-  var ZIG_ROW = {
-    w: [0.055, 0.435, 0.055, 0.435, 0.055],          // 上行 = 倒 M（谷在中列，指向下）
-    m: [0.945, 0.565, 0.945, 0.565, 0.945]           // 下行 = M（峰在中列，指向上）
-  };
-  var STICK8 = { w: 5.8, over: 0.10 };
-
-  /** 生成 8 条的 8 段竹节坐标：cx/cy 段中点、len 段长（含两端外延）、rot 旋转角（度） */
-  function zigSegments8() {
-    var segs = [], rows = [ZIG_ROW.w, ZIG_ROW.m], r, i;
-    for (r = 0; r < rows.length; r++) {
-      var vs = rows[r];
-      for (i = 0; i < ZIG_U.length - 1; i++) {
-        var x1 = px(ZIG_U[i]), y1 = py(vs[i]), x2 = px(ZIG_U[i + 1]), y2 = py(vs[i + 1]);
-        var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
-        segs.push({
-          cx: (x1 + x2) / 2, cy: (y1 + y2) / 2,
-          len: len * (1 + STICK8.over * 2),
-          // 竹节默认竖着画（长度沿 +y）。要把 (0,1) 转到 (dx,dy)，SVG 顺时针旋转角为
-          // atan2(-dx, dy)；写成 atan2(dx, dy) 会让整个锯齿反向（M 变 W），不报错。
-          rot: Math.atan2(-dx, dy) * 180 / Math.PI
-        });
-      }
-    }
-    return segs;
-  }
-
-  function stick(D, cx, cy, w, h, rot, pal) {
-    var P = pal || PAL_TIAO;
+  function stick(D, cx, cy, w, h) {
     // 横向渐变：圆柱受光 —— 两侧收暗，但亮区要够宽，否则整根竹子发沉（实测过：
     // 暗端压到 #0f5233 时，高饱和绿像素占比从 0.016 掉到 0.002，视觉明显变闷）。
-    var g = D.linear(P.role, 0, 0, 1, 0, [
-      [0, P.dark], [0.12, P.mid], [0.44, P.lit],
-      [0.62, P.mid], [0.9, P.mid], [1, P.dark]
+    var g = D.linear('tiao', 0, 0, 1, 0, [
+      [0, COL.tiaoDark], [0.12, COL.tiaoMid], [0.44, COL.tiaoLit],
+      [0.62, COL.tiaoMid], [0.9, COL.tiaoMid], [1, COL.tiaoDark]
     ]);
     var x = cx - w / 2, y = cy - h / 2, r = w * 0.42;
     var s = '';
@@ -433,30 +363,18 @@
     // 节线（竹节）+ 节线下方高光
     var n1 = cy - h * 0.17, n2 = cy + h * 0.17;
     s += '<line x1="' + f1(x) + '" y1="' + f1(n1) + '" x2="' + f1(x + w) + '" y2="' + f1(n1) +
-      '" stroke="' + P.node + '" stroke-width="1.05"/>';
+      '" stroke="' + COL.tiaoNode + '" stroke-width="1.05"/>';
     s += '<line x1="' + f1(x) + '" y1="' + f1(n1 + 1.1) + '" x2="' + f1(x + w) + '" y2="' + f1(n1 + 1.1) +
-      '" stroke="' + P.hi + '" stroke-width="0.7" opacity="0.5"/>';
+      '" stroke="' + COL.tiaoHi + '" stroke-width="0.7" opacity="0.5"/>';
     s += '<line x1="' + f1(x) + '" y1="' + f1(n2) + '" x2="' + f1(x + w) + '" y2="' + f1(n2) +
-      '" stroke="' + P.node + '" stroke-width="1.05"/>';
+      '" stroke="' + COL.tiaoNode + '" stroke-width="1.05"/>';
     s += '<line x1="' + f1(x) + '" y1="' + f1(n2 + 1.1) + '" x2="' + f1(x + w) + '" y2="' + f1(n2 + 1.1) +
-      '" stroke="' + P.hi + '" stroke-width="0.7" opacity="0.5"/>';
-    // 旋转只在 8 条上用得到（rot=0 时不包 <g>，保持既有牌面的输出逐字节不变）
-    if (!rot) return s;
-    return '<g transform="rotate(' + f1(rot) + ' ' + f1(cx) + ' ' + f1(cy) + ')">' + s + '</g>';
+      '" stroke="' + COL.tiaoHi + '" stroke-width="0.7" opacity="0.5"/>';
+    return s;
   }
-
   function tiaoSticks(D, n) {
-    if (n === 8) {
-      var segs = zigSegments8(), s8 = '', k;
-      for (k = 0; k < segs.length; k++) {
-        s8 += stick(D, segs[k].cx, segs[k].cy, STICK8.w, segs[k].len, segs[k].rot, null);
-      }
-      return s8;
-    }
-    var pts = STICKS[n], h = STICK_H[n], w = h * 0.42, s = '', red = RED_STICKS[n] || null;
-    for (var i = 0; i < pts.length; i++) {
-      s += stick(D, px(pts[i][0]), py(pts[i][1]), w, h, 0, red && red[i] ? PAL_TIAO_RED : null);
-    }
+    var pts = STICKS[n], h = STICK_H[n], w = h * 0.42, s = '';
+    for (var i = 0; i < pts.length; i++) s += stick(D, px(pts[i][0]), py(pts[i][1]), w, h);
     return s;
   }
 
@@ -579,11 +497,8 @@
   }
 
   window.MJTiles = {
-    face: face, back: back, CN: CN, version: '3.1.0',
+    face: face, back: back, CN: CN, version: '3.0.0',
     glyphsReady: glyphsReady,      // 万子字形轮廓是否就位（构建链完整性自检用）
-    WAN_LAYOUT: WAN_LAYOUT,        // 万子版式参数（冒烟测试据此校验墨迹不越界）
-    RED_STICKS: RED_STICKS,        // 条子红色定位节（哪几根是红的）——牌面契约，冒烟测试据此断言
-    STICK8: STICK8,                // 8 条单节宽度与外延比例
-    ZIG_U: ZIG_U, ZIG_ROW: ZIG_ROW // 8 条锯齿折线（横向顶点 + 两行的峰谷位置）
+    WAN_LAYOUT: WAN_LAYOUT         // 万子版式参数（冒烟测试据此校验墨迹不越界）
   };
 })();

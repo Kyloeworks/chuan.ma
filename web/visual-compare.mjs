@@ -14,7 +14,7 @@
  * 产出：web/baseline/compare-before-after.png
  * ---------------------------------------------------------------------------
  */
-import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -34,16 +34,20 @@ const oldArg = ARGV.indexOf('--old');
 // before 基准取**仓库内固化快照**，不取 git HEAD ——
 // 仓库有自动化会推进 HEAD 并清理临时文件，靠 HEAD/临时文件取旧版会取到新版，
 // 对照图会变成「自己跟自己比」（实测两版 detail 完全一致 0.0%，白忙一轮）。
-const v1Path = path.resolve(here, 'baseline', 'tiles-ui-v1.js');
-const v2Path = path.resolve(here, 'baseline', 'tiles-ui-v2.js');
-// 默认取**上一个已接受版本**（v2）＝ 这一轮改动的增量；
-// 要看累计变化用 --old baseline/tiles-ui-v1.js。
+//
+// 默认取「**序号最大的快照**」＝ 上一版已接受的资产，也就是这一轮改动的增量。
+// 别写死 -v2 / -v1：每加一轮就要改代码，而且很容易忘了改，于是静默地拿两轮前的
+// 资产当基准（本轮实际踩到：v3 已入库，但默认仍指向 v2，对照的是两轮前的画法）。
+const dir = path.resolve(here, 'baseline');
+const snapshots = existsSync(dir)
+  ? readdirSync(dir).filter((f) => /^tiles-ui-v\d+\.js$/.test(f))
+    .sort((a, b) => (+a.match(/\d+/)[0]) - (+b.match(/\d+/)[0]))
+  : [];
 let oldFile;
 if (oldArg >= 0 && ARGV[oldArg + 1]) oldFile = path.resolve(here, ARGV[oldArg + 1]);
-else if (existsSync(v2Path)) oldFile = v2Path;
-else if (existsSync(v1Path)) oldFile = v1Path;
+else if (snapshots.length) oldFile = path.join(dir, snapshots[snapshots.length - 1]);
 else {
-  console.error('缺少 before 基准（baseline/tiles-ui-v2.js 或 -v1.js）\n' +
+  console.error('缺少 before 基准（web/baseline/tiles-ui-v*.js）\n' +
     '请先运行 node web/fix-baseline.cjs <commit> <v1|v2|v3> 从 git 固化快照。');
   process.exit(1);
 }

@@ -101,11 +101,16 @@ const SCRIPT_CHAIN = ['tokens.js', 'glyphs.js', 'tiles-ui.js'];
 const face = SCRIPT_CHAIN.concat(['app.js']);
 const gallery = SCRIPT_CHAIN.concat(['gallery.js']);
 const table = SCRIPT_CHAIN.concat(['pixi-table.js']);
+const lessonTiles = SCRIPT_CHAIN.concat(['learn-tiles.js']);
 
 const targets = [
   { template: 'template.html', scripts: face, out: 'calculator.html', kernel: true },
   { template: 'tiles.template.html', scripts: gallery, out: 'tiles.html', kernel: false },
   { template: 'pixi-table.template.html', scripts: table, out: 'play.html', kernel: true, pixi: true },
+  /* 识牌教学页是**内容页里唯一需要牌面资产**的一页：讲哪张牌就画哪张牌，
+     所以它必须走构建链（tokens → glyphs → tiles-ui → 页面逻辑），而不是当静态文件复制。
+     其余学习页保持纯静态 —— 没有资产需求就不要背脚本。 */
+  { template: 'content/learn-tiles.html', scripts: lessonTiles, out: 'learn-tiles.html', kernel: false },
 ];
 
 for (const tg of targets) {
@@ -131,8 +136,9 @@ for (const tg of targets) {
 
 // 学习内容页：纯静态，无脚本打包，原样复制（含共享样式表 site.css）
 // site.css 顶部的 /*__TOKENS_CSS__*/ 在此展开，使 dist 里的样式表自带变量定义。
+// 注意 learn-tiles.html 不在这里 —— 它要接牌面资产，走上面的 targets 构建链。
 const statics = [
-  'learn-rules.html', 'learn-tiles.html', 'learn-scoring.html',
+  'learn-rules.html', 'learn-scoring.html',
   'learn-culture.html', 'glossary.html', 'site.css',
 ];
 for (const f of statics) {

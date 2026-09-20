@@ -28,13 +28,13 @@ Four short lessons, in order. Each one assumes nothing.
 | # | Lesson | What it covers |
 |---|---|---|
 | 1 | [**How to Play**](learn-rules.html) · 基础规则 | The 108-tile deck, declaring your **missing suit** (定缺), turn order, pong / kong / win, and how a round ends — including why the round keeps going after somebody wins. |
-| 2 | [**Reading the Tiles**](learn-tiles.html) · 识别牌型 | Three suits 万 条 筒, the nine Chinese numerals, and the one tile that is drawn as a bird instead of a number. |
-| 3 | [**Scoring & Fan**](learn-scoring.html) · 计算番数 | The fan table, how pattern bonuses stack, who pays on a self-draw versus a discard, kong money, and three worked examples. |
+| 2 | [**Reading the Tiles**](learn-tiles.html) · 识别牌面 | Three suits 万 条 筒, the nine Chinese numerals, and the one tile that is drawn as a bird instead of a number. Shows **all 27 faces at table size**, the four bamboo tiles you can read by colour alone, and two drills that quiz you on the real faces. |
+| 3 | [**Scoring & Fan**](learn-scoring.html) · 计算番数 | The fan table, how pattern bonuses stack, who pays on a self-draw versus a discard, kong money, and four worked examples. |
 | 4 | [**Culture & Variants**](learn-culture.html) · 麻将文化 | Where the game comes from, the teahouse table, table etiquette, and the variants you will actually meet. |
 
 Then practise:
 
-- **[The table](play.html)** — a four-player game against three opponents, rendered on the GPU. A coaching strip along the bottom always tells you how many tiles you are from ready, which tiles you are waiting on and how many are left, which tile to discard **and why**. Three difficulty levels, and a full scoring breakdown at the end of every round.
+- **[The table](play.html)** — a four-player game against three opponents, rendered on the GPU. A coaching strip along the bottom always tells you how many tiles you are from ready, which tiles you are waiting on and how many are left, which tile to discard **and why**. Discarding takes **two clicks** — the first lifts the tile for confirmation, the second plays it — so a stray click never costs you a turn. Three difficulty levels, and a full scoring breakdown at the end of every round.
 - **[The calculator](calculator.html)** — click in any hand and instantly see how far it is from 下叫 (ready), which tiles it is waiting on, which tiles would pull it forward, and the best discard. The fastest way to build intuition for hand shape.
 - **[Glossary](glossary.html)** — every term in English and Chinese with pinyin, because discards are announced in Chinese at a real table.
 
@@ -59,7 +59,7 @@ With the honours stripped out, essentially the whole game is about **shape effic
 .
 ├── index.html            # site entry — start here
 ├── learn-rules.html      # lesson 1 · the basics
-├── learn-tiles.html      # lesson 2 · tile recognition
+├── learn-tiles.html      # lesson 2 · tile recognition (built: embeds the tile faces)
 ├── learn-scoring.html    # lesson 3 · fan and points
 ├── learn-culture.html    # lesson 4 · culture and variants
 ├── glossary.html         # English ↔ Chinese term list
@@ -74,11 +74,12 @@ With the honours stripped out, essentially the whole game is about **shape effic
 │
 ├── web/                  # page sources and build tooling
 │   ├── content/          #   lesson page sources + shared CSS
+│   ├── learn-tiles.js    #   lesson 2 logic: face placeholders + the two drills
 │   ├── *.template.html   #   tool page templates
 │   ├── tokens.js         #   design tokens — the only place colours live
 │   ├── glyphs.js         #   GENERATED: the ten hanzi outlines the tile faces embed
 │   ├── tools/            #   generators that produce the artefacts above
-│   ├── tiles-ui.js       #   the 33 procedural tile faces (SVG)
+│   ├── tiles-ui.js       #   the 33 procedural tile faces (SVG) + the bamboo colour landmarks
 │   ├── pixi-table.js     #   the GPU table renderer
 │   ├── build.mjs         #   bundles a page + the engine into one HTML file
 │   ├── publish.mjs       #   copies web/dist/ to the repository root
@@ -158,6 +159,22 @@ Four things hold the line:
 | **`web/glyphs.js`** | The ten hanzi the tile faces need (一二三四五六七八九萬) as **embedded vector outlines**, generated from an OFL-licensed font by `web/tools/extract-glyphs.py`. See *Typography* below for why the faces do not use a system font. |
 | **`web/visual-baseline.mjs`** | Rasterises all 33 faces and stores a **fingerprint** per tile — ink coverage, mean luminance, vertical gradient direction, colour-channel share, detail energy — in `web/baseline/tiles.json`. `npm run visual` diffs the current artwork against that baseline and names every offset, so a regression is a number rather than an opinion. |
 | **`web/visual-compare.mjs`** | Emits a before/after contact sheet (`web/baseline/compare-before-after.png`) against the previously accepted artwork, plus a **three-size legibility check** (132×185 / 64×90 / 33×46) — because a tile in the river is only 33 px wide, and that is where added texture can turn into mud. |
+
+### The bamboo faces follow real-tile conventions
+
+The artwork is not free-form: real sets draw the bamboo suit in a specific way, and the differences are
+usable information at a table. Four of the nine bamboo tiles carry a **red locating cane** — 5 bamboo
+(middle cane red), 7 bamboo (top cane red) and 9 bamboo (the whole middle row red) — and 8 bamboo is the
+only tile in the game laid out as **two zigzags** (four canes forming an M underneath, four forming an
+inverted M on top), which is why it is recognisable at a glance and why it has nicknames like BMW and
+坦克. `tiles-ui.js` draws them that way: `RED_STICKS` names which cane is red per rank, `ZIG_U`/`ZIG_ROW`
+define the 8-bamboo zigzag, and the red canes share the green ones' material and lighting exactly — they
+are the same cane in another colour, not a sticker.
+
+This is what makes the artwork teach. A player who knows the red mark reads 9 bamboo off a discard
+without counting; a player who only knows "nine canes somewhere" loses that half-second every round.
+`web/tiles.smoke.mjs` asserts the count and placement of the red canes and the zigzag geometry, and
+`docs/ui-references.md` records where the conventions come from.
 
 ```bash
 npm run visual                       # diff artwork against the stored baseline

@@ -23,6 +23,7 @@
   --tong:#2b6cb0;
   --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
   --cm-tiao-tile:#1c7d4d;
+  --cm-tiao-red:#c0392b;
   --cm-accent-hi:#3d8ef8;
   --cm-accent-lo:#1a5fd0;
   --cm-tile-top:#fdf9ee;
@@ -166,14 +167,61 @@ td.c,th.c{text-align:center}
   border-radius:var(--r-full);background:var(--accent);color:#fff;font-size:var(--fs-small);font-weight:800;
   display:flex;align-items:center;justify-content:center}
 
-/* ── 牌面编码（纯文字表示） ── */
-.tile{display:inline-block;font-family:var(--mono);font-weight:700;background:#fff;
-  border:var(--bw-hair) solid var(--line);border-radius:var(--r-sm);
-  padding:var(--sp-hair) var(--sp-sm);margin:0 var(--sp-hair);font-size:var(--fs-dense);line-height:var(--lh-ui)}
-.tile.wan{color:var(--wan)} .tile.tiao{color:var(--tiao)} .tile.tong{color:var(--tong)}
-/* 手牌条：行高按「一整排牌」定，所以用 px 而不是倍数 */
+/* ── 手牌条（定缺练习的 13 张牌）──
+   行高按「一整排牌」定，所以用 px 而不是倍数 */
 .hand{background:#fff;border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
   padding:var(--sp-md);margin:var(--sp-md) 0;font-size:var(--fs-ui);line-height:var(--sp-3xl)}
+
+/* ── 真实牌面（web/tiles-ui.js 运行期生成的 SVG） ──────────────────────────
+   教学页的核心资产：讲哪张牌就画哪张牌，与牌桌 / 算牌器共用同一份源码 ——
+   纯图片方案做不到这一点（插图会跟真牌漂移）。尺寸只取 --sp-* 已有档位，不新造数值。
+   （此前的 .tile 纯文字牌面编码已随本页改版下线：有真牌面之后，文字编码反而更慢认。） */
+.face{display:inline-block;width:var(--sp-3xl);height:calc(var(--sp-3xl) * 1.4);line-height:0;vertical-align:middle}
+.face.lg{width:var(--sp-4xl);height:calc(var(--sp-4xl) * 1.4)}
+.face.xl{width:var(--sp-5xl);height:calc(var(--sp-5xl) * 1.4)}
+
+/* 一副牌总览：一个花色一行、每行九张；牌宽随格子走（宽高比 = 60:84） */
+.deckwrap{margin:var(--sp-lg) 0}
+.suitrow{margin:var(--sp-lg) 0}
+.suitcap{font-size:var(--fs-meta);letter-spacing:.06em;text-transform:uppercase;color:var(--sub);font-weight:800}
+.suitcap .zh{text-transform:none;font-size:var(--fs-small)}
+.deck{display:grid;grid-template-columns:repeat(9,minmax(0,1fr));gap:var(--sp-sm);margin:var(--sp-sm) 0 0}
+.cell{display:flex;flex-direction:column;align-items:center;gap:var(--sp-hair);min-width:0}
+.cell .face{width:100%;height:auto;aspect-ratio:5/7}
+.cn{font-size:var(--fs-meta);color:var(--sub);font-variant-numeric:tabular-nums;font-weight:700}
+.cn i{font-style:normal;margin-left:var(--sp-hair)}
+
+/* 颜色锚点：四张「一眼认得出」的条子 */
+.landmark{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:var(--sp-md);margin:var(--sp-lg) 0}
+.lm{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:var(--sp-xs);
+  background:#fff;border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+  padding:var(--sp-md);text-align:center}
+.lm b{font-size:var(--fs-dense)}
+.lm-note{font-size:var(--fs-meta);color:var(--sub);line-height:var(--lh-ui)}
+.lm-note em{font-style:normal;font-weight:800;color:var(--wan)}
+
+/* ── 随堂练习 ──
+   .fb 给固定 min-height：答完题文字长度会变，不留位的话按钮会被顶得上下跳。 */
+.drill{background:#fff;border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+  padding:var(--sp-lg);margin:var(--sp-lg) 0}
+.drill .q{display:flex;justify-content:center;margin-bottom:var(--sp-lg)}
+.opts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:var(--sp-sm)}
+.opts.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.btn{font:inherit;font-size:var(--fs-dense);font-weight:700;color:var(--ink);background:#fff;
+  border:var(--bw-hair) solid var(--line);border-radius:var(--r-sm);
+  padding:var(--sp-sm) var(--sp-md);cursor:pointer;text-align:center;line-height:var(--lh-ui)}
+.btn:hover:not(:disabled){border-color:var(--accent);color:var(--accent)}
+.btn:disabled{cursor:default}
+.btn .py{display:block;font-size:var(--fs-meta);font-weight:600;color:var(--sub);font-family:var(--mono)}
+.btn.ok{border-color:var(--tiao);color:var(--tiao);box-shadow:inset 0 0 0 var(--bw-rule) var(--tiao)}
+.btn.ok .py{color:var(--tiao)}
+.btn.no{border-color:var(--wan);color:var(--wan);box-shadow:inset 0 0 0 var(--bw-rule) var(--wan)}
+.btn.no .py{color:var(--wan)}
+.fb{text-align:center;font-size:var(--fs-dense);color:var(--sub);min-height:var(--sp-3xl);margin:var(--sp-md) 0}
+.fb.ok{color:var(--tiao)} .fb.no{color:var(--wan)}
+.score{display:flex;align-items:center;justify-content:center;gap:var(--sp-lg);flex-wrap:wrap;
+  font-size:var(--fs-dense);font-weight:700;color:var(--sub)}
+.score .btn{font-size:var(--fs-small)}
 
 /* ── 下一页 ── */
 .next{display:flex;gap:var(--sp-md);flex-wrap:wrap;margin-top:var(--sp-3xl)}
@@ -216,4 +264,8 @@ a.step:hover .go{text-decoration:underline}
   .wrap{padding:0 var(--sp-lg) var(--sp-4xl)}
   header.top{padding:var(--sp-xxl) 0 var(--sp-sm)}
   h2{margin-top:var(--sp-3xl)}
+  /* 窄屏保留「一门一行九张」的行结构（换成 3 列会让总览变成九行长条），
+     只把列间距收到发丝级 —— 375px 下每张牌仍有 36px 宽，认形足够。 */
+  .deck{gap:var(--sp-hair)}
+  .landmark{grid-template-columns:repeat(2,minmax(0,1fr))}
 }

@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tile Recognition · Reading Sichuan Mahjong Tiles — chuan.ma</title>
-<meta name="description" content="Learn to read every Sichuan mahjong tile: the three suits 万 条 筒, the nine Chinese numerals, and the one tile that is not what it looks like.">
+<meta name="description" content="Learn to read every Sichuan mahjong tile with the real tile faces: the three suits 万 条 筒, the nine numerals, the bamboo tiles you can read by colour alone, and the one tile that is not what it looks like.">
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
@@ -22,9 +22,9 @@
 
 <div class="wrap">
 <header class="top">
-  <div class="kicker">Lesson 2 · 识别牌型</div>
+  <div class="kicker">Lesson 2 · 识别牌面</div>
   <h1>Reading the Tiles</h1>
-  <p class="lede">You cannot play a game you cannot read. The good news: Sichuan mahjong has the smallest tile set of any major variant — <b>108 tiles, three suits, nine numbers</b>. Learn nine characters and one visual trap, and you can name any tile on the table in under a second.</p>
+  <p class="lede">You cannot play a game you cannot read. The good news: Sichuan mahjong has the smallest tile set of any major variant — <b>108 tiles, three suits, nine numbers</b>. Below is every face, drawn at the size you will actually see across a table. Learn nine characters, four colour landmarks and one visual trap, and you can name any tile on the table in under a second.</p>
 </header>
 
 <h2>1. A deliberately stripped deck</h2>
@@ -41,7 +41,7 @@
     </tr>
     <tr>
       <td><b>Bamboo</b> / sticks</td><td class="n">条</td><td class="n">tiáo</td>
-      <td>that many bamboo sticks drawn on the tile</td>
+      <td>that many bamboo canes drawn on the tile</td>
       <td>条 means "strip" or "stick"</td>
     </tr>
     <tr>
@@ -58,57 +58,91 @@
   <p>With no winds or dragons to get in the way, almost every hand is made of the same raw material: runs and triplets inside three suits. Sichuan mahjong is therefore much purer than other variants — it is almost entirely a test of <b>shape efficiency</b>. See <a href="learn-rules.html">the basics</a> for how that plays out.</p>
 </div>
 
-<h2>2. The nine numerals</h2>
+<h2>2. All 27 faces, at table size</h2>
+<p>This is the whole vocabulary of the game on one screen. Nothing is missing and nothing is added — if you can name these, you can read any hand.</p>
+<div id="deck" class="deckwrap"></div>
+<p>Notice how differently the three suits encode a number. Characters <i>write</i> it. Bamboo and dots <b>count</b> it — which is why bamboo and dots are the fast suits to read, and characters are the ones worth drilling.</p>
+
+<h2>3. The nine numerals</h2>
 <p>Every tile is identified by a Chinese numeral. These are the everyday forms — the ceremonial accounting forms (<span class="zh">壹貳叁肆伍陆柒捌玖</span>) belong on bank documents, not on tiles.</p>
 <div class="tbl-scroll">
 <table>
-  <thead><tr><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th></tr></thead>
+  <thead><tr><th class="c">Face</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="c">Face</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="c">Face</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th></tr></thead>
   <tbody>
     <tr>
-      <td class="n">一</td><td class="n">yī</td><td class="n">1</td>
-      <td class="n">四</td><td class="n">sì</td><td class="n">4</td>
-      <td class="n">七</td><td class="n">qī</td><td class="n">7</td>
+      <td class="c"><span class="face" data-face="0"></span></td><td class="n">一</td><td class="n">yī</td><td class="n">1</td>
+      <td class="c"><span class="face" data-face="3"></span></td><td class="n">四</td><td class="n">sì</td><td class="n">4</td>
+      <td class="c"><span class="face" data-face="6"></span></td><td class="n">七</td><td class="n">qī</td><td class="n">7</td>
     </tr>
     <tr>
-      <td class="n">二</td><td class="n">èr</td><td class="n">2</td>
-      <td class="n">五</td><td class="n">wǔ</td><td class="n">5</td>
-      <td class="n">八</td><td class="n">bā</td><td class="n">8</td>
+      <td class="c"><span class="face" data-face="1"></span></td><td class="n">二</td><td class="n">èr</td><td class="n">2</td>
+      <td class="c"><span class="face" data-face="4"></span></td><td class="n">五</td><td class="n">wǔ</td><td class="n">5</td>
+      <td class="c"><span class="face" data-face="7"></span></td><td class="n">八</td><td class="n">bā</td><td class="n">8</td>
     </tr>
     <tr>
-      <td class="n">三</td><td class="n">sān</td><td class="n">3</td>
-      <td class="n">六</td><td class="n">liù</td><td class="n">6</td>
-      <td class="n">九</td><td class="n">jiǔ</td><td class="n">9</td>
+      <td class="c"><span class="face" data-face="2"></span></td><td class="n">三</td><td class="n">sān</td><td class="n">3</td>
+      <td class="c"><span class="face" data-face="5"></span></td><td class="n">六</td><td class="n">liù</td><td class="n">6</td>
+      <td class="c"><span class="face" data-face="8"></span></td><td class="n">九</td><td class="n">jiǔ</td><td class="n">9</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>On the bamboo and dot suits you may not even need the numerals: the tile simply shows that many sticks or circles. On the character suit the numeral is written out, which is where these nine characters earn their keep.</p>
+<p>Above the numeral is always <span class="zh">萬</span> <span class="zh">wàn</span>, "ten thousand" — it never changes, so train yourself to ignore the bottom half of a character tile entirely. The top glyph is the whole message. If you only ever learn nine shapes, learn these:</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th class="n">Glyph</th><th>How to tell it apart at a glance</th></tr></thead>
+  <tbody>
+    <tr><td class="n">一 二 三</td><td>one, two, three horizontal strokes — free, no learning required</td></tr>
+    <tr><td class="n">四</td><td>the boxed one: a square with something inside</td></tr>
+    <tr><td class="n">五</td><td>an enclosed angular shape, like a box with a lid and legs</td></tr>
+    <tr><td class="n">六</td><td>a little hat above two legs</td></tr>
+    <tr><td class="n">七</td><td>a single stroke crossed low — the simplest stroke count of all</td></tr>
+    <tr><td class="n">八</td><td>two strokes leaning apart, nothing joining them</td></tr>
+    <tr><td class="n">九</td><td>ends in a hook</td></tr>
+  </tbody>
+</table>
+</div>
 
-<h2>3. The one tile that is not what it looks like</h2>
+<h2>4. The one tile that is not what it looks like</h2>
 <div class="box warn">
-  <h4>1 Bamboo <span class="zh">一条</span> is drawn as a bird</h4>
-  <p>Every other bamboo tile shows its rank as a count of sticks — <b>except the 1</b>. Traditionally it is drawn as a <b>bird</b> (a peacock or sparrow), not as a single stick. Players call it <span class="zh">幺鸡</span> (yāo jī, literally "little chicken").</p>
+  <h4>1 Bamboo <span class="zh">一条</span> is drawn as a bird <span class="face lg" data-face="9"></span></h4>
+  <p>Every other bamboo tile shows its rank as a count of canes — <b>except the 1</b>. Traditionally it is drawn as a <b>bird</b> (a peacock or sparrow), not as a single cane. Players call it <span class="zh">幺鸡</span> (yāo jī, literally "little chicken").</p>
   <p>So if you are scanning a hand for "one bamboo", stop looking for a lone stick. The bird <i>is</i> the one. This single piece of tile art has confused more beginners than any rule in the game.</p>
 </div>
 
-<h2>4. Saying a tile out loud</h2>
+<h2>5. Four bamboo tiles you can read by colour alone</h2>
+<p>Bamboo tiles are not a plain grid of identical canes. Real sets colour specific canes red, and lay the eight out unlike any other rank — so four of the nine bamboo tiles can be identified <b>without counting a single cane</b>. Most players discover this at a table, under time pressure, the hard way.</p>
+<div class="landmark">
+  <div class="lm"><span class="face xl" data-face="13"></span><b>5 条</b><span class="lm-note">the <em>middle</em> cane is red</span></div>
+  <div class="lm"><span class="face xl" data-face="15"></span><b>7 条</b><span class="lm-note">the <em>top</em> cane is red</span></div>
+  <div class="lm"><span class="face xl" data-face="17"></span><b>9 条</b><span class="lm-note">the whole <em>middle row</em> is red</span></div>
+  <div class="lm"><span class="face xl" data-face="16"></span><b>8 条</b><span class="lm-note">four over four, <em>M over W</em></span></div>
+</div>
+<p>Three of them are pure colour: a red dot in the centre (5), a red dot on top (7), a red band across the middle (9). Nine bamboo is the easiest tile in the deck to spot from across a room, precisely because of that band.</p>
+<p>Eight bamboo is a shape instead. It is the only tile in the game laid out as <b>two zigzags</b> — four canes forming an <b>M</b> on the bottom, four forming an inverted M (<b>W</b>) on top, the two rows pinching together in the middle into an hourglass. Its nicknames at Chinese tables are unforgiving: <span class="zh">坦克</span> (a tank, seen from above), <span class="zh">脚开开</span> (legs wide open), and <b>BMW</b> — B for 八, M for the bottom row, W for the top.</p>
+<div class="box">
+  <h4>Why colour beats counting</h4>
+  <p>Counting nine canes costs a beat of conscious attention; seeing a red band costs none. Under time pressure that difference is the whole game — but note the caveat: <b>red canes are a convention, not a law</b>. Cheap or unusual sets sometimes omit them. Use colour as your fast cue, and counting as the fallback that always works.</p>
+</div>
+
+<h2>6. Saying a tile out loud</h2>
 <p>The pattern is always <b>[number][suit]</b> — number first, suit second. That is the opposite of how English speakers tend to guess.</p>
 <div class="tbl-scroll">
 <table>
-  <thead><tr><th class="n">Tile</th><th class="n">Chinese</th><th class="n">Pinyin</th><th class="n">Means</th></tr></thead>
+  <thead><tr><th class="c">Face</th><th class="n">Tile</th><th class="n">Chinese</th><th class="n">Pinyin</th><th class="n">Means</th></tr></thead>
   <tbody>
-    <tr><td class="n">三万</td><td class="n">三 + 万</td><td class="n">sān wàn</td><td class="n">3 of characters</td></tr>
-    <tr><td class="n">七条</td><td class="n">七 + 条</td><td class="n">qī tiáo</td><td class="n">7 of bamboo</td></tr>
-    <tr><td class="n">五筒</td><td class="n">五 + 筒</td><td class="n">wǔ tǒng</td><td class="n">5 of dots</td></tr>
-    <tr><td class="n">幺鸡</td><td class="n">幺 + 鸡</td><td class="n">yāo jī</td><td class="n">1 of bamboo (the bird)</td></tr>
-    <tr><td class="n">九万</td><td class="n">九 + 万</td><td class="n">jiǔ wàn</td><td class="n">9 of characters</td></tr>
+    <tr><td class="c"><span class="face" data-face="2"></span></td><td class="n">三万</td><td class="n">三 + 万</td><td class="n">sān wàn</td><td class="n">3 of characters</td></tr>
+    <tr><td class="c"><span class="face" data-face="15"></span></td><td class="n">七条</td><td class="n">七 + 条</td><td class="n">qī tiáo</td><td class="n">7 of bamboo</td></tr>
+    <tr><td class="c"><span class="face" data-face="22"></span></td><td class="n">五筒</td><td class="n">五 + 筒</td><td class="n">wǔ tǒng</td><td class="n">5 of dots</td></tr>
+    <tr><td class="c"><span class="face" data-face="9"></span></td><td class="n">幺鸡</td><td class="n">幺 + 鸡</td><td class="n">yāo jī</td><td class="n">1 of bamboo (the bird)</td></tr>
+    <tr><td class="c"><span class="face" data-face="8"></span></td><td class="n">九万</td><td class="n">九 + 万</td><td class="n">jiǔ wàn</td><td class="n">9 of characters</td></tr>
   </tbody>
 </table>
 </div>
 <p>Chinese mahjong tables are loud partly because discards are <b>announced</b>: you say the tile name as you throw it. Learn these five phrases and you can follow the conversation at a real table.</p>
-<p>A quick naming convention you will hear constantly: because the rank comes first, a hand sorted from 1 to 9 in one suit reads as a list of numbers — <span class="tile tiao">1条</span> <span class="tile tiao">2条</span> <span class="tile tiao">3条</span> and so on. Sorted hands are also <b>announced by their shape</b>, e.g. "I have 1-2-3 bamboo", which is how you will start hearing your own hands.</p>
+<p>A quick naming convention you will hear constantly: because the rank comes first, a hand sorted from 1 to 9 in one suit reads as a list of numbers — <span class="zh">幺鸡</span>, <span class="zh">二条</span>, <span class="zh">三条</span> and so on. Sorted hands are also <b>announced by their shape</b>, e.g. "I have 1-2-3 bamboo", which is how you will start hearing your own hands.</p>
 
-<h2>5. The real skill: sorting a hand fast</h2>
+<h2>7. The real skill: sorting a hand fast</h2>
 <p>Naming tiles is table stakes. What actually makes you a player is the first three seconds of every round: <b>sorting 13 tiles into their three suits and seeing which suit is thinnest.</b></p>
 <ol class="steps">
   <li><b>Split into three piles</b> — characters left, bamboo middle, dots right (or whatever order you like, as long as it never changes).</li>
@@ -117,30 +151,21 @@
 </ol>
 <p>Doing this reflexively is worth more than any strategy tip on this site. If you have to think about it, you will lose the first three turns of every round.</p>
 
-<h2>6. Three drills you can do alone</h2>
-<div class="tbl-scroll">
-<table>
-  <thead><tr><th>Drill</th><th>What to do</th><th>Target</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><b>Name the tile</b></td>
-      <td>Shuffle the 27 distinct tile faces and name each one out loud as you flip it.</td>
-      <td>27 tiles, no mistakes</td>
-    </tr>
-    <tr>
-      <td><b>Speed sort</b></td>
-      <td>Deal yourself 13 random tiles and sort them into three ordered suits.</td>
-      <td>Under 10 seconds</td>
-    </tr>
-    <tr>
-      <td><b>Call the missing suit</b></td>
-      <td>From a sorted 13-tile hand, say out loud which suit you would drop — without pausing.</td>
-      <td>Instant, every time</td>
-    </tr>
-  </tbody>
-</table>
+<h2>8. Drills you can do right here</h2>
+<p>Both drills use exactly the tile faces from the table. Click to answer; the feedback tells you what you actually picked, and flags the classic mix-ups.</p>
+
+<h3>Drill A · Name the tile <span class="zh">认牌</span></h3>
+<p>One tile at a time — sometimes face down at first. Name it out loud <i>before</i> you look at the options.</p>
+<div class="drill" id="drillName"></div>
+
+<h3>Drill B · Call the missing suit <span class="zh">定缺</span></h3>
+<p>Thirteen tiles dealt from a real wall. Count the three suits and drop the thinnest — in one motion, without pausing.</p>
+<div class="drill" id="drillVoid"></div>
+
+<div class="box good">
+  <h4>Drill C · Speed sort</h4>
+  <p>Deal yourself 13 real tiles and sort them into three ordered suits. Target: under 10 seconds, no mistakes. You can do it on the <a href="tiles.html">tile gallery</a>, which shows every face at several sizes, or on the <a href="calculator.html">calculator</a>, which lets you click tiles in and immediately tells you what the hand is worth.</p>
 </div>
-<p>You can do all three on the <a href="tiles.html">tile gallery</a>, which shows every tile face drawn as clean vector artwork, or on the <a href="calculator.html">calculator</a>, which lets you click tiles in and immediately tells you what the hand is worth.</p>
 
 <div class="next">
   <a href="learn-scoring.html"><div class="k">Next lesson</div><div class="t">Scoring &amp; Fan &rarr;</div></a>
@@ -149,5 +174,1163 @@
 
 <footer>chuan.ma · a free tool for learning Sichuan mahjong · rules match the engine used by the table</footer>
 </div>
+<script>/* 川麻视觉设计令牌 · 单一源 (single source of truth)
+ * ---------------------------------------------------------------------------
+ * 为什么存在：牌面（tiles-ui.js）、GPU 牌桌（pixi-table.js）、三处页面样式
+ * 原先各写一份色值，改一处必漂移。本文件把「色板 + 质感参数」集中定义，
+ * 由三处共同消费：
+ *   - 浏览器：<script src=tokens.js> → window.CMTokens（build.mjs 内联到每个页面）
+ *   - Node   ：视觉回归脚本用 new Function('window', src) 取同一份值做断言
+ *   - 样式   ：build.mjs 把模板里的 __TOKENS_CSS__ 占位注释替换为 CMTokens.css()，产出 :root{...}
+ *             （坑：别在注释里写出「注释结束符」的完整字符序列，那会提前闭合本注释，
+ *              导致 new Function(src) 直接语法报错 —— 2026-09-19 实际踩到过）
+ *
+ * 契约（改本文件会同时影响牌面 / 牌桌 / 页面样式，改动即全局生效）：
+ *   CMTokens.geo      牌面几何（viewBox 单位，非像素）
+ *   CMTokens.tile     牌身与内凹面板
+ *   CMTokens.wan/tiao/tong/back   各花色墨色
+ *   CMTokens.felt     桌面绒布与桌边
+ *   CMTokens.side     2.5D 牌体厚度侧边
+ *   CMTokens.ui       UI 层（与既有 --accent 等变量名对齐，便于样式平滑迁移）
+ *   CMTokens.fx       质感开关与强度（高光 / 内阴影 / 纹理密度 / 暗角）
+ *   CMTokens.css()    产出 :root{...} 字符串
+ * ---------------------------------------------------------------------------
+ */
+(function (root) {
+  'use strict';
+
+  var T = {
+    version: '1.0.0',
+
+    /* ── 牌面几何（viewBox 60×84，接近真实牌 0.714 比例） ── */
+    geo: {
+      vbW: 60, vbH: 84,
+      rOuter: 8,      // 牌身外圆角
+      rPanel: 5,      // 内凹面板圆角
+      edge: 1.2,      // 牌身描边宽
+      panelInset: 5,  // 面板相对牌身内缩
+      panelEdgeW: 0.9
+    },
+
+    /* ── 牌身：象牙白实体感（顶亮 → 底暗 + 顶部高光 + 底部内阴影） ── */
+    tile: {
+      top: '#fdf9ee',
+      mid: '#f6efdd',
+      bot: '#e7dcc3',
+      edge: '#c6b99c',
+      edgeHi: 'rgba(255,255,255,.55)',   // 顶部 1px 高光线
+      innerLo: 'rgba(138,118,84,.16)',   // 底部内阴影
+      innerHi: 'rgba(255,255,255,.7)',   // 顶部内高光
+      // 内凹面板（刻面）：比牌身略亮，四周有内阴影制造凹陷
+      pTop: '#fffefa',
+      pBot: '#f7f2e5',
+      pEdge: '#e2dac5',
+      pInHi: 'rgba(255,255,255,.95)',
+      pInLo: 'rgba(150,132,96,.12)'
+    },
+
+    /* ── 万：靛黑汉字 + 朱红「萬」，带刻字高光/暗影 ── */
+    wan: {
+      ink: '#1e2b45',
+      inkBot: '#2c3c5c',                // 字形渐变下端（比 ink 略亮，刻痕里也有层次）
+      inkHi: 'rgba(255,255,255,.42)',   // 刻字顶部高光
+      inkLo: 'rgba(24,34,54,.30)',      // 刻字底部暗影
+      char: '#bf3626',
+      charBot: '#9c2a1c',
+      charHi: 'rgba(255,255,255,.34)',
+      charLo: 'rgba(110,32,20,.34)'
+    },
+
+    /* ── 条：竹节绿（横向渐变 = 圆柱：暗 / 亮 / 暗）
+     *   暗端刻意不压太深：圆柱感靠「亮度差」而不是「把两侧做黑」——
+     *   暗端一旦落到高饱和绿之外，整根竹子会发闷（实测 chroma.green 0.021→0.003）。 */
+    tiao: {
+      dark: '#176b43',
+      mid: '#1c7d4d',
+      lit: '#2aa86a',
+      hi: '#6cc896',
+      nodeDark: '#0b3d26',
+      birdBody: '#1c7d4d',
+      birdDark: '#0f5233',
+      birdWing: '#6cc896',
+      beak: '#d99a2b',
+      comb: '#c0392b',
+      eye: '#0d2e1c',
+
+      /* 红色定位节（2026-09-20）——真实牌面用红色标出条子的「锚点」，
+       * 让玩家不看数字也能秒认这四张牌：
+       *   5 条 = 正中一根红   · 7 条 = 最上面一根红
+       *   9 条 = 中间一整行三根红
+       * 结构与绿竹节完全同构（同一条圆柱横向渐变 + 同款竹节线），只换色系。
+       * 红选**朱红**而不是警示红：牌面是奶油底，亮度不够的红会读成脏褐色。
+       * 暗端沿用筒心暗部 #8f2a1f，使全牌面的红属于同一族。 */
+      red: {
+        dark: '#8f2a1f',
+        mid: '#a92e1f',
+        lit: '#c0392b',
+        hi: '#e8907c',
+        nodeDark: '#5c130a'
+      }
+    },
+
+    /* ── 筒：蓝环 + 朱红靶心（环面径向渐变 + 高光弧） ── */
+    tong: {
+      rimDark: '#24569a',
+      face: '#3f86cf',
+      faceHi: '#8fbdec',
+      core: '#c0392b',
+      coreDark: '#8f2a1f',
+      coreLit: '#e0604f',
+      coreHi: 'rgba(255,255,255,.5)',
+      white: '#fffdf6'
+    },
+
+    /* ── 牌背：织物蓝 + 斜织纹 + 边框高光 ── */
+    back: {
+      top: '#3a7cc4',
+      mid: '#2a6aad',
+      bot: '#1e4d84',
+      edge: '#173e6d',
+      inner: '#e8eef7',
+      weave: 'rgba(232,238,247,.13)',
+      weft: 'rgba(12,36,66,.20)',
+      hi: 'rgba(255,255,255,.32)'
+    },
+
+    /* ── 桌面绒布：中央柔和光斑 → 边缘深绿 + 定向拉丝 + 暗角 ── */
+    felt: {
+      hot: '#2e7f5b',     // 光斑中心（0）
+      m1: '#1f6847',      // 0.4
+      m2: '#14503a',      // 0.72
+      deep: '#0a2c1e',    // 1
+      slubHi: 'rgba(255,255,255,.055)',  // 拉丝亮丝
+      slubLo: 'rgba(0,0,0,.075)',        // 拉丝暗丝
+      vign: 'rgba(3,16,10,.72)',         // 四角暗角
+      // 桌边三环
+      rimOuter: '#061c12',
+      rimGold: '#d9b45c',
+      rimGoldHi: 'rgba(255,232,168,.55)',
+      rimInner: '#6fae8c',
+      ui: '#2f6b4f',      // 页面用绒布色（.stage 背景兜底）
+      stage: '#0b2a1c'    // canvas 清屏色（PixiJS background）
+    },
+
+    /* ── 2.5D 牌体厚度侧边（顶亮 → 底暗，不再是纯色平涂） ── */
+    side: {
+      top: '#e8dcbc',
+      bot: '#a8956e',
+      edge: '#8d7b5a'
+    },
+
+    /* ── 落地阴影分层（近影紧而深 / 远影散而淡） ── */
+    shadow: {
+      nearA: 0.30, nearDy: 2, nearBlur: 3,
+      farA: 0.14, farDy: 6, farBlur: 10,
+      color: 0x000000
+    },
+
+    /* ── UI 层：与既有 CSS 变量名对齐（--accent / --gold / --felt ...） ── */
+    ui: {
+      bg: '#f5f6f8',
+      card: '#ffffff',
+      ink: '#1a1d21',
+      sub: '#5b6470',
+      line: '#e4e8ed',
+      accent: '#1f6feb',
+      accentHi: '#3d8ef8',
+      accentLo: '#1a5fd0',
+      gold: '#c9971f',
+      wan: '#c0392b',
+      tiao: '#1e8e5a',
+      tiaoTile: '#1c7d4d',   // 牌面竹绿（比文字绿深一档，用于色块/徽章）
+      tiaoRed: '#c0392b',    // 牌面红竹节（5/7/9 条的定位节，用于图例与说明文字）
+      tong: '#2b6cb0',
+      // 牌桌深色外壳
+      shellBg: '#0f1418',
+      shellHead: '#161c22',
+      shellLine: '#232b33',
+      mono: 'ui-monospace,SFMono-Regular,Menlo,Consolas,monospace'
+    },
+
+    /* ── 牌桌外壳（深色 HUD）细色板 ── */
+    shell: {
+      headInk: '#e9edf2',
+      dim: '#93a1b0',
+      faint: '#6b7784',
+      panel: '#1b2229',
+      panelLine: '#2c353f',
+      panelInk: '#dfe6ee',
+      link: '#4b9bff',
+      linkHi: '#8ec2ff',
+      btnHi: '#cfe0f0',
+      accentEdge: '#7ab2ff',
+      okBg: '#14351f', okInk: '#7fd8a5',
+      failBg: '#3b1717', failInk: '#f19a90',
+      easy: '#0f6e56',
+      hard: '#a32d2d',
+      me: '#f6f9ff',
+      drawerBg: 'rgba(14,20,26,.95)',
+      drawerLine: '#2b343d',
+      drawerInk: '#c3cdd8',
+      overlay: 'rgba(8,12,16,.72)'
+    },
+
+    /* ── 质感开关与强度（想降噪/回退时只改这里，不用翻绘制代码） ── */
+    fx: {
+      tileGloss: 1,      // 牌身高光/内阴影总开关系数 0~1
+      panelDepth: 1,     // 内凹面板的凹陷强度
+      edgeLight: 1,      // 凸起牌身左右内缘的受光/背光强度（统一光源＝左上）
+      weave: 1,          // 牌背织纹强度
+      feltSlub: 2600,    // 绒布拉丝根数
+      feltWeave: 1400,   // 绒布斜织纹根数
+      feltVignette: true,
+      shadowLayers: 2
+    },
+
+    /* ── 版式尺度（全站唯一来源） ──────────────────────────────────────────
+       为什么要有这一节：此前四套样式（site.css / 算牌器 / 牌面页 / 牌桌）各写各的，
+       静态样式里就散出 20 个字号、20 个间距、10 个圆角，同一个语义的元素跨页不一致
+       （h1 分别是 31 / 22 / 24）。「层次」不是靠调某些值做出来的，是靠**只有这几档**做出来的。
+       规则：样式表里不允许出现字面量 px 的字号/间距/圆角，一律引用 --fs-* / --sp-* / --r-* / --lh-*。
+       每档都有明确角色，新增元素时先选角色，不要新造数值。 */
+    scale: {
+      // 字号：9 档 + 1 个显示级数字。小字到正文逐级递增，标题层明确断开
+      fs: {
+        meta: 12,     // 角标 / kicker / pill / 表头 / 页脚 / 图注
+        small: 13,    // 导航链接 / 次级说明 / 小按钮
+        dense: 14,    // 表格正文 / 牌面编码 / 卡片副标题
+        ui: 15,       // 界面正文（工具页，密度优先）
+        body: 16,     // 阅读正文 / 导语
+        h3: 18,       // 三级标题 / 卡片标题
+        h2: 22,       // 二级标题
+        h1: 28,       // 一级标题（全站唯一，跨页一致）
+        num: 40       // 显示级数字（算牌器结果，唯一例外档）
+      },
+      // 间距：4px 体系，hair=2 只用于发丝级微调（如描边内侧留白）
+      // ⚠ 键名直接拼成 CSS 变量名（--sp-<key>），所以带数字的键必须与 CSS 里的写法完全一致。
+      //   踩过：这里写 x3l 生成 --sp-x3l，CSS 里写的是 var(--sp-3xl) —— 全部引用静默失效
+      //   （CSS 变量未定义时整条声明被丢弃，不报错、控制台也不提示）。
+      sp: {
+        hair: 2, xs: 4, sm: 8, md: 12, lg: 16, xl: 20,
+        xxl: 24, '3xl': 32, '4xl': 40, '5xl': 64
+      },
+      // 圆角：3 档 + 胶囊。小控件 / 卡片面板 / 大面板 / 胶囊标签
+      radius: { sm: 6, md: 12, lg: 20, full: 999 },
+      // 边框层次：3 档，含义固定 —— 发丝描边 / 分隔条 / 强调色条
+      bw: { hair: 1, rule: 2, accent: 4 },
+      // 行高：3 档，按「用途」而不是按元素挑
+      lh: { tight: 1.25, ui: 1.5, body: 1.7 }
+    },
+
+    /* ── 汉字轮廓（web/glyphs.js，由 tools/extract-glyphs.py 从 OFL 字体抽取） ──
+       不再使用系统字体渲染「萬 / 一~九」：跨设备字形不一致，且 SVG 光栅化为
+       pixi 纹理时缺字会直接成方块。此处仅记录来源与授权，供审计与再生成。
+       字体风格选了**楷体**而非宋体：宋体横画天生细（一二三 的墨量只有其他字
+       三分之一），而牌面需要匀重笔画；牌河尺寸下楷体的「一」墨迹是宋体的 1.6 倍。 */
+    glyphs: {
+      source: 'LXGW WenKai TC Bold',
+      upstream: 'https://github.com/lxgw/LxgwWenKai',
+      license: 'SIL Open Font License 1.1',
+      licenseFile: 'docs/OFL.txt',
+      generator: 'web/tools/extract-glyphs.py',
+      chars: '一二三四五六七八九萬'
+    }
+  };
+
+  /* ── 产出 :root{...}：由 build.mjs 注入模板与 site.css ── */
+  T.css = function () {
+    var u = T.ui, f = T.felt, t = T.tile, s = T.shell, sc = T.scale;
+    var v = [
+      // UI 层：沿用既有变量名，样式表可平滑迁移
+      ['--bg', u.bg], ['--card', u.card], ['--ink', u.ink], ['--sub', u.sub],
+      ['--line', u.line], ['--accent', u.accent], ['--gold', u.gold],
+      ['--felt', f.ui], ['--wan', u.wan], ['--tiao', u.tiao], ['--tong', u.tong],
+      ['--mono', u.mono],
+      // 质感层
+      ['--cm-tiao-tile', u.tiaoTile],
+      ['--cm-tiao-red', u.tiaoRed],
+      ['--cm-accent-hi', u.accentHi], ['--cm-accent-lo', u.accentLo],
+      ['--cm-tile-top', t.top], ['--cm-tile-mid', t.mid], ['--cm-tile-bot', t.bot],
+      ['--cm-tile-edge', t.edge], ['--cm-panel-top', t.pTop], ['--cm-panel-bot', t.pBot],
+      ['--cm-panel-edge', t.pEdge],
+      ['--cm-felt-hot', f.hot], ['--cm-felt-deep', f.deep],
+      ['--cm-rim-gold', f.rimGold], ['--cm-rim-outer', f.rimOuter],
+      // 牌桌外壳
+      ['--cm-shell-bg', u.shellBg], ['--cm-shell-head', u.shellHead], ['--cm-shell-line', u.shellLine],
+      ['--cm-head-ink', s.headInk], ['--cm-dim', s.dim], ['--cm-faint', s.faint],
+      ['--cm-panel', s.panel], ['--cm-panel-line', s.panelLine], ['--cm-panel-ink', s.panelInk],
+      ['--cm-link', s.link], ['--cm-link-hi', s.linkHi],
+      ['--cm-btn-hi', s.btnHi], ['--cm-accent-edge', s.accentEdge],
+      ['--cm-ok-bg', s.okBg], ['--cm-ok-ink', s.okInk],
+      ['--cm-fail-bg', s.failBg], ['--cm-fail-ink', s.failInk],
+      ['--cm-easy', s.easy], ['--cm-hard', s.hard], ['--cm-me', s.me],
+      ['--cm-drawer-bg', s.drawerBg], ['--cm-drawer-line', s.drawerLine], ['--cm-drawer-ink', s.drawerInk],
+      ['--cm-overlay', s.overlay], ['--cm-stage', f.stage]
+    ];
+    // 版式尺度：命名与 T.scale 一一对应，样式表只引用这些变量
+    var groups = [
+      ['--fs-', sc.fs, 'px'], ['--sp-', sc.sp, 'px'],
+      ['--r-', sc.radius, 'px'], ['--bw-', sc.bw, 'px'], ['--lh-', sc.lh, '']
+    ];
+    for (var g = 0; g < groups.length; g++) {
+      var pre = groups[g][0], obj = groups[g][1], unit = groups[g][2];
+      for (var k in obj) {
+        if (Object.prototype.hasOwnProperty.call(obj, k)) v.push([pre + k, obj[k] + unit]);
+      }
+    }
+    var out = ':root{\n';
+    for (var i = 0; i < v.length; i++) out += '  ' + v[i][0] + ':' + v[i][1] + ';\n';
+    return out + '}\n';
+  };
+
+  root.CMTokens = T;
+})(typeof window !== 'undefined' ? window
+  : (typeof globalThis !== 'undefined' ? globalThis : this));
+
+;
+/* 自动生成 —— 请勿手改。
+ * 由 web/tools/extract-glyphs.py 从 Noto Serif TC Bold 抽取汉字轮廓。
+ * 字型版权归原作者，以 SIL Open Font License 1.1 授权（见 docs/OFL.txt）。
+ * 牌面使用内嵌矢量路径而非系统字体：跨设备像素一致 + 零字体依赖。
+ */
+;(function (g) {
+  var D = {"upem":1000,"font":"LXGW WenKai TC Bold","cmds":"HLMQVZ","glyphs":{"一":{"n":"u4E00","d":"M149 314 921 354Q933 355 941.5 360.5Q950 366 950 377Q950 390 937.5 404Q925 418 910 427Q895 436 885 436Q880 436 877 435Q866 431 856 429Q846 427 837 426L128 390Q124 390 119.5 389.5Q115 389 110 389Q91 389 74 394Q67 396 64 396Q53 396 53 384Q53 379 58 366.5Q63 354 70.5 341.5Q78 329 87 321Q99 313 121 313Q126 313 133 313Q140 313 149 314Z","b":[53,313,950,436]},"二":{"n":"u4E8C","d":"M152 66 919 98Q932 99 941 104.5Q950 110 950 121Q950 134 937 148.5Q924 163 908 172.5Q892 182 881 182Q876 182 869 180Q860 177 846.5 174.5Q833 172 821 171L131 142Q125 142 119.5 141.5Q114 141 108 141Q86 141 67 146Q64 147 59 147Q46 147 46 134Q46 123 53.5 110Q61 97 69.5 87.5Q78 78 80 75Q94 65 120 65Q127 65 134.5 65Q142 65 152 66ZM272 529 755 556Q768 557 777.5 562Q787 567 787 578Q787 591 775 605Q763 619 748 628.5Q733 638 723 638Q718 638 715 637Q706 634 694 631Q682 628 672 627L251 602H238Q227 602 216.5 603Q206 604 196 607Q192 608 188 608Q175 608 175 595Q175 586 183.5 566.5Q192 547 207 535Q214 530 223 529Q232 528 242 528Q249 528 256 528Q263 528 272 529Z","b":[46,65,950,638]},"三":{"n":"u4E09","d":"M157 9 924 35Q937 36 946.5 42Q956 48 956 60Q956 73 943 87.5Q930 102 914 111.5Q898 121 887 121Q882 121 875 119Q866 117 852.5 114.5Q839 112 827 111L137 88Q131 88 125.5 87.5Q120 87 114 87Q92 87 73 92Q70 93 65 93Q52 93 52 80Q52 70 61.5 50.5Q71 31 85 19Q100 8 130 8Q135 8 142 8.5Q149 9 157 9ZM321 321 750 341Q763 342 773 347Q783 352 783 365Q783 375 771.5 389Q760 403 745 414Q730 425 718 425Q714 425 711 424Q702 421 690 418Q678 415 668 414L302 396H292Q267 396 247 402Q243 403 239 403Q226 403 226 390Q226 373 237.5 354.5Q249 336 257 329Q263 323 272 321.5Q281 320 292 320Q299 320 306.5 320.5Q314 321 321 321ZM252 589 796 619Q809 620 819 625Q829 630 829 642Q829 651 818 664.5Q807 678 792.5 689.5Q778 701 765 701Q760 701 757 700Q748 697 736 694Q724 691 714 690L233 662H220Q209 662 198 663Q187 664 178 667Q174 668 170 668Q157 668 157 655Q157 653 164.5 631.5Q172 610 188 596Q193 590 202 589Q211 588 221 588Q229 588 236.5 588.5Q244 589 252 589Z","b":[52,8,956,701]},"四":{"n":"u56DB","d":"M816 600 799 338Q796 341 792 345Q781 356 767.5 364Q754 372 746 372Q742 372 735 370Q724 366 705 360.5Q686 355 648 355Q617 355 609 359.5Q601 364 601 390L603 588ZM216 35 855 53Q870 54 882.5 56Q895 58 895 73Q895 82 887 95Q879 108 863 125L895 607Q896 611 898.5 615Q901 619 901 627Q901 644 884.5 658Q868 672 844 672H833L184 634Q127 654 109 654Q92 654 92 641Q92 637 94 632Q96 627 99 621Q105 609 107.5 595Q110 581 111 568L140 76Q140 71 140.5 65.5Q141 60 141 54Q141 43 140 31.5Q139 20 137 9Q136 5 135.5 0.5Q135 -4 135 -7Q135 -30 156.5 -41.5Q178 -53 194 -53Q219 -53 219 -24V-21ZM797 306 785 125 213 105 188 566 358 576V575Q358 465 330 381.5Q302 298 229 228Q219 220 214.5 211.5Q210 203 210 196Q210 182 224 182Q238 182 259 197Q327 245 365 298Q403 351 419 420.5Q435 490 438 579L526 585L523 390V386Q523 337 539 314.5Q555 292 582.5 288Q610 284 644 284Q712 284 773 296Q789 299 797 306Z","b":[92,-53,901,672]},"五":{"n":"u4E94","d":"M692 359 665 58 407 50 464 348ZM929 -7H932Q959 -4 959 14Q959 23 947.5 36.5Q936 50 920.5 61.5Q905 73 891 73Q886 73 879 71Q870 69 856.5 66.5Q843 64 831 63L742 60L773 359Q775 363 777.5 370Q780 377 780 385Q780 405 766.5 414.5Q753 424 740 426.5Q727 429 723 429H717L477 417L517 629L812 647Q824 648 834 652Q844 656 844 667Q844 677 832 690.5Q820 704 805 713.5Q790 723 780 723Q775 723 772 722Q763 719 751 716Q739 713 729 712L218 681H205Q194 681 183.5 682Q173 683 163 686Q159 687 155 687Q142 687 142 674Q142 662 151 646.5Q160 631 174 619Q181 614 190 613Q199 612 209 612Q216 612 223 612Q230 612 239 613L434 625L395 413L270 407Q263 407 256 406.5Q249 406 242 406Q232 406 221.5 407Q211 408 200 412Q197 413 193 413Q180 413 180 399Q180 394 187.5 378Q195 362 209 348Q220 337 243 337Q251 337 259 337.5Q267 338 277 339L383 344L329 48L121 42Q115 42 109.5 41.5Q104 41 98 41Q76 41 57 46Q54 47 49 47Q36 47 36 34Q36 19 50.5 4Q65 -11 70 -16Q79 -25 91.5 -27Q104 -29 124 -29H142Z","b":[36,-29,959,723]},"六":{"n":"u516D","d":"M908 27Q908 39 898 53Q858 103 813.5 153.5Q769 204 726 250Q683 296 646 332Q631 347 618 347Q610 347 592.5 335.5Q575 324 575 304Q575 293 585 283Q619 247 661 197Q703 147 746 93Q789 39 824 -8Q838 -25 854 -25Q867 -25 879 -15.5Q891 -6 899.5 6Q908 18 908 27ZM91 -45Q103 -45 136.5 -20.5Q170 4 215.5 47Q261 90 311 147Q361 204 406 271Q409 275 409 283Q409 299 394.5 316Q380 333 362.5 346Q345 359 335 359Q319 359 319 337Q319 324 316 313Q313 302 309 295Q272 230 222 159.5Q172 89 103 12Q77 -17 77 -32Q77 -45 91 -45ZM164 431 903 469Q916 470 925 476.5Q934 483 934 495Q934 509 921 523Q908 537 893 545.5Q878 554 869 554Q865 554 858 552Q848 548 836.5 546.5Q825 545 816 544L534 528L535 741Q535 760 515.5 769Q496 778 476.5 781.5Q457 785 450 785Q428 785 428 771Q428 766 432 760Q440 748 444.5 738Q449 728 449 714L451 524L140 508H128Q117 508 106.5 509Q96 510 87 513Q83 514 77 514Q63 514 63 501Q63 490 74.5 468.5Q86 447 103 435Q105 434 107.5 432.5Q110 431 114 430Q118 430 122 429.5Q126 429 130 429Q138 429 146 429.5Q154 430 164 431Z","b":[63,-45,934,785]},"七":{"n":"u4E03","d":"M465 336 929 412Q959 417 959 436Q959 450 945 462.5Q931 475 914.5 483Q898 491 888 491Q880 491 868 485Q853 478 837.5 472.5Q822 467 803 464L466 410L469 730Q469 743 457.5 751Q446 759 431 764Q416 769 405.5 771Q395 773 392 773Q371 773 371 759Q371 755 375 749Q382 737 385 725Q388 713 388 700L385 397L133 357Q121 355 109 353.5Q97 352 83 352Q79 352 74 352Q69 352 64 353H61Q44 353 44 339Q44 332 49 326Q54 316 71 297.5Q88 279 110 279Q119 279 131.5 281Q144 283 161 286L384 323L382 145V138Q382 83 391 47.5Q400 12 424.5 -9Q449 -30 493.5 -37.5Q538 -45 609 -45Q677 -45 754.5 -38.5Q832 -32 909 -19Q945 -13 945 8Q945 20 929.5 33.5Q914 47 897 56.5Q880 66 872.5 66Q865 66 857 62Q830 50 768.5 40Q707 30 628 30Q555 30 520 38Q485 46 474 69.5Q463 93 463 144V156Z","b":[44,-45,959,773]},"八":{"n":"u516B","d":"M82 -23Q215 70 292 214Q369 358 407 535Q408 539 408.5 543Q409 547 409 550Q409 566 394 579Q379 592 361.5 600Q344 608 330.5 608Q317 608 317 590Q317 588 317.5 586.5Q318 585 318 583Q321 568 321 559Q321 555 315 518.5Q309 482 292.5 423.5Q276 365 247 294Q218 223 170.5 149.5Q123 76 56 10Q34 -12 34 -26Q34 -38 47 -38Q61 -38 82 -23ZM993 14Q993 24 978 33Q904 84 845 154Q786 224 740.5 303Q695 382 663.5 460.5Q632 539 611 608Q604 634 597.5 657Q591 680 586 697Q583 710 575.5 720Q568 730 550 735.5Q532 741 496 741Q462 741 462 726Q462 716 482 703Q494 695 501 686.5Q508 678 515.5 656.5Q523 635 536 588Q574 453 624 349.5Q674 246 724.5 172Q775 98 819 51.5Q863 5 893 -18Q923 -41 930 -41Q940 -41 954.5 -29Q969 -17 981 -4Q993 9 993 14Z","b":[34,-41,993,741]},"九":{"n":"u4E5D","d":"M969 167V187Q968 244 948 244Q930 244 921 191Q917 163 908 129Q899 95 892 76Q886 57 877 44.5Q868 32 846.5 26.5Q825 21 778 21Q739 21 720.5 26Q702 31 697 40.5Q692 50 692 63Q692 70 692.5 77Q693 84 694 93L735 482Q736 489 738.5 497Q741 505 741 514Q741 531 724.5 544Q708 557 688 557Q684 557 680.5 556.5Q677 556 673 556L490 539Q497 586 502 642Q507 698 509 751V753Q509 769 496.5 778.5Q484 788 468.5 794Q453 800 441 802.5Q429 805 427 805Q407 805 407 790Q407 786 408 783Q413 767 417 752.5Q421 738 421 720V714Q420 674 416.5 626Q413 578 406 531L214 513Q208 512 201.5 512Q195 512 189 512Q176 512 164.5 513.5Q153 515 138 517L137 518Q136 518 134 518Q122 518 122 506Q122 501 124 496Q125 496 130.5 482.5Q136 469 149.5 454.5Q163 440 185 440Q193 440 201.5 441Q210 442 220 443L393 458Q376 373 340.5 286Q305 199 239.5 119Q174 39 64 -35Q39 -52 39 -64Q39 -77 56 -77Q64 -77 93.5 -64.5Q123 -52 165.5 -27Q208 -2 255 39Q302 80 346.5 138Q391 196 423 273Q442 318 455.5 368.5Q469 419 478 466L654 482L614 79Q613 71 613 64.5Q613 58 613 52Q613 -6 647.5 -31.5Q682 -57 773 -57Q831 -57 869.5 -52Q908 -47 930.5 -25.5Q953 -4 961 41.5Q969 87 969 167Z","b":[39,-77,969,805]},"萬":{"n":"u842C","d":"M195 -97Q217 -97 217 -69V183L463 194L462 98Q374 86 290 83Q275 83 261 86Q246 86 246 72Q258 15 297 15Q323 15 458.5 37.5Q594 60 678 78L712 33Q724 15 735 15Q745 15 760 28.5Q775 42 775 55Q775 71 696 156Q656 198 641 198Q632 198 618 187Q604 176 604 165Q604 156 612 149Q630 134 638 125Q598 117 531 108L532 197L813 209L809 -12Q733 3 659 30Q642 36 631 36Q616 36 616 24Q616 14 642.5 -6.5Q669 -27 711.5 -48.5Q754 -70 803 -85Q811 -87 822.5 -91Q834 -95 841 -95Q856 -95 871.5 -81.5Q887 -68 887 -53L886 -23Q886 209 891 222Q894 230 894 236Q894 244 884 257Q874 270 854 270L533 256V308L768 318Q794 318 794 332Q794 345 764 373Q789 551 792.5 556Q796 561 796 567Q796 580 779.5 592Q763 604 752 604L584 596Q595 602 605 620Q621 647 633 672L892 686Q920 689 920 704Q920 724 891 746Q878 755 868 755Q859 755 845.5 750.5Q832 746 660 736Q671 770 671 776Q671 801 624 821Q606 828 596 828Q580 828 580 818Q580 811 585.5 801.5Q591 792 591 783Q591 771 584 733L418 723Q414 744 410 774.5Q406 805 350 805Q313 805 313 790Q313 784 322 775Q339 761 343 740L347 720L135 708Q117 708 108 710.5Q99 713 95 713Q82 713 82 702Q82 695 90 680.5Q98 666 109 656.5Q120 647 153 647Q163 647 171 648L357 658Q358 655 358 625Q358 608 374 596Q384 590 396 587L293 582Q245 599 226 599Q211 599 211 588Q211 582 215 576Q228 549 229 518Q239 354 239 341Q239 331 238 323.5Q237 316 237 309Q237 290 256.5 281Q276 272 287 272Q311 272 311 291L310 299L464 306V253L216 243V265Q216 277 208 285.5Q200 294 179 301.5Q158 309 147 309Q131 309 131 298Q131 291 134 287Q145 269 145 245Q117 245 92 250Q78 250 78 239Q78 221 110 188Q119 182 145 182L144 3Q144 -20 139 -54Q139 -70 161 -83.5Q183 -97 195 -97ZM299 472 295 526 467 534 466 480ZM307 354 302 415 466 423 465 362ZM534 364 535 426 704 434 697 372ZM535 483 536 537 718 545 712 492ZM561 595 427 588Q436 594 436 608L428 661L569 669Q555 626 555 612Q555 600 561 595Z","b":[78,-97,920,828]}}};
+  g.CMGlyphs = D;
+})(typeof window !== 'undefined' ? window : this);
+
+;
+/* 川麻麻将牌面资产 v3.1 · 程序化 SVG（零依赖，33 个牌面：27 张 + 牌背）
+ * ---------------------------------------------------------------------------
+ * 用法：MJTiles.face(tileId) / MJTiles.back() / MJTiles.CN
+ *   tileId 0..26 =>  suit = floor(id/9)  rank = id%9+1
+ *
+ * 视觉契约（v3，2026-09-19 吸收开源资产经验后升级）：
+ *   - 统一光源：**左上方**（方位角约 45°）。牌身倒角高光、内凹面板明暗、
+ *     条/筒的受光面全部服从这一个方向 —— 此前牌身假设纯顶光、筒心高光却在左上，互相矛盾。
+ *   - 牌身是**凸起**：垂直渐变「顶亮 → 底暗」+ 左上偏置的柔和高光 + 底部外缘暗边
+ *   - 面板是**凹陷**：顶部内侧暗（上壁背光）+ 底部内侧亮（下壁受光）—— 方向与牌身相反
+ *   - 汉字是**内嵌矢量路径**（见下方字形引擎），不再依赖系统字体
+ *   - 花色是**实体**：条=圆柱（横向暗→亮→暗）、筒=球面（径向渐变 + 左上高光点）
+ *   - 色板与强度全部来自 web/tokens.js，本文件不硬写色值
+ *
+ * 视觉契约（v3.1，2026-09-20 条子对齐实体牌面画法）：
+ *   - **红色定位节**：5 条正中一根红、7 条最上一根红、9 条中间一行三根红
+ *     （见 RED_STICKS）。这是实体牌的通行画法，也是新手最快建立「颜色 → 牌名」
+ *     条件反射的三张牌。红色节与绿色节**同结构、同受光**，只换色系。
+ *   - **8 条改传统锯齿版式**：顶部四条倒 M（W）+ 底部四条 M，中间收腰成沙漏轮廓
+ *     （见 ZIG_U / ZIG_ROW / zigSegments8）。此前是 2×4 的平铺方阵，与实体牌不符。
+ *
+ * ⚠ 三个必须守住的约束（破坏会静默失效）：
+ *   1. 外层 <svg> 必须原样保留 `width="100%" height="100%"` ——
+ *      pixi-table.js 的 svgToTexture() 靠字符串精确匹配它来换尺寸，换了就渲不出纹理。
+ *   2. 每张牌自带的 <defs> 渐变 id 必须**全局唯一**（自增 uid 保证）——
+ *      同一页面/同一张联系表里 33 张牌同框时，同名 id 会互相抢渐变（浏览器只认第一个）。
+ *   3. 必须在 tiles-ui.js **之前**引入 web/glyphs.js（汉字轮廓数据）——
+ *      否则万子退化成空白面板（face() 不报错，只是没字）。
+ *
+ * 依赖：web/tokens.js（色板）、web/glyphs.js（汉字轮廓）。两者缺失时各自走兜底/跳过。
+ * ---------------------------------------------------------------------------
+ */
+(function () {
+  'use strict';
+
+  /* ---------------- 令牌（取不到时用与 tokens.js 一致的兜底值） ---------------- */
+  var T = (typeof window !== 'undefined' && window.CMTokens) || null;
+  function pick(pathStr, fb) {
+    if (!T) return fb;
+    var o = T, ps = pathStr.split('.');
+    for (var i = 0; i < ps.length; i++) {
+      if (o === null || o === undefined || o[ps[i]] === undefined) return fb;
+      o = o[ps[i]];
+    }
+    return o;
+  }
+  var FX = {
+    gloss: pick('fx.tileGloss', 1),
+    panel: pick('fx.panelDepth', 1),
+    weave: pick('fx.weave', 1),
+    edge: pick('fx.edgeLight', 1)
+  };
+
+  var COL = {
+    /* 牌身（凸起） */
+    bodyTop: pick('tile.top', '#fdf9ee'),
+    bodyMid: pick('tile.mid', '#f6efdd'),
+    bodyBot: pick('tile.bot', '#e7dcc3'),
+    bodyEdge: pick('tile.edge', '#c6b99c'),
+    innerHi: pick('tile.innerHi', 'rgba(255,255,255,.7)'),
+    innerLo: pick('tile.innerLo', 'rgba(138,118,84,.16)'),
+    /* 内凹面板 */
+    pTop: pick('tile.pTop', '#fffefa'),
+    pBot: pick('tile.pBot', '#f7f2e5'),
+    pEdge: pick('tile.pEdge', '#e2dac5'),
+    pInHi: pick('tile.pInHi', 'rgba(255,255,255,.95)'),
+    pInLo: pick('tile.pInLo', 'rgba(150,132,96,.12)'),
+    /* 万 */
+    wanInk: pick('wan.ink', '#1e2b45'),
+    wanInkBot: pick('wan.inkBot', '#2c3c5c'),
+    wanInkLo: pick('wan.inkLo', 'rgba(24,34,54,.30)'),
+    wanHi: pick('wan.inkHi', 'rgba(255,255,255,.42)'),
+    wanChar: pick('wan.char', '#bf3626'),
+    wanCharBot: pick('wan.charBot', '#9c2a1c'),
+    wanCharLo: pick('wan.charLo', 'rgba(110,32,20,.34)'),
+    wanCharHi: pick('wan.charHi', 'rgba(255,255,255,.34)'),
+    /* 条（兜底值必须与 tokens.js 保持一致，否则回归脚本走兜底时会拿到另一套颜色） */
+    tiaoDark: pick('tiao.dark', '#176b43'),
+    tiaoMid: pick('tiao.mid', '#1c7d4d'),
+    tiaoLit: pick('tiao.lit', '#2aa86a'),
+    tiaoHi: pick('tiao.hi', '#6cc896'),
+    tiaoNode: pick('tiao.nodeDark', '#0b3d26'),
+    /* 条 · 红色定位节（5 / 7 / 9 条用来「一眼认出」的那几根） */
+    tiaoRedDark: pick('tiao.red.dark', '#8f2a1f'),
+    tiaoRedMid: pick('tiao.red.mid', '#a92e1f'),
+    tiaoRedLit: pick('tiao.red.lit', '#c0392b'),
+    tiaoRedHi: pick('tiao.red.hi', '#e8907c'),
+    tiaoRedNode: pick('tiao.red.nodeDark', '#5c130a'),
+    birdBody: pick('tiao.birdBody', '#1c7d4d'),
+    birdDark: pick('tiao.birdDark', '#0f5233'),
+    birdWing: pick('tiao.birdWing', '#6cc896'),
+    beak: pick('tiao.beak', '#d99a2b'),
+    comb: pick('tiao.comb', '#c0392b'),
+    eye: pick('tiao.eye', '#0d2e1c'),
+    /* 筒 */
+    tongRim: pick('tong.rimDark', '#24569a'),
+    tongFace: pick('tong.face', '#3f86cf'),
+    tongHi: pick('tong.faceHi', '#8fbdec'),
+    tongCore: pick('tong.core', '#c0392b'),
+    tongCoreDark: pick('tong.coreDark', '#8f2a1f'),
+    tongCoreLit: pick('tong.coreLit', '#e0604f'),
+    tongCoreHi: pick('tong.coreHi', 'rgba(255,255,255,.5)'),
+    tongWhite: pick('tong.white', '#fffdf6'),
+    /* 牌背 */
+    bkTop: pick('back.top', '#3a7cc4'),
+    bkMid: pick('back.mid', '#2a6aad'),
+    bkBot: pick('back.bot', '#1e4d84'),
+    bkEdge: pick('back.edge', '#173e6d'),
+    bkInner: pick('back.inner', '#e8eef7'),
+    bkWeave: pick('back.weave', 'rgba(232,238,247,.13)'),
+    bkWeft: pick('back.weft', 'rgba(12,36,66,.20)'),
+    bkHi: pick('back.hi', 'rgba(255,255,255,.32)')
+  };
+
+  /* 竹节的两套色板。除了色系不同，**结构与画法必须完全一致** ——
+     红色定位节是「同一根竹子换了个颜色」，不是另一种材质；一旦亮度层次不一样，
+     5/7/9 条上的红节会像贴上去的贴纸。role 用于渐变 id 命名，便于调试时分辨。 */
+  var PAL_TIAO = {
+    dark: COL.tiaoDark, mid: COL.tiaoMid, lit: COL.tiaoLit,
+    hi: COL.tiaoHi, node: COL.tiaoNode, role: 'tiao'
+  };
+  var PAL_TIAO_RED = {
+    dark: COL.tiaoRedDark, mid: COL.tiaoRedMid, lit: COL.tiaoRedLit,
+    hi: COL.tiaoRedHi, node: COL.tiaoRedNode, role: 'tiaored'
+  };
+
+  /* ---------------- id 唯一化（同页多张牌不抢渐变） ---------------- */
+  var uid = 0;
+  function nid(role) { uid++; return 'cm' + uid + '-' + role; }
+
+  /* ---------------- 几何 ---------------- */
+  var W = 60, H = 84;
+  var X0 = 12, X1 = 48, Y0 = 12, Y1 = 72;      // 花色内容区
+  var BX = 1.2, BY = 1.2, BW = 57.6, BH = 81.6, BR = 8;   // 牌身
+  var PX = 5, PY = 5, PW = 50, PH = 74, PR = 5;           // 内凹面板
+  function px(u) { return X0 + u * (X1 - X0); }
+  function py(v) { return Y0 + v * (Y1 - Y0); }
+  function f1(n) { return (Math.round(n * 10) / 10).toFixed(1); }
+
+  /* ================= 汉字轮廓引擎（内嵌矢量路径，零字体依赖） =================
+   * 为什么不用 <text font-family="KaiTi,SimSun">：
+   *   1. 楷体/宋体是 Windows 专有字体 —— Linux / Android / iOS 上会静默回退成
+   *      黑体或默认 serif，「萬」和数字的字形与字距在每台设备上都不一样。
+   *   2. SVG 被当作图片光栅化时（pixi-table.js 的 svgToTexture 走的就是这条路：
+   *      Image → canvas → 纹理），字体解析更不可控，缺字直接成方块。
+   *   3. 把专有字体的派生轮廓公开发布有授权风险。
+   *
+   * 做法：web/tools/extract-glyphs.py 从 Noto Serif TC Bold（SIL OFL 1.1）抽出
+   * 十个字形的轮廓（字体 em 坐标系，upem=1000），运行期做一次仿射拟合后直接画 <path>。
+   * 这是权威开源牌面资产（FluffyStuff/riichi-mahjong-tiles）的通行做法：
+   * 全部手绘/追踪路径、零字体依赖 —— 跨设备像素一致的前提条件。
+   * ========================================================================= */
+  var GL = (typeof window !== 'undefined' && window.CMGlyphs) || null;
+
+  /* 对路径做仿射拟合。支持的命令集：M L H V C Q Z
+   *   —— 与 web/tools/extract-glyphs.py 的 ALLOWED_CMDS 必须保持同步。
+   * C / Q / L / M 的参数成对（C 三对、Q 两对）；**H / V 是单坐标命令**
+   *   —— CJK 轮廓里横竖笔画大量使用（实测 67 个 H、44 个 V），
+   *     漏掉它们会让后续坐标整体错位，产出一串 NaN：字会整块消失，
+   *     而且页面不报任何错。所以这里不静默兜底，命令不认识 / 参数不成对就抛错。
+   * Z 无参数。仿射变换下贝塞尔控制点同步变换，曲线形状不变。 */
+  var PATH_CMDS = 'MLHVCQZ';
+  function fitPath(d, sx, sy, dx, dy) {
+    var out = '', re = /([A-Za-z])([^A-Za-z]*)/g, m;
+    while ((m = re.exec(d)) !== null) {
+      var c = m[1].toUpperCase();
+      if (PATH_CMDS.indexOf(c) < 0) throw new Error('fitPath: 未支持的路径命令 "' + m[1] + '"');
+      var n = (m[2].match(/-?\d*\.?\d+/g) || []).map(parseFloat);
+      out += c;
+      if (c === 'Z') continue;
+      var i;
+      if (c === 'H') { for (i = 0; i < n.length; i++) out += (i ? ' ' : '') + f1(n[i] * sx + dx); continue; }
+      if (c === 'V') { for (i = 0; i < n.length; i++) out += (i ? ' ' : '') + f1(n[i] * sy + dy); continue; }
+      if (n.length % 2) {
+        throw new Error('fitPath: ' + c + ' 的参数为奇数个（' + n.length + '），命令集假定已变');
+      }
+      for (i = 0; i < n.length; i += 2) {
+        out += (i ? ' ' : '') + f1(n[i] * sx + dx) + ' ' + f1(n[i + 1] * sy + dy);
+      }
+    }
+    return out;
+  }
+
+  /* 把某个字以「墨迹包围盒中心」对齐到 (cx, cy)，字号 size＝em 边长（viewBox 单位）。
+     用墨迹中心而非字体基线：牌面是图形排版，一 / 二 / 萬 的墨迹在 em 里的位置
+     各不相同（「一」只有 0.15em 高、居中在 0.46em 处），按基线对齐会让它明显偏上。 */
+  var pathCache = {};
+  function glyphPath(ch, cx, cy, size) {
+    if (!GL || !GL.glyphs || !GL.glyphs[ch]) return null;
+    var key = ch + '|' + cx + '|' + cy + '|' + size;
+    if (pathCache[key]) return pathCache[key];
+    var g = GL.glyphs[ch], s = size / GL.upem;
+    var bx = (g.b[0] + g.b[2]) / 2, by = (g.b[1] + g.b[3]) / 2;
+    // 字体坐标系 y 轴向上、SVG 向下 —— sy 取负实现翻转
+    var d = fitPath(g.d, s, -s, cx - bx * s, cy + by * s);
+    pathCache[key] = d;
+    return d;
+  }
+  function glyphsReady() {
+    return !!(GL && GL.glyphs && GL.glyphs['萬']);
+  }
+
+  /* ---------------- 每张牌一个 defs 收集器（同参数的渐变在本张牌内复用） ---------------- */
+  function Defs() { this.list = []; this.cache = {}; }
+  Defs.prototype.linear = function (role, x1, y1, x2, y2, stops) {
+    var key = 'L|' + x1 + ',' + y1 + ',' + x2 + ',' + y2 + '|' + JSON.stringify(stops);
+    if (this.cache[key]) return this.cache[key];
+    var id = nid(role), s = '';
+    for (var i = 0; i < stops.length; i++) {
+      s += '<stop offset="' + stops[i][0] + '" stop-color="' + stops[i][1] + '"' +
+        (stops[i][2] !== undefined ? ' stop-opacity="' + stops[i][2] + '"' : '') + '/>';
+    }
+    this.list.push('<linearGradient id="' + id + '" x1="' + x1 + '" y1="' + y1 +
+      '" x2="' + x2 + '" y2="' + y2 + '">' + s + '</linearGradient>');
+    this.cache[key] = id;
+    return id;
+  };
+  Defs.prototype.radial = function (role, cx, cy, r, fx, fy, stops) {
+    var key = 'R|' + cx + ',' + cy + ',' + r + ',' + fx + ',' + fy + '|' + JSON.stringify(stops);
+    if (this.cache[key]) return this.cache[key];
+    var id = nid(role), s = '';
+    for (var i = 0; i < stops.length; i++) {
+      s += '<stop offset="' + stops[i][0] + '" stop-color="' + stops[i][1] + '"' +
+        (stops[i][2] !== undefined ? ' stop-opacity="' + stops[i][2] + '"' : '') + '/>';
+    }
+    this.list.push('<radialGradient id="' + id + '" cx="' + cx + '" cy="' + cy + '" r="' + r +
+      '" fx="' + fx + '" fy="' + fy + '">' + s + '</radialGradient>');
+    this.cache[key] = id;
+    return id;
+  };
+  Defs.prototype.clip = function (role, rectAttr) {
+    var key = 'C|' + rectAttr;
+    if (this.cache[key]) return this.cache[key];
+    var id = nid(role);
+    this.list.push('<clipPath id="' + id + '">' + rectAttr + '</clipPath>');
+    this.cache[key] = id;
+    return id;
+  };
+  Defs.prototype.out = function () {
+    return this.list.length ? '<defs>' + this.list.join('') + '</defs>' : '';
+  };
+
+  /* ================= 牌体：凸起牌身 + 凹陷面板 =================
+   * 单一光源：左上方（方位角 45°、略高于水平），全牌面服从这一个方向。
+   * 按朗伯余弦定律，凸起的四壁受光：
+   *   上壁（法线朝上）受光 → 顶部高光；下壁背光 → 底部暗边
+   *   左壁受光 → 左内缘亮线；右壁背光 → 右内缘暗线
+   * 凹陷面板的四壁**方向完全相反**（这正是凹与凸的判据，也是这里唯一不能省的一步）：
+   *   上内壁投影 → 顶部内侧暗；下内壁受光 → 底部内侧亮
+   *   左内壁背光 → 左内缘暗；右内壁受光 → 右内缘亮
+   * 光强用多档渐变而非两档线性 —— 两档会在带边缘留下可见的硬转折。
+   * （参考资产 FluffyStuff/riichi-mahjong-tiles 的 Front.svg 用高斯模糊的白/黑异形色块
+   *   表达同一件事；我们改用多档渐变，因为牌面还要经 canvas 光栅化成 pixi 纹理，
+   *   滤镜在 Image→canvas 这条路上既慢又不可靠。）
+   */
+  function shell(D) {
+    var bodyG = D.linear('body', 0, 0, 0, 1, [
+      [0, COL.bodyTop], [0.5, COL.bodyMid], [1, COL.bodyBot]
+    ]);
+    var panelG = D.linear('panel', 0, 0, 0, 1, [
+      [0, COL.pTop], [1, COL.pBot]
+    ]);
+    // 凸起 · 顶部高光：轴向略向右下偏置 → 左上更亮，读作「光从左上来」
+    var topHi = D.linear('toplit', 0, 0, 0.3, 1, [
+      [0, COL.innerHi, FX.gloss], [0.45, COL.innerHi, FX.gloss * 0.34], [1, COL.innerHi, 0]
+    ]);
+    // 凸起 · 底部暗边（垂直落回桌面，纯垂直方向才是对的）
+    var footLo = D.linear('foot', 0, 0, 0, 1, [
+      [0, COL.innerLo, 0], [0.55, COL.innerLo, COL.innerLo === '' ? 0 : 1], [1, COL.innerLo]
+    ]);
+    // 凸起 · 左内缘亮线 / 右内缘暗线
+    var edgeHi = D.linear('ledge', 0, 0, 1, 0, [
+      [0, COL.innerHi, FX.edge], [1, COL.innerHi, 0]
+    ]);
+    var edgeLo = D.linear('redge', 0, 0, 1, 0, [
+      [0, COL.innerLo, 0], [1, COL.innerLo, FX.edge]
+    ]);
+    // 凹陷面板 · 上内壁投影 / 下内壁受光
+    var panTopSh = D.linear('pshade', 0, 0, 0, 1, [
+      [0, COL.pInLo, FX.panel], [1, COL.pInLo, 0]
+    ]);
+    var panBotHi = D.linear('plit', 0, 1, 0, 0, [
+      [0, COL.pInHi, FX.panel], [1, COL.pInHi, 0]
+    ]);
+    // 凹陷面板 · 左内壁背光 / 右内壁受光（与凸起相反）
+    var panLeftSh = D.linear('pleft', 0, 0, 1, 0, [
+      [0, COL.pInLo, FX.panel], [1, COL.pInLo, 0]
+    ]);
+    var panRightHi = D.linear('pright', 0, 0, 1, 0, [
+      [0, COL.pInHi, 0], [1, COL.pInHi, FX.panel]
+    ]);
+    var clip = D.clip('bodyclip', '<rect x="' + BX + '" y="' + BY + '" width="' + BW +
+      '" height="' + BH + '" rx="' + BR + '"/>');
+    var pclip = D.clip('panelclip', '<rect x="' + PX + '" y="' + PY +
+      '" width="' + PW + '" height="' + PH + '" rx="' + PR + '"/>');
+
+    var s = '';
+    // 牌身
+    s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="' + BR +
+      '" fill="url(#' + bodyG + ')"/>';
+    s += '<g clip-path="url(#' + clip + ')">';
+    s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + f1(9 * FX.gloss) +
+      '" fill="url(#' + topHi + ')"/>';
+    s += '<rect x="' + BX + '" y="' + f1(BY + BH - 11) + '" width="' + BW + '" height="11" fill="url(#' + footLo + ')"/>';
+    s += '<rect x="' + BX + '" y="' + BY + '" width="3" height="' + BH + '" fill="url(#' + edgeHi + ')"/>';
+    s += '<rect x="' + f1(BX + BW - 3.5) + '" y="' + BY + '" width="3.5" height="' + BH +
+      '" fill="url(#' + edgeLo + ')"/>';
+    s += '</g>';
+    // 牌身描边（画在渐变之上，边缘才干净）
+    s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="' + BR +
+      '" fill="none" stroke="' + COL.bodyEdge + '" stroke-width="1.2"/>';
+    // 内凹面板
+    s += '<rect x="' + PX + '" y="' + PY + '" width="' + PW + '" height="' + PH + '" rx="' + PR +
+      '" fill="url(#' + panelG + ')" stroke="' + COL.pEdge + '" stroke-width="0.9"/>';
+    s += '<g clip-path="url(#' + pclip + ')">';
+    s += '<rect x="' + PX + '" y="' + PY + '" width="' + PW + '" height="4" fill="url(#' + panTopSh + ')"/>';
+    s += '<rect x="' + PX + '" y="' + f1(PY + PH - 3) + '" width="' + PW + '" height="3" fill="url(#' + panBotHi + ')"/>';
+    s += '<rect x="' + PX + '" y="' + PY + '" width="2.5" height="' + PH + '" fill="url(#' + panLeftSh + ')"/>';
+    s += '<rect x="' + f1(PX + PW - 2.5) + '" y="' + PY + '" width="2.5" height="' + PH +
+      '" fill="url(#' + panRightHi + ')"/>';
+    s += '</g>';
+    return s;
+  }
+
+  /* ================= 万：刻字 ================= */
+  var CN = ['', '一', '二', '三', '四', '五', '六', '七', '八', '九'];
+
+  /* 万子版式：数字占上段、萬占下段，两块墨迹合起来在面板里垂直居中。
+     字号以「最高墨迹」为准统一取一个值 —— 若让每个数字各自撑满，
+     一（墨迹只有 0.15em 高）会胖得离谱、九（0.93em）又会被压小。
+
+     下面的数值是按「墨迹包围盒」而不是 em 框推出来的（Noto Serif TC Bold 实测）：
+       九 墨迹高 0.933em → size 29 时 27.1 单位，是九个字里最高的那个，它决定上段高度；
+       萬 墨迹高 0.937em → size 26 时 24.4 单位。
+     当前排布：数字 12.8~39.8、萬 46.9~71.2，面板内区 5~79 —— 上下各留约 8 单位，
+     两段之间留 7 单位。改字号时务必同步跑 npm run smoke（tiles.smoke 会断言不越界、不重叠）。 */
+  var WAN_LAYOUT = { numSize: 29, numY: 26.3, charSize: 26, charY: 59.1, cx: 30 };
+
+  function engraved(D, glyph, cy, size, fillTop, fillBot, hi, lo, role) {
+    var cx = WAN_LAYOUT.cx;
+    var d = glyphPath(glyph, cx, cy, size);
+    if (d === null) return '';        // 轮廓缺失时整字跳过，不吐出半个字
+    var g = D.linear(role, 0, 0, 0, 1, [[0, fillTop], [0.62, fillTop], [1, fillBot]]);
+    var s = '';
+    // 下移 0.9 的亮色副本：凹刻的下壁受光，在字下方露出亮边
+    s += '<path d="' + glyphPath(glyph, cx, cy + 0.9, size) + '" fill="' + hi + '"/>';
+    // 上移 0.35 的暗色副本：上壁背光
+    s += '<path d="' + glyphPath(glyph, cx, cy - 0.35, size) + '" fill="' + lo + '"/>';
+    s += '<path d="' + d + '" fill="url(#' + g + ')"/>';
+    return s;
+  }
+  function wanContent(D, n) {
+    var L = WAN_LAYOUT;
+    return engraved(D, CN[n], L.numY, L.numSize, COL.wanInk, COL.wanInkBot,
+      COL.wanHi, COL.wanInkLo, 'wanink') +
+      engraved(D, '萬', L.charY, L.charSize, COL.wanChar, COL.wanCharBot,
+        COL.wanCharHi, COL.wanCharLo, 'wanchar');
+  }
+
+  /* ================= 条：圆柱竹节 =================
+   * 版式遵循实体牌面的通行画法（不是随便摆满）：
+   *   2 条两竖 · 3 条上一下二 · 4 条两列各二 · 5 条四角 + 正中 · 6 条上三下三
+   *   7 条上一下三下三 · 8 条上四下四锯齿（见下方 zigSegments8）· 9 条三行三列
+   * 坐标是面板内区的归一值（u 横向、v 纵向，0..1），**行优先**：先上后下、同行先左后右。
+   * 索引顺序有意义 —— RED_STICKS 就是按索引指定「哪几根是红节」。 */
+  var STICKS = {
+    2: [[0.5, 0.25], [0.5, 0.75]],
+    3: [[0.5, 0.2], [0.26, 0.74], [0.74, 0.74]],
+    4: [[0.26, 0.25], [0.74, 0.25], [0.26, 0.75], [0.74, 0.75]],
+    5: [[0.2, 0.2], [0.8, 0.2], [0.5, 0.5], [0.2, 0.8], [0.8, 0.8]],
+    6: [[0.3, 0.16], [0.7, 0.16], [0.3, 0.5], [0.7, 0.5], [0.3, 0.84], [0.7, 0.84]],
+    7: [[0.5, 0.12], [0.22, 0.5], [0.5, 0.5], [0.78, 0.5], [0.22, 0.88], [0.5, 0.88], [0.78, 0.88]],
+    9: [[0.16, 0.16], [0.5, 0.16], [0.84, 0.16], [0.16, 0.5], [0.5, 0.5], [0.84, 0.5], [0.16, 0.84], [0.5, 0.84], [0.84, 0.84]]
+  };
+  var STICK_H = { 2: 17, 3: 16, 4: 15, 5: 14, 6: 14.5, 7: 12.5, 9: 12.5 };
+
+  /* ---- 红色定位节（2026-09-20）：真实牌面用红色标出条子的锚点，
+   *      让玩家不看数字也能秒认这三张牌。索引对应 STICKS 的行优先顺序。
+   *        5 条 → 正中一根（索引 2）          视觉中心一个红点
+   *        7 条 → 最上面一根（索引 0）        顶部一个红点
+   *        9 条 → 中间一整行三根（索引 3,4,5）横向一条红带
+   *      三张牌各占一种「红的位置类型」（点 / 顶 / 带），互不混淆。 */
+  var RED_STICKS = { 5: { 2: 1 }, 7: { 0: 1 }, 9: { 3: 1, 4: 1, 5: 1 } };
+
+  /* ---- 8 条：传统「顶部四条倒 M（W 形）+ 底部四条 M 形」锯齿版式
+   *      （实体牌面的通行画法：俗称坦克 / BMW / 脚开开 —— 下方 M、上方 W）
+   *
+   *      做法：两组共用同一条横向锯齿折线（5 个顶点 → 4 段），每段摆一根竹节并
+   *      按段的方向旋转。两个关键细节，少一个就散架：
+   *        ① 竹节**两端各外延 10%**，使相邻两根在折点处搭接 —— 否则折点处有豁口，
+   *           4 根各自转了点角度的短棒读不出连续的 M / W。
+   *        ② 上行为倒 M（首顶点在高位）、下行为 M（首顶点在低位），两行的峰谷
+   *           横向对齐 —— 于是中间收腰，整体呈「沙漏」轮廓，这正是八条的辨识特征。 */
+  var ZIG_U = [0.06, 0.28, 0.5, 0.72, 0.94];        // 折线顶点横向位置（等距，两端略内收）
+  var ZIG_ROW = {
+    w: [0.055, 0.435, 0.055, 0.435, 0.055],          // 上行 = 倒 M（谷在中列，指向下）
+    m: [0.945, 0.565, 0.945, 0.565, 0.945]           // 下行 = M（峰在中列，指向上）
+  };
+  var STICK8 = { w: 5.8, over: 0.10 };
+
+  /** 生成 8 条的 8 段竹节坐标：cx/cy 段中点、len 段长（含两端外延）、rot 旋转角（度） */
+  function zigSegments8() {
+    var segs = [], rows = [ZIG_ROW.w, ZIG_ROW.m], r, i;
+    for (r = 0; r < rows.length; r++) {
+      var vs = rows[r];
+      for (i = 0; i < ZIG_U.length - 1; i++) {
+        var x1 = px(ZIG_U[i]), y1 = py(vs[i]), x2 = px(ZIG_U[i + 1]), y2 = py(vs[i + 1]);
+        var dx = x2 - x1, dy = y2 - y1, len = Math.sqrt(dx * dx + dy * dy);
+        segs.push({
+          cx: (x1 + x2) / 2, cy: (y1 + y2) / 2,
+          len: len * (1 + STICK8.over * 2),
+          // 竹节默认竖着画（长度沿 +y）。要把 (0,1) 转到 (dx,dy)，SVG 顺时针旋转角为
+          // atan2(-dx, dy)；写成 atan2(dx, dy) 会让整个锯齿反向（M 变 W），不报错。
+          rot: Math.atan2(-dx, dy) * 180 / Math.PI
+        });
+      }
+    }
+    return segs;
+  }
+
+  function stick(D, cx, cy, w, h, rot, pal) {
+    var P = pal || PAL_TIAO;
+    // 横向渐变：圆柱受光 —— 两侧收暗，但亮区要够宽，否则整根竹子发沉（实测过：
+    // 暗端压到 #0f5233 时，高饱和绿像素占比从 0.016 掉到 0.002，视觉明显变闷）。
+    var g = D.linear(P.role, 0, 0, 1, 0, [
+      [0, P.dark], [0.12, P.mid], [0.44, P.lit],
+      [0.62, P.mid], [0.9, P.mid], [1, P.dark]
+    ]);
+    var x = cx - w / 2, y = cy - h / 2, r = w * 0.42;
+    var s = '';
+    s += '<rect x="' + f1(x) + '" y="' + f1(y) + '" width="' + f1(w) + '" height="' + f1(h) +
+      '" rx="' + f1(r) + '" fill="url(#' + g + ')"/>';
+    // 节线（竹节）+ 节线下方高光
+    var n1 = cy - h * 0.17, n2 = cy + h * 0.17;
+    s += '<line x1="' + f1(x) + '" y1="' + f1(n1) + '" x2="' + f1(x + w) + '" y2="' + f1(n1) +
+      '" stroke="' + P.node + '" stroke-width="1.05"/>';
+    s += '<line x1="' + f1(x) + '" y1="' + f1(n1 + 1.1) + '" x2="' + f1(x + w) + '" y2="' + f1(n1 + 1.1) +
+      '" stroke="' + P.hi + '" stroke-width="0.7" opacity="0.5"/>';
+    s += '<line x1="' + f1(x) + '" y1="' + f1(n2) + '" x2="' + f1(x + w) + '" y2="' + f1(n2) +
+      '" stroke="' + P.node + '" stroke-width="1.05"/>';
+    s += '<line x1="' + f1(x) + '" y1="' + f1(n2 + 1.1) + '" x2="' + f1(x + w) + '" y2="' + f1(n2 + 1.1) +
+      '" stroke="' + P.hi + '" stroke-width="0.7" opacity="0.5"/>';
+    // 旋转只在 8 条上用得到（rot=0 时不包 <g>，保持既有牌面的输出逐字节不变）
+    if (!rot) return s;
+    return '<g transform="rotate(' + f1(rot) + ' ' + f1(cx) + ' ' + f1(cy) + ')">' + s + '</g>';
+  }
+
+  function tiaoSticks(D, n) {
+    if (n === 8) {
+      var segs = zigSegments8(), s8 = '', k;
+      for (k = 0; k < segs.length; k++) {
+        s8 += stick(D, segs[k].cx, segs[k].cy, STICK8.w, segs[k].len, segs[k].rot, null);
+      }
+      return s8;
+    }
+    var pts = STICKS[n], h = STICK_H[n], w = h * 0.42, s = '', red = RED_STICKS[n] || null;
+    for (var i = 0; i < pts.length; i++) {
+      s += stick(D, px(pts[i][0]), py(pts[i][1]), w, h, 0, red && red[i] ? PAL_TIAO_RED : null);
+    }
+    return s;
+  }
+
+  /* 一索 = 幺鸡 */
+  function tiaoBird(D) {
+    var bodyG = D.radial('birdbody', 0.38, 0.32, 0.78, 0.36, 0.3, [
+      [0, COL.birdWing], [0.55, COL.birdBody], [1, COL.birdDark]
+    ]);
+    return '<g>' +
+      '<ellipse cx="30" cy="46" rx="12" ry="15" fill="url(#' + bodyG + ')"/>' +
+      '<path d="M30 31 q-9 -6 -6 -16 q7 4 9 12 z" fill="' + COL.birdDark + '"/>' +
+      '<circle cx="30" cy="25" r="8.5" fill="' + COL.birdBody + '"/>' +
+      '<circle cx="27.2" cy="22.6" r="3.4" fill="' + COL.birdWing + '" opacity="0.55"/>' +
+      '<path d="M30 17 q3 -7 8 -8 q-1 6 -5 9 z" fill="' + COL.comb + '"/>' +
+      '<circle cx="27" cy="24" r="1.7" fill="' + COL.eye + '"/>' +
+      '<circle cx="26.5" cy="23.3" r="0.6" fill="#ffffff" opacity="0.8"/>' +
+      '<path d="M38 26 l7 3 l-7 3 z" fill="' + COL.beak + '"/>' +
+      '<path d="M18 50 q-8 6 -10 16 q10 -2 14 -9 z" fill="' + COL.birdWing + '" opacity="0.85"/>' +
+      '<path d="M42 50 q8 6 10 16 q-10 -2 -14 -9 z" fill="' + COL.birdWing + '" opacity="0.85"/>' +
+      '<path d="M22 60 l-3 12 M38 60 l3 12" stroke="' + COL.birdDark + '" stroke-width="2" stroke-linecap="round"/>' +
+      '</g>';
+  }
+
+  /* ================= 筒：球面靶心 ================= */
+  var DOTS = {
+    1: [[0.5, 0.5]],
+    2: [[0.5, 0.2], [0.5, 0.8]],
+    3: [[0.16, 0.18], [0.5, 0.5], [0.84, 0.82]],
+    4: [[0.22, 0.22], [0.78, 0.22], [0.22, 0.78], [0.78, 0.78]],
+    5: [[0.16, 0.16], [0.84, 0.16], [0.5, 0.5], [0.16, 0.84], [0.84, 0.84]],
+    6: [[0.22, 0.14], [0.78, 0.14], [0.22, 0.5], [0.78, 0.5], [0.22, 0.86], [0.78, 0.86]],
+    7: [[0.12, 0.12], [0.5, 0.12], [0.88, 0.12], [0.22, 0.62], [0.78, 0.62], [0.22, 0.9], [0.78, 0.9]],
+    8: [[0.22, 0.06], [0.78, 0.06], [0.22, 0.35], [0.78, 0.35], [0.22, 0.65], [0.78, 0.65], [0.22, 0.94], [0.78, 0.94]],
+    9: [[0.14, 0.14], [0.5, 0.14], [0.86, 0.14], [0.14, 0.5], [0.5, 0.5], [0.86, 0.5], [0.14, 0.86], [0.5, 0.86], [0.86, 0.86]]
+  };
+  var DOT_R = { 1: 12.5, 2: 9, 3: 7.6, 4: 7.4, 5: 6.8, 6: 6.4, 7: 5.6, 8: 5.4, 9: 5.4 };
+
+  function dot(D, cx, cy, r) {
+    var ringG = D.radial('tongring', 0.36, 0.3, 0.85, 0.34, 0.26, [
+      [0, COL.tongHi], [0.42, COL.tongFace], [1, COL.tongRim]
+    ]);
+    var coreG = D.radial('tongcore', 0.36, 0.3, 0.85, 0.34, 0.26, [
+      [0, COL.tongCoreLit], [0.5, COL.tongCore], [1, COL.tongCoreDark]
+    ]);
+    var s = '';
+    // 外环（球面）
+    s += '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + r + '" fill="url(#' + ringG + ')"/>';
+    s += '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + r + '" fill="none" stroke="' +
+      COL.tongRim + '" stroke-width="0.55" opacity="0.55"/>';
+    // 白环（凹槽）
+    s += '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(r * 0.6) + '" fill="' + COL.tongWhite + '"/>';
+    // 靶心
+    s += '<circle cx="' + f1(cx) + '" cy="' + f1(cy) + '" r="' + f1(r * 0.28) + '" fill="url(#' + coreG + ')"/>';
+    // 左上高光点（球面反射）
+    s += '<circle cx="' + f1(cx - r * 0.42) + '" cy="' + f1(cy - r * 0.46) + '" r="' + f1(Math.max(0.7, r * 0.16)) +
+      '" fill="#ffffff" opacity="0.5"/>';
+    s += '<circle cx="' + f1(cx - r * 0.2) + '" cy="' + f1(cy - r * 0.22) + '" r="' + f1(Math.max(0.5, r * 0.09)) +
+      '" fill="' + COL.tongCoreHi + '" opacity="0.7"/>';
+    return s;
+  }
+  function tongPips(D, n) {
+    var pts = DOTS[n], r = DOT_R[n], s = '';
+    for (var i = 0; i < pts.length; i++) s += dot(D, px(pts[i][0]), py(pts[i][1]), r);
+    return s;
+  }
+
+  /* ================= 组装：牌面 ================= */
+  function face(id) {
+    var suit = Math.floor(id / 9), rank = (id % 9) + 1;
+    var D = new Defs();
+    var content = suit === 0 ? wanContent(D, rank)
+      : (suit === 1 ? (rank === 1 ? tiaoBird(D) : tiaoSticks(D, rank)) : tongPips(D, rank));
+    var body = shell(D);
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" ' +
+      'width="100%" height="100%" style="display:block;border-radius:8px">' +
+      D.out() + body + content + '</svg>';
+  }
+
+  /* ================= 组装：牌背（织物 + 边框高光） ================= */
+  function back() {
+    var D = new Defs();
+    var faceG = D.linear('bkface', 0, 0, 0, 1, [
+      [0, COL.bkTop], [0.55, COL.bkMid], [1, COL.bkBot]
+    ]);
+    var bodyG = D.linear('bkbody', 0, 0, 0, 1, [
+      [0, COL.bodyTop], [1, COL.bodyBot]
+    ]);
+    var clip = D.clip('bkclip', '<rect x="6" y="6" width="48" height="72" rx="6"/>');
+    var s = '';
+    s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="' + BR +
+      '" fill="url(#' + bodyG + ')"/>';
+    s += '<rect x="' + BX + '" y="' + BY + '" width="' + BW + '" height="' + BH + '" rx="' + BR +
+      '" fill="none" stroke="' + COL.bodyEdge + '" stroke-width="1.2"/>';
+    s += '<rect x="6" y="6" width="48" height="72" rx="6" fill="url(#' + faceG + ')"/>';
+    s += '<g clip-path="url(#' + clip + ')">';
+    // 斜织纹（±45° 细线，两向交叉 = 织物）
+    var wv = '', i;
+    for (i = -72; i < 108; i += 3.4) {
+      wv += '<line x1="' + i + '" y1="0" x2="' + (i + 72) + '" y2="84" stroke="' + COL.bkWeave +
+        '" stroke-width="' + (0.55 * FX.weave).toFixed(2) + '"/>';
+    }
+    for (i = -24; i < 108; i += 3.4) {
+      wv += '<line x1="' + i + '" y1="0" x2="' + (i - 72) + '" y2="84" stroke="' + COL.bkWeft +
+        '" stroke-width="' + (0.45 * FX.weave).toFixed(2) + '"/>';
+    }
+    s += wv;
+    // 顶部受光 / 底部内阴影
+    s += '<rect x="6" y="6" width="48" height="7" fill="url(#' + D.linear('bkhi', 0, 0, 0, 1,
+      [[0, COL.bkHi, FX.gloss], [1, COL.bkHi, 0]]) + ')"/>';
+    s += '<rect x="6" y="' + (6 + 72 - 8) + '" width="48" height="8" fill="url(#' +
+      D.linear('bklo', 0, 0, 0, 1, [[1, 'rgba(3,20,40,.30)', FX.gloss], [0, 'rgba(3,20,40,0)']]) + ')"/>';
+    s += '</g>';
+    // 内框亮线
+    s += '<rect x="9.5" y="9.5" width="41" height="65" rx="4" fill="none" stroke="' + COL.bkInner +
+      '" stroke-width="0.9" opacity="0.55"/>';
+    s += '<rect x="6" y="6" width="48" height="72" rx="6" fill="none" stroke="' + COL.bkEdge +
+      '" stroke-width="1.2"/>';
+    return '<svg viewBox="0 0 ' + W + ' ' + H + '" xmlns="http://www.w3.org/2000/svg" ' +
+      'width="100%" height="100%" style="display:block;border-radius:8px">' + D.out() + s + '</svg>';
+  }
+
+  window.MJTiles = {
+    face: face, back: back, CN: CN, version: '3.1.0',
+    glyphsReady: glyphsReady,      // 万子字形轮廓是否就位（构建链完整性自检用）
+    WAN_LAYOUT: WAN_LAYOUT,        // 万子版式参数（冒烟测试据此校验墨迹不越界）
+    RED_STICKS: RED_STICKS,        // 条子红色定位节（哪几根是红的）——牌面契约，冒烟测试据此断言
+    STICK8: STICK8,                // 8 条单节宽度与外延比例
+    ZIG_U: ZIG_U, ZIG_ROW: ZIG_ROW // 8 条锯齿折线（横向顶点 + 两行的峰谷位置）
+  };
+})();
+
+;
+/* 识牌教学页（learn-tiles.html）逻辑
+ * ---------------------------------------------------------------------------
+ * 这一页的定位是「把牌面资产接进课程」：
+ *   - 讲哪张牌，页面上就画哪张牌 —— 用的就是牌桌、算牌器同一份 tiles-ui.js，
+ *     不存在「插图画得跟真牌不一样」的漂移（这是纯图片方案做不到的）。
+ *   - 最后两个练习直接用真实牌面出题，做完就能上桌。
+ *
+ * 依赖加载顺序（build.mjs 保证）：tokens.js → glyphs.js → tiles-ui.js → 本文件。
+ * MJTiles 缺失时整体降级为「只剩文字」，不抛错、不白屏。
+ * ---------------------------------------------------------------------------
+ */
+(function () {
+  'use strict';
+
+  var MJ = window.MJTiles;
+  var SUIT = ['万', '条', '筒'];
+  var SUIT_EN = ['characters', 'bamboo', 'dots'];
+  var SUIT_PY = ['wàn', 'tiáo', 'tǒng'];
+  var NUM_PY = ['', 'yī', 'èr', 'sān', 'sì', 'wǔ', 'liù', 'qī', 'bā', 'jiǔ'];
+
+  function nameOf(id) { return ((id % 9) + 1) + ' ' + SUIT[Math.floor(id / 9)]; }
+  function spokenOf(id) { return NUM_PY[(id % 9) + 1] + ' ' + SUIT_PY[Math.floor(id / 9)]; }
+
+  /* ---------------- ① 牌面占位符 → 真实牌面 ----------------
+   * HTML 里写 <span class="face lg" data-face="9"></span>，这里把 SVG 填进去。
+   * 尺寸写在占位符自己的 class 上（不是 data-size）：这样「这一页用了几档尺寸」
+   * 在 HTML 里一眼看得见，样式审计也能据 class 判断 .face.lg 到底有没有人在用。
+   * data-face 允许逗号分隔多张（各自独立成牌），目前页面没有用到。 */
+  function renderFaces(scope) {
+    if (!MJ) return 0;
+    var list = (scope || document).querySelectorAll('[data-face]');
+    for (var i = 0; i < list.length; i++) {
+      var el = list[i];
+      var toks = el.getAttribute('data-face').split(',')
+        .map(function (t) { return t.trim(); })
+        .filter(function (t) { return !!t; });
+      var html = '', j;
+      for (j = 0; j < toks.length; j++) {
+        var svg = toks[j] === 'back' ? MJ.back() : MJ.face(parseInt(toks[j], 10));
+        html += toks.length > 1 ? '<span class="face">' + svg + '</span>' : svg;
+      }
+      el.innerHTML = html;
+    }
+    return list.length;
+  }
+
+  /* ---------------- ② 一副牌总览：三行九列，每行一个花色 ---------------- */
+  function buildDeck() {
+    var host = document.getElementById('deck');
+    if (!host || !MJ) return;
+    var out = '', s, r;
+    for (s = 0; s < 3; s++) {
+      out += '<div class="suitrow">' +
+        '<div class="suitcap"><b class="zh">' + SUIT[s] + '</b> ' + SUIT_EN[s] +
+        ' <span class="zh">' + SUIT_PY[s] + '</span></div><div class="deck">';
+      for (r = 0; r < 9; r++) {
+        var id = s * 9 + r;
+        out += '<div class="cell"><span class="face">' + MJ.face(id) + '</span>' +
+          '<span class="cn">' + ((id % 9) + 1) + '<i>' + SUIT[s] + '</i></span></div>';
+      }
+      out += '</div></div>';
+    }
+    host.innerHTML = out;
+  }
+
+  /* ---------------- ③ 练习一：看牌认名 ----------------
+   * 干扰项不是随机的：优先放**真实牌桌上最容易认错的那几张**（2条/3条、6筒/8筒、
+   * 2万/3万），认错一次的收获比认对十次大。 */
+  var CONFUSE = { 10: [11], 11: [10], 23: [25], 25: [23], 1: [2], 2: [1] };
+
+  function distractors(id, n) {
+    var pool = [], seen = {}, i;
+    function add(x) { if (x >= 0 && x <= 26 && x !== id && !seen[x]) { seen[x] = 1; pool.push(x); } }
+    var conf = CONFUSE[id] || [];
+    for (i = 0; i < conf.length; i++) add(conf[i]);
+    add((id % 9) + 9 * ((Math.floor(id / 9) + 1) % 3));   // 同数字、另一花色
+    add((id % 9) + 9 * ((Math.floor(id / 9) + 2) % 3));   // 再另一花色
+    while (pool.length < n) add(Math.floor(Math.random() * 27));
+    // 洗牌，取前 n
+    for (i = pool.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1)), t = pool[i]; pool[i] = pool[j]; pool[j] = t;
+    }
+    return pool.slice(0, n);
+  }
+
+  function DrillName() {
+    var host = document.getElementById('drillName');
+    if (!host || !MJ) return;
+    var right = 0, total = 0, streak = 0, best = 0, answer = 0, locked = false;
+
+    host.innerHTML =
+      '<div class="q" id="dnQ"></div>' +
+      '<div class="opts" id="dnOpts"></div>' +
+      '<p class="fb" id="dnFb"></p>' +
+      '<div class="score"><span id="dnScore"></span><button class="btn" id="dnNext" type="button">Next tile →</button></div>';
+
+    var q = host.querySelector('#dnQ'), opts = host.querySelector('#dnOpts'),
+      fb = host.querySelector('#dnFb'), score = host.querySelector('#dnScore'),
+      next = host.querySelector('#dnNext');
+
+    function paint() {
+      var hold = Math.random() < 0.35;                     // 三成概率出牌背，逼你回忆而不是扫答案
+      q.innerHTML = '<span class="face xl">' + (hold ? MJ.back() : MJ.face(answer)) + '</span>';
+      q.setAttribute('data-hold', hold ? '1' : '0');
+      var picks = distractors(answer, 3), all = picks.concat([answer]);
+      // 选项按牌序排列，避免「正确答案总在同一个位置」
+      all.sort(function (a, b) { return a - b; });
+      opts.innerHTML = all.map(function (id) {
+        return '<button class="btn" type="button" data-id="' + id + '">' +
+          nameOf(id) + '<span class="py">' + spokenOf(id) + '</span></button>';
+      }).join('');
+    }
+
+    function ask() {
+      locked = false;
+      // 出题避免与上一题重复
+      var prev = answer;
+      do { answer = Math.floor(Math.random() * 27); } while (answer === prev);
+      paint();
+      fb.textContent = 'Which tile is this? Name it before you click.';
+      fb.className = 'fb';
+    }
+
+    opts.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('button[data-id]') : null;
+      if (!b || locked) return;
+      locked = true;
+      var pick = parseInt(b.getAttribute('data-id'), 10);
+      total++;
+      var status = '';
+      if (pick === answer) {
+        right++; streak++; if (streak > best) best = streak;
+        b.className = 'btn ok';
+        fb.className = 'fb ok';
+        status = 'Correct — ' + nameOf(answer) + ' <span class="zh">' + spokenOf(answer) + '</span>';
+      } else {
+        streak = 0;
+        b.className = 'btn no';
+        var c = opts.querySelector('button[data-id="' + answer + '"]');
+        if (c) c.className = 'btn ok';
+        fb.className = 'fb no';
+        status = 'Not quite. That was ' + nameOf(answer) + ' <span class="zh">' + spokenOf(answer) +
+          '</span>, not ' + nameOf(pick) + '.';
+      }
+      // 认错的教学点直接给出来：这几张是新手互认错的常客
+      if (answer === 9) status += ' Remember: one bamboo is the <b>bird</b> <span class="zh">幺鸡</span>.';
+      if (answer === 16) status += ' Eight bamboo: four over four, M over W — the hourglass.';
+      if (answer === 23) status += ' Six dots is two columns of three — count one column, not the tile.';
+      if (answer === 25) status += ' Eight dots is two columns of four — one column taller than six dots.';
+      fb.innerHTML = status;
+      // 出题时若盖着牌背，答完亮出正面
+      if (q.getAttribute('data-hold') === '1') {
+        q.innerHTML = '<span class="face xl">' + MJ.face(answer) + '</span>';
+      }
+      score.textContent = right + ' / ' + total + ' correct · streak ' + streak + ' · best ' + best;
+    });
+
+    next.addEventListener('click', ask);
+    score.textContent = '0 / 0 correct · streak 0 · best 0';
+    ask();
+  }
+
+  /* ---------------- ④ 练习二：定缺（13 张里哪一门最薄） ----------------
+   * 这是 lesson 的正题：实战第一件事就是「分门 → 数张 → 丢最薄的一门」。
+   * 用真实牌墙随机发 13 张，判定最薄的那一门；并列时都算对。 */
+  function DrillVoid() {
+    var host = document.getElementById('drillVoid');
+    if (!host || !MJ) return;
+    var right = 0, total = 0, hand = [], thin = [];
+
+    host.innerHTML =
+      '<div class="hand" id="dvHand"></div>' +
+      '<div class="opts three" id="dvOpts"></div>' +
+      '<p class="fb" id="dvFb"></p>' +
+      '<div class="score"><span id="dvScore"></span><button class="btn" id="dvNext" type="button">Deal again →</button></div>';
+
+    var handEl = host.querySelector('#dvHand'), opts = host.querySelector('#dvOpts'),
+      fb = host.querySelector('#dvFb'), score = host.querySelector('#dvScore'),
+      next = host.querySelector('#dvNext');
+
+    function deal() {
+      // 108 张牌：27 种 × 4 张，每种最多发 4 张
+      var left = [], i, k;
+      for (i = 0; i < 27; i++) for (k = 0; k < 4; k++) left.push(i);
+      hand = [];
+      for (i = 0; i < 13; i++) hand.push(left.splice(Math.floor(Math.random() * left.length), 1)[0]);
+      hand.sort(function (a, b) { return a - b; });
+
+      var cnt = [0, 0, 0];
+      for (i = 0; i < hand.length; i++) cnt[Math.floor(hand[i] / 9)]++;
+      var min = Math.min(cnt[0], cnt[1], cnt[2]);
+      thin = [];
+      for (i = 0; i < 3; i++) if (cnt[i] === min) thin.push(i);
+
+      handEl.innerHTML = hand.map(function (id) {
+        return '<span class="face">' + MJ.face(id) + '</span>';
+      }).join('');
+      opts.innerHTML = [0, 1, 2].map(function (s) {
+        return '<button class="btn" type="button" data-suit="' + s + '">' +
+          '<b class="zh">' + SUIT[s] + '</b> ' + SUIT_EN[s] + '</button>';
+      }).join('');
+      fb.className = 'fb';
+      fb.textContent = 'Count the three suits, then choose the one you would drop.';
+    }
+
+    opts.addEventListener('click', function (e) {
+      var b = e.target.closest ? e.target.closest('button[data-suit]') : null;
+      if (!b || b.disabled) return;
+      var pick = parseInt(b.getAttribute('data-suit'), 10);
+      var cnt = [0, 0, 0], i;
+      for (i = 0; i < hand.length; i++) cnt[Math.floor(hand[i] / 9)]++;
+      total++;
+      var ok = thin.indexOf(pick) >= 0;
+      if (ok) right++;
+      var all = opts.querySelectorAll('button');
+      for (i = 0; i < all.length; i++) {
+        var s = parseInt(all[i].getAttribute('data-suit'), 10);
+        all[i].disabled = true;
+        if (thin.indexOf(s) >= 0) all[i].className = 'btn ok';
+        else if (s === pick) all[i].className = 'btn no';
+      }
+      fb.className = 'fb ' + (ok ? 'ok' : 'no');
+      fb.innerHTML = (ok ? 'Right — ' : 'No — ') +
+        'the hand is ' + cnt[0] + ' 万 · ' + cnt[1] + ' 条 · ' + cnt[2] + ' 筒, so you throw ' +
+        '<b class="zh">' + SUIT[thin[0]] + '</b> (' + thin.map(function (s) { return SUIT[s]; }).join(' or ') + ').';
+      score.textContent = right + ' / ' + total + ' correct';
+    });
+
+    next.addEventListener('click', deal);
+    score.textContent = '0 / 0 correct';
+    deal();
+  }
+
+  /* ---------------- 启动 ----------------
+   * 直接跑，不等 DOMContentLoaded：脚本链内联在 </body> 之前，运行时整个 body
+   * 已经解析完了。等事件反而会引入不确定性（构建产物与 jsdom 冒烟的时序不一致）。 */
+  renderFaces(document);
+  buildDeck();
+  DrillName();
+  DrillVoid();
+})();
+</script>
 </body>
 </html>

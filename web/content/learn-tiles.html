@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tile Recognition · Reading Sichuan Mahjong Tiles — chuan.ma</title>
-<meta name="description" content="Learn to read every Sichuan mahjong tile: the three suits 万 条 筒, the nine Chinese numerals, and the one tile that is not what it looks like.">
+<meta name="description" content="Learn to read every Sichuan mahjong tile with the real tile faces: the three suits 万 条 筒, the nine numerals, the bamboo tiles you can read by colour alone, and the one tile that is not what it looks like.">
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
@@ -22,9 +22,9 @@
 
 <div class="wrap">
 <header class="top">
-  <div class="kicker">Lesson 2 · 识别牌型</div>
+  <div class="kicker">Lesson 2 · 识别牌面</div>
   <h1>Reading the Tiles</h1>
-  <p class="lede">You cannot play a game you cannot read. The good news: Sichuan mahjong has the smallest tile set of any major variant — <b>108 tiles, three suits, nine numbers</b>. Learn nine characters and one visual trap, and you can name any tile on the table in under a second.</p>
+  <p class="lede">You cannot play a game you cannot read. The good news: Sichuan mahjong has the smallest tile set of any major variant — <b>108 tiles, three suits, nine numbers</b>. Below is every face, drawn at the size you will actually see across a table. Learn nine characters, four colour landmarks and one visual trap, and you can name any tile on the table in under a second.</p>
 </header>
 
 <h2>1. A deliberately stripped deck</h2>
@@ -41,7 +41,7 @@
     </tr>
     <tr>
       <td><b>Bamboo</b> / sticks</td><td class="n">条</td><td class="n">tiáo</td>
-      <td>that many bamboo sticks drawn on the tile</td>
+      <td>that many bamboo canes drawn on the tile</td>
       <td>条 means "strip" or "stick"</td>
     </tr>
     <tr>
@@ -58,57 +58,91 @@
   <p>With no winds or dragons to get in the way, almost every hand is made of the same raw material: runs and triplets inside three suits. Sichuan mahjong is therefore much purer than other variants — it is almost entirely a test of <b>shape efficiency</b>. See <a href="learn-rules.html">the basics</a> for how that plays out.</p>
 </div>
 
-<h2>2. The nine numerals</h2>
+<h2>2. All 27 faces, at table size</h2>
+<p>This is the whole vocabulary of the game on one screen. Nothing is missing and nothing is added — if you can name these, you can read any hand.</p>
+<div id="deck" class="deckwrap"></div>
+<p>Notice how differently the three suits encode a number. Characters <i>write</i> it. Bamboo and dots <b>count</b> it — which is why bamboo and dots are the fast suits to read, and characters are the ones worth drilling.</p>
+
+<h2>3. The nine numerals</h2>
 <p>Every tile is identified by a Chinese numeral. These are the everyday forms — the ceremonial accounting forms (<span class="zh">壹貳叁肆伍陆柒捌玖</span>) belong on bank documents, not on tiles.</p>
 <div class="tbl-scroll">
 <table>
-  <thead><tr><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th></tr></thead>
+  <thead><tr><th class="c">Face</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="c">Face</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th><th class="c">Face</th><th class="n">Numeral</th><th class="n">Pinyin</th><th class="n">Digit</th></tr></thead>
   <tbody>
     <tr>
-      <td class="n">一</td><td class="n">yī</td><td class="n">1</td>
-      <td class="n">四</td><td class="n">sì</td><td class="n">4</td>
-      <td class="n">七</td><td class="n">qī</td><td class="n">7</td>
+      <td class="c"><span class="face" data-face="0"></span></td><td class="n">一</td><td class="n">yī</td><td class="n">1</td>
+      <td class="c"><span class="face" data-face="3"></span></td><td class="n">四</td><td class="n">sì</td><td class="n">4</td>
+      <td class="c"><span class="face" data-face="6"></span></td><td class="n">七</td><td class="n">qī</td><td class="n">7</td>
     </tr>
     <tr>
-      <td class="n">二</td><td class="n">èr</td><td class="n">2</td>
-      <td class="n">五</td><td class="n">wǔ</td><td class="n">5</td>
-      <td class="n">八</td><td class="n">bā</td><td class="n">8</td>
+      <td class="c"><span class="face" data-face="1"></span></td><td class="n">二</td><td class="n">èr</td><td class="n">2</td>
+      <td class="c"><span class="face" data-face="4"></span></td><td class="n">五</td><td class="n">wǔ</td><td class="n">5</td>
+      <td class="c"><span class="face" data-face="7"></span></td><td class="n">八</td><td class="n">bā</td><td class="n">8</td>
     </tr>
     <tr>
-      <td class="n">三</td><td class="n">sān</td><td class="n">3</td>
-      <td class="n">六</td><td class="n">liù</td><td class="n">6</td>
-      <td class="n">九</td><td class="n">jiǔ</td><td class="n">9</td>
+      <td class="c"><span class="face" data-face="2"></span></td><td class="n">三</td><td class="n">sān</td><td class="n">3</td>
+      <td class="c"><span class="face" data-face="5"></span></td><td class="n">六</td><td class="n">liù</td><td class="n">6</td>
+      <td class="c"><span class="face" data-face="8"></span></td><td class="n">九</td><td class="n">jiǔ</td><td class="n">9</td>
     </tr>
   </tbody>
 </table>
 </div>
-<p>On the bamboo and dot suits you may not even need the numerals: the tile simply shows that many sticks or circles. On the character suit the numeral is written out, which is where these nine characters earn their keep.</p>
+<p>Above the numeral is always <span class="zh">萬</span> <span class="zh">wàn</span>, "ten thousand" — it never changes, so train yourself to ignore the bottom half of a character tile entirely. The top glyph is the whole message. If you only ever learn nine shapes, learn these:</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th class="n">Glyph</th><th>How to tell it apart at a glance</th></tr></thead>
+  <tbody>
+    <tr><td class="n">一 二 三</td><td>one, two, three horizontal strokes — free, no learning required</td></tr>
+    <tr><td class="n">四</td><td>the boxed one: a square with something inside</td></tr>
+    <tr><td class="n">五</td><td>an enclosed angular shape, like a box with a lid and legs</td></tr>
+    <tr><td class="n">六</td><td>a little hat above two legs</td></tr>
+    <tr><td class="n">七</td><td>a single stroke crossed low — the simplest stroke count of all</td></tr>
+    <tr><td class="n">八</td><td>two strokes leaning apart, nothing joining them</td></tr>
+    <tr><td class="n">九</td><td>ends in a hook</td></tr>
+  </tbody>
+</table>
+</div>
 
-<h2>3. The one tile that is not what it looks like</h2>
+<h2>4. The one tile that is not what it looks like</h2>
 <div class="box warn">
-  <h4>1 Bamboo <span class="zh">一条</span> is drawn as a bird</h4>
-  <p>Every other bamboo tile shows its rank as a count of sticks — <b>except the 1</b>. Traditionally it is drawn as a <b>bird</b> (a peacock or sparrow), not as a single stick. Players call it <span class="zh">幺鸡</span> (yāo jī, literally "little chicken").</p>
+  <h4>1 Bamboo <span class="zh">一条</span> is drawn as a bird <span class="face lg" data-face="9"></span></h4>
+  <p>Every other bamboo tile shows its rank as a count of canes — <b>except the 1</b>. Traditionally it is drawn as a <b>bird</b> (a peacock or sparrow), not as a single cane. Players call it <span class="zh">幺鸡</span> (yāo jī, literally "little chicken").</p>
   <p>So if you are scanning a hand for "one bamboo", stop looking for a lone stick. The bird <i>is</i> the one. This single piece of tile art has confused more beginners than any rule in the game.</p>
 </div>
 
-<h2>4. Saying a tile out loud</h2>
+<h2>5. Four bamboo tiles you can read by colour alone</h2>
+<p>Bamboo tiles are not a plain grid of identical canes. Real sets colour specific canes red, and lay the eight out unlike any other rank — so four of the nine bamboo tiles can be identified <b>without counting a single cane</b>. Most players discover this at a table, under time pressure, the hard way.</p>
+<div class="landmark">
+  <div class="lm"><span class="face xl" data-face="13"></span><b>5 条</b><span class="lm-note">the <em>middle</em> cane is red</span></div>
+  <div class="lm"><span class="face xl" data-face="15"></span><b>7 条</b><span class="lm-note">the <em>top</em> cane is red</span></div>
+  <div class="lm"><span class="face xl" data-face="17"></span><b>9 条</b><span class="lm-note">the whole <em>middle row</em> is red</span></div>
+  <div class="lm"><span class="face xl" data-face="16"></span><b>8 条</b><span class="lm-note">four over four, <em>M over W</em></span></div>
+</div>
+<p>Three of them are pure colour: a red dot in the centre (5), a red dot on top (7), a red band across the middle (9). Nine bamboo is the easiest tile in the deck to spot from across a room, precisely because of that band.</p>
+<p>Eight bamboo is a shape instead. It is the only tile in the game laid out as <b>two zigzags</b> — four canes forming an <b>M</b> on the bottom, four forming an inverted M (<b>W</b>) on top, the two rows pinching together in the middle into an hourglass. Its nicknames at Chinese tables are unforgiving: <span class="zh">坦克</span> (a tank, seen from above), <span class="zh">脚开开</span> (legs wide open), and <b>BMW</b> — B for 八, M for the bottom row, W for the top.</p>
+<div class="box">
+  <h4>Why colour beats counting</h4>
+  <p>Counting nine canes costs a beat of conscious attention; seeing a red band costs none. Under time pressure that difference is the whole game — but note the caveat: <b>red canes are a convention, not a law</b>. Cheap or unusual sets sometimes omit them. Use colour as your fast cue, and counting as the fallback that always works.</p>
+</div>
+
+<h2>6. Saying a tile out loud</h2>
 <p>The pattern is always <b>[number][suit]</b> — number first, suit second. That is the opposite of how English speakers tend to guess.</p>
 <div class="tbl-scroll">
 <table>
-  <thead><tr><th class="n">Tile</th><th class="n">Chinese</th><th class="n">Pinyin</th><th class="n">Means</th></tr></thead>
+  <thead><tr><th class="c">Face</th><th class="n">Tile</th><th class="n">Chinese</th><th class="n">Pinyin</th><th class="n">Means</th></tr></thead>
   <tbody>
-    <tr><td class="n">三万</td><td class="n">三 + 万</td><td class="n">sān wàn</td><td class="n">3 of characters</td></tr>
-    <tr><td class="n">七条</td><td class="n">七 + 条</td><td class="n">qī tiáo</td><td class="n">7 of bamboo</td></tr>
-    <tr><td class="n">五筒</td><td class="n">五 + 筒</td><td class="n">wǔ tǒng</td><td class="n">5 of dots</td></tr>
-    <tr><td class="n">幺鸡</td><td class="n">幺 + 鸡</td><td class="n">yāo jī</td><td class="n">1 of bamboo (the bird)</td></tr>
-    <tr><td class="n">九万</td><td class="n">九 + 万</td><td class="n">jiǔ wàn</td><td class="n">9 of characters</td></tr>
+    <tr><td class="c"><span class="face" data-face="2"></span></td><td class="n">三万</td><td class="n">三 + 万</td><td class="n">sān wàn</td><td class="n">3 of characters</td></tr>
+    <tr><td class="c"><span class="face" data-face="15"></span></td><td class="n">七条</td><td class="n">七 + 条</td><td class="n">qī tiáo</td><td class="n">7 of bamboo</td></tr>
+    <tr><td class="c"><span class="face" data-face="22"></span></td><td class="n">五筒</td><td class="n">五 + 筒</td><td class="n">wǔ tǒng</td><td class="n">5 of dots</td></tr>
+    <tr><td class="c"><span class="face" data-face="9"></span></td><td class="n">幺鸡</td><td class="n">幺 + 鸡</td><td class="n">yāo jī</td><td class="n">1 of bamboo (the bird)</td></tr>
+    <tr><td class="c"><span class="face" data-face="8"></span></td><td class="n">九万</td><td class="n">九 + 万</td><td class="n">jiǔ wàn</td><td class="n">9 of characters</td></tr>
   </tbody>
 </table>
 </div>
 <p>Chinese mahjong tables are loud partly because discards are <b>announced</b>: you say the tile name as you throw it. Learn these five phrases and you can follow the conversation at a real table.</p>
-<p>A quick naming convention you will hear constantly: because the rank comes first, a hand sorted from 1 to 9 in one suit reads as a list of numbers — <span class="tile tiao">1条</span> <span class="tile tiao">2条</span> <span class="tile tiao">3条</span> and so on. Sorted hands are also <b>announced by their shape</b>, e.g. "I have 1-2-3 bamboo", which is how you will start hearing your own hands.</p>
+<p>A quick naming convention you will hear constantly: because the rank comes first, a hand sorted from 1 to 9 in one suit reads as a list of numbers — <span class="zh">幺鸡</span>, <span class="zh">二条</span>, <span class="zh">三条</span> and so on. Sorted hands are also <b>announced by their shape</b>, e.g. "I have 1-2-3 bamboo", which is how you will start hearing your own hands.</p>
 
-<h2>5. The real skill: sorting a hand fast</h2>
+<h2>7. The real skill: sorting a hand fast</h2>
 <p>Naming tiles is table stakes. What actually makes you a player is the first three seconds of every round: <b>sorting 13 tiles into their three suits and seeing which suit is thinnest.</b></p>
 <ol class="steps">
   <li><b>Split into three piles</b> — characters left, bamboo middle, dots right (or whatever order you like, as long as it never changes).</li>
@@ -117,30 +151,21 @@
 </ol>
 <p>Doing this reflexively is worth more than any strategy tip on this site. If you have to think about it, you will lose the first three turns of every round.</p>
 
-<h2>6. Three drills you can do alone</h2>
-<div class="tbl-scroll">
-<table>
-  <thead><tr><th>Drill</th><th>What to do</th><th>Target</th></tr></thead>
-  <tbody>
-    <tr>
-      <td><b>Name the tile</b></td>
-      <td>Shuffle the 27 distinct tile faces and name each one out loud as you flip it.</td>
-      <td>27 tiles, no mistakes</td>
-    </tr>
-    <tr>
-      <td><b>Speed sort</b></td>
-      <td>Deal yourself 13 random tiles and sort them into three ordered suits.</td>
-      <td>Under 10 seconds</td>
-    </tr>
-    <tr>
-      <td><b>Call the missing suit</b></td>
-      <td>From a sorted 13-tile hand, say out loud which suit you would drop — without pausing.</td>
-      <td>Instant, every time</td>
-    </tr>
-  </tbody>
-</table>
+<h2>8. Drills you can do right here</h2>
+<p>Both drills use exactly the tile faces from the table. Click to answer; the feedback tells you what you actually picked, and flags the classic mix-ups.</p>
+
+<h3>Drill A · Name the tile <span class="zh">认牌</span></h3>
+<p>One tile at a time — sometimes face down at first. Name it out loud <i>before</i> you look at the options.</p>
+<div class="drill" id="drillName"></div>
+
+<h3>Drill B · Call the missing suit <span class="zh">定缺</span></h3>
+<p>Thirteen tiles dealt from a real wall. Count the three suits and drop the thinnest — in one motion, without pausing.</p>
+<div class="drill" id="drillVoid"></div>
+
+<div class="box good">
+  <h4>Drill C · Speed sort</h4>
+  <p>Deal yourself 13 real tiles and sort them into three ordered suits. Target: under 10 seconds, no mistakes. You can do it on the <a href="tiles.html">tile gallery</a>, which shows every face at several sizes, or on the <a href="calculator.html">calculator</a>, which lets you click tiles in and immediately tells you what the hand is worth.</p>
 </div>
-<p>You can do all three on the <a href="tiles.html">tile gallery</a>, which shows every tile face drawn as clean vector artwork, or on the <a href="calculator.html">calculator</a>, which lets you click tiles in and immediately tells you what the hand is worth.</p>
 
 <div class="next">
   <a href="learn-scoring.html"><div class="k">Next lesson</div><div class="t">Scoring &amp; Fan &rarr;</div></a>
@@ -149,5 +174,6 @@
 
 <footer>chuan.ma · a free tool for learning Sichuan mahjong · rules match the engine used by the table</footer>
 </div>
+<script>/*__APP__*/</script>
 </body>
 </html>

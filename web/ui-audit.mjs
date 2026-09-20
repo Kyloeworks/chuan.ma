@@ -89,6 +89,26 @@ const sharedCss = readMaybe(path.resolve(repo, 'web/content/site.css')).replace(
 const sharedDefined = new Set();
 for (const m of sharedCss.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)) sharedDefined.add(m[1]);
 
+/* 类名提取要容忍「JS 里拼出来的 class」。
+   页面里的 DOM 有一部分由脚本生成（gallery.js / learn-tiles.js / pixi-table.js），
+   它们的 class 写在 JS 字符串里；而 `'<span class="face' + (size ? ' ' + size : '') + '">'`
+   这种拼接会让贪婪正则一路吃到下一个双引号，把 `' + (size ...` 整段当成类名 ——
+   报出一串 `.+'`、`.(el.getAttribute(...)` 之类的**假类名**，真正的信号被淹没。
+   所以只取「引号 / 单引号之前的字面量前缀」，并额外认 `className = '...'` 赋值。 */
+const CLASS_ATTR_RE = /class="([^"']*)/g;
+const CLASSNAME_ASSIGN_RE = /className\s*=\s*'([^']*)'/g;
+function classesIn(text) {
+  const set = new Set();
+  for (const re of [CLASS_ATTR_RE, CLASSNAME_ASSIGN_RE]) {
+    re.lastIndex = 0;
+    let m;
+    while ((m = re.exec(text)) !== null) {
+      for (const c of m[1].trim().split(/\s+/)) if (c) set.add(c);
+    }
+  }
+  return set;
+}
+
 /** 用到的类名（按页面归集） */
 const usedByPage = new Map();
 const scanPages = [
@@ -96,15 +116,15 @@ const scanPages = [
   { name: 'landing.html(源)', file: path.resolve(here, 'landing.html'), via: 'src' },
   ...['learn-rules.html', 'learn-tiles.html', 'learn-scoring.html', 'learn-culture.html', 'glossary.html']
     .map((p) => ({ name: p + '(源)', file: path.join(contentDir, p), via: 'src' })),
+  // 生成 DOM 的页面脚本也要一起扫：否则「只在 JS 里用到的类」（如 .face / .btn / .hand）
+  // 会被报成「site.css 定义了但没人用」的死样式。
+  ...['gallery.js', 'learn-tiles.js', 'app.js', 'pixi-table.js']
+    .map((f) => ({ name: f, file: path.resolve(here, f), via: 'src' })),
 ];
 for (const p of scanPages) {
-  const html = readMaybe(p.file);
-  if (!html) continue;
-  const set = new Set();
-  for (const m of html.matchAll(/class="([^"]+)"/g)) {
-    for (const c of m[1].trim().split(/\s+/)) if (c) set.add(c);
-  }
-  usedByPage.set(p.name, set);
+  const text = readMaybe(p.file);
+  if (!text) continue;
+  usedByPage.set(p.name, classesIn(text));
 }
 const usedAll = new Set();
 for (const s of usedByPage.values()) for (const c of s) usedAll.add(c);

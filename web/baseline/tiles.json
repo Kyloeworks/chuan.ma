@@ -1,6 +1,6 @@
 {
   "__meta": {
-    "builtAt": "2026-09-19T11:17:33.233Z",
+    "builtAt": "2026-09-20T06:36:54.883Z",
     "tiles": 28,
     "raster": "132x185",
     "tokensVersion": "1.0.0",
@@ -165,12 +165,12 @@
     },
     "face13": {
       "ink": 0.877,
-      "lumMean": 238.957,
-      "lumStd": 20.147,
+      "lumMean": 238.842,
+      "lumStd": 20.356,
       "grad": 11.208,
       "chroma": {
-        "red": 0,
-        "green": 0.065,
+        "red": 0.014,
+        "green": 0.052,
         "blue": 0
       },
       "detail": 5.107
@@ -188,40 +188,40 @@
       "detail": 5.626
     },
     "face15": {
-      "ink": 0.868,
-      "lumMean": 239.027,
-      "lumStd": 20.232,
-      "grad": 12.474,
+      "ink": 0.867,
+      "lumMean": 239.018,
+      "lumStd": 20.246,
+      "grad": 12.456,
       "chroma": {
-        "red": 0,
-        "green": 0.074,
+        "red": 0.011,
+        "green": 0.064,
         "blue": 0
       },
-      "detail": 5.631
+      "detail": 5.63
     },
     "face16": {
-      "ink": 0.85,
-      "lumMean": 238.669,
-      "lumStd": 20.423,
-      "grad": 11.261,
+      "ink": 0.741,
+      "lumMean": 236.937,
+      "lumStd": 21.774,
+      "grad": 11.43,
       "chroma": {
         "red": 0,
-        "green": 0.09,
+        "green": 0.197,
         "blue": 0
       },
-      "detail": 6.089
+      "detail": 7.858
     },
     "face17": {
-      "ink": 0.845,
-      "lumMean": 238.677,
-      "lumStd": 20.398,
+      "ink": 0.842,
+      "lumMean": 238.655,
+      "lumStd": 20.433,
       "grad": 11.393,
       "chroma": {
-        "red": 0,
-        "green": 0.096,
+        "red": 0.032,
+        "green": 0.064,
         "blue": 0
       },
-      "detail": 6.393
+      "detail": 6.39
     },
     "face18": {
       "ink": 0.943,
