@@ -53,6 +53,47 @@ async function ev(expression) {
   return rr ? rr.value : undefined;
 }
 
+/** 在真实页面上点一下（CDP 合成鼠标事件 → Pixi 的 pointerdown 会收到） */
+async function click(x, y) {
+  const base = { x: Math.round(x), y: Math.round(y), button: 'left', buttons: 1, clickCount: 1, pointerType: 'mouse' };
+  await cmd('Input.dispatchMouseEvent', { type: 'mouseMoved', x: base.x, y: base.y, pointerType: 'mouse' });
+  await cmd('Input.dispatchMouseEvent', Object.assign({ type: 'mousePressed' }, base));
+  await cmd('Input.dispatchMouseEvent', Object.assign({ type: 'mouseReleased' }, base, { buttons: 0 }));
+}
+
+/** 页面上「第一张可打出的手牌」的浏览器视口坐标（由 testhook 给出画布坐标后按 canvas 缩放映射）
+ *  ⚠️ 纵向取牌中心**偏上 0.3 牌高**处，而不是正中心：牌在 hover（-12px）和「已提起待确认」
+ *  （-1/3 牌高）状态下都会上移，只有偏上的点在这三种姿态下都稳稳落在牌面上。 */
+const HAND_POINT = `(function(){
+  var H = window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.handPoint ? window.__CM_TESTHOOK__.handPoint() : null;
+  if (!H) return null;
+  var c = document.querySelector('#stage canvas');
+  var r = c.getBoundingClientRect();
+  var kx = r.width / H.W, ky = r.height / H.H;
+  var hh = window.__PIXI_TABLE__.layout.handH || 80;
+  return JSON.stringify({ x: r.left + H.x * kx, y: r.top + (H.y - hh * 0.3) * ky, tile: H.tile, slot: H.slot });
+})()`;
+
+/** 手牌张数（主体 + 单独排开的那张） */
+const HAND_N = `(function(){ var t = window.__PIXI_TABLE__.layout.handTiles[0]; return t.main + t.sep; })()`;
+
+/** 牌桌上一个「不被任何区域占据」的空白点（用于验证「点空白取消」） */
+const BLANK_POINT = `(function(){
+  var L = window.__PIXI_TABLE__.layout;
+  var c = document.querySelector('#stage canvas');
+  var r = c.getBoundingClientRect();
+  var cands = [[0.5,0.05],[0.05,0.5],[0.95,0.5],[0.5,0.45],[0.06,0.06],[0.94,0.06]];
+  for (var i=0;i<cands.length;i++){
+    var lx = L.W*cands[i][0], ly = L.H*cands[i][1], hit=false;
+    for (var j=0;j<L.boxes.length;j++){
+      var b=L.boxes[j];
+      if (lx>=b.x-4 && lx<=b.x+b.w+4 && ly>=b.y-4 && ly<=b.y+b.h+4) { hit=true; break; }
+    }
+    if (!hit) return JSON.stringify({ x: r.left + lx*(r.width/L.W), y: r.top + ly*(r.height/L.H) });
+  }
+  return null;
+})()`;
+
 /** 页面内执行的布局体检 */
 const AUDIT = `(function(){
   var D = window.__PIXI_TABLE__ || {};
@@ -265,9 +306,56 @@ try {
     ck('推进十几手后：缺门已打完（进入向听 / 下叫阶段）', cleared,
       `共推进 ${used} 步；末次状态 ${JSON.stringify(tt)}`);
     ck('教学状态自洽（向听数 / 已听牌+所听之牌 / 缺门 三选一）',
-      tt && (tt.shEff > 0 || (tt.waitingKinds > 0 && tt.waitLeft > 0) || tt.mustMiss), JSON.stringify(tt));
-    ck('教学状态不与「向听 0」自相矛盾', tt && !(tt.sh <= 0 && !tt.mustMiss && tt.waitingKinds === 0),
+      tt && (tt.shEff > 0 || (tt.waitingKinds > 0 && tt.waitLeft > 0) || tt.mustMiss || tt.deadWait), JSON.stringify(tt));
+    // 「死叫」是合法状态：手牌确实已听牌（向听 0），但所听之牌一张不剩（全被打完/全在缺门）
+    ck('教学状态不与「向听 0」自相矛盾', tt && !(tt.sh <= 0 && !tt.mustMiss && tt.waitingKinds === 0 && !tt.deadWait),
       JSON.stringify(tt));
+  }
+
+  // ── 出牌二次确认：第一次点只「提起」待确认，第二次点同一张才真正打出 ──
+  {
+    const atTurn = await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.stepToHumanTurn()");
+    ck('可推进到「轮到人类出牌」的时刻（供点击测试）', atTurn === true, 'got=' + atTurn);
+    if (atTurn === true) {
+      const hp = await ev(HAND_POINT);
+      const n0 = await ev(HAND_N);
+      const r0 = await ev("window.__PIXI_TABLE__.layout.rivers[0]");
+      const p0 = hp ? JSON.parse(hp) : null;
+      ck('取到第一张可打手牌的屏幕坐标', !!p0, hp || 'null');
+      if (p0) {
+        // ① 第一次点击：只提起待确认，手牌数量不变
+        await click(p0.x, p0.y);
+        await sleep(300);
+        const s1 = JSON.parse((await ev("JSON.stringify({sel:window.__PIXI_TABLE__.layout.selTile})")) || '{}');
+        const n1 = await ev(HAND_N);
+        ck('第一次点牌：只「提起」待确认，没有打出', s1.sel >= 0 && n1 === n0, `sel=${s1.sel} 手牌 ${n0}→${n1}`);
+
+        // ② 点桌面空白：取消待确认，仍不打出
+        const bp = await ev(BLANK_POINT);
+        if (bp) {
+          const b = JSON.parse(bp);
+          await click(b.x, b.y);
+          await sleep(300);
+          const s2 = JSON.parse((await ev("JSON.stringify({sel:window.__PIXI_TABLE__.layout.selTile})")) || '{}');
+          const n2 = await ev(HAND_N);
+          ck('点桌面空白：取消待确认（不打出）', s2.sel === -1 && n2 === n0, `sel=${s2.sel} 手牌=${n2}`);
+        }
+
+        // ③ 重新选中 → 第二次点同一张 → 真正打出
+        await click(p0.x, p0.y);
+        await sleep(280);
+        const s3 = JSON.parse((await ev("JSON.stringify({sel:window.__PIXI_TABLE__.layout.selTile})")) || '{}');
+        ck('可重复选中同一张（取消后能再确认）', s3.sel >= 0, `sel=${s3.sel}`);
+        await click(p0.x, p0.y);
+        await sleep(360);
+        const s4 = JSON.parse((await ev("JSON.stringify({sel:window.__PIXI_TABLE__.layout.selTile})")) || '{}');
+        const r4 = await ev("window.__PIXI_TABLE__.layout.rivers[0]");
+        // ⚠️ 出牌后 pump 会自动推进到「我下一轮摸完牌」才停下，所以手牌数会回到原值 ——
+        //    要断言「确实打出去了」得看**牌河**（人类牌河 +1），不是手牌数。
+        ck('第二次点同一张：真正打出（人类牌河 +1、选中态清空）',
+          r4 === r0 + 1 && s4.sel === -1, `牌河 ${r0}→${r4} sel=${s4.sel}（手牌 ${n0}→${await ev(HAND_N)}）`);
+      }
+    }
   }
 
   // 演示模式：动作级节奏自动推进，期间应产生飞行牌轨迹 / 碰杠高光
@@ -289,7 +377,7 @@ try {
     ck('対局中布局仍无越界', audit2.overflow === 0, 'overflow=' + audit2.overflow);
     ck('对局中牌河仍 ≤2 排', audit2.rows.every((r) => r <= 2), JSON.stringify(audit2.rows));
     const tt = audit2.teach;
-    ck('对局推进后教学条仍自洽', !tt || tt.shEff > 0 || tt.waitingKinds > 0 || tt.mustMiss, JSON.stringify(tt));
+    ck('对局推进后教学条仍自洽', !tt || tt.shEff > 0 || tt.waitingKinds > 0 || tt.mustMiss || tt.deadWait, JSON.stringify(tt));
   }
 
   // 走完整局 → 必出胡牌粒子 + 终局亮牌 + 结算弹层

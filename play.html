@@ -48039,8 +48039,9 @@ ${parts.join("\n")}
       you: '你', next: '下家 →', opp: '对家', prev: '← 上家',
       wall: '牌墙', turn: '轮到', dealer: '庄', shanten: '离下叫', shantenUnit: ' 张',
       claimT: '可以鸣牌', kong: '杠', pong: '碰', pass: '过', ck: '暗杠', ak: '补杠', win: '胡',
-      hintTurn: '轮到你打牌 —— 点牌即可打出',
+      hintTurn: '轮到你打牌 —— 点牌选中，再点一次打出',
       hintMiss: '还有缺门牌，必须先打完（只能点缺门牌）',
+      hintArmed: function (tl) { return '已选 ' + tl + ' · 再点一次打出（点空白取消）'; },
       declareT: '定缺 —— 选一门要打光的牌',
       declareSub: '川麻开局必选一门「缺门」：必须先打完，且胡牌时手上不能有它。建议选张数最少的一门。',
       recommend: '推荐', start: '开始', again: '再来一局', close: '关闭',
@@ -48063,6 +48064,7 @@ ${parts.join("\n")}
         '<b>座位</b>：你在下；<b>下家</b>在右、<b>上家</b>在左，四家围桌而坐，牌面朝向桌心。<br>' +
         '<b>底部教学条</b>：常驻显示「离下叫还差几张」；下叫时金框虚线牌就是你在等的牌，右下角数字是还剩几张。<br>' +
         '<b>★ 推荐</b>：金色光晕那张是建议打出的牌，教学条右侧会说明理由（打它之后进张多少张）。<br>' +
+        '<b>出牌要确认两次</b>：点一下先把手牌<b>提起</b>（金框标出，防手滑），再点同一张才真正打出；点桌面空白处可取消。<br>' +
         '<b>难度</b>：右上角可切 新手 / 标准 / 困难 —— 只改对手的强弱，不改规则。<br>' +
         '<b>结算</b>：终局按「番数×底分」计分，另算杠分、查叫、查花猪、退税，给出每家净分。<br>' +
         '<b>动作按钮</b>：牌桌中间会弹出「胡 / 碰 / 杠 / 过」——<b>要不要胡由你决定</b>，系统不会替你胡。<br>' +
@@ -48077,6 +48079,7 @@ ${parts.join("\n")}
       evEnd: '本局结算',
       // —— 教学脚手架 ——
       teachReady: '已下叫',
+      teachDeadWait: '已听牌，但所听的牌已经全被打完（死叫）',
       teachWait: function (n) { return '可和 ' + n + ' 张'; },
       teachShanten: function (n) { return n <= 0 ? '已下叫' : '还差 ' + n + ' 张下叫'; },
       teachImprove: function (n) { return '进张 ' + n + ' 张'; },
@@ -48106,8 +48109,9 @@ ${parts.join("\n")}
       you: 'You', next: 'Right →', opp: 'Across', prev: '← Left',
       wall: 'Wall', turn: 'Turn', dealer: 'D', shanten: 'To ready', shantenUnit: '',
       claimT: 'Claim', kong: 'Kong', pong: 'Pong', pass: 'Pass', ck: 'Concealed', ak: 'Added', win: 'Win',
-      hintTurn: 'Your turn — click a tile to discard',
+      hintTurn: 'Your turn — click a tile to select, click it again to discard',
       hintMiss: 'Clear your missing suit first (only those tiles clickable)',
+      hintArmed: function (tl) { return 'Selected ' + tl + ' — click again to discard (click empty space to cancel)'; },
       declareT: 'Declare Missing Suit',
       declareSub: 'Pick one suit to clear. You must discard it all first, and a winning hand must not contain it.',
       recommend: 'PICK', start: 'Start', again: 'Play again', close: 'Close',
@@ -48131,6 +48135,7 @@ ${parts.join("\n")}
         '<b>Hand</b>: auto-sorted; the <b>tile just drawn sits apart on the right</b> and re-sorts after you discard.<br>' +
         '<b>River</b>: discards are laid neatly in <b>two rows</b> in front of each player.<br>' +
         '<b>Gold glow</b> = suggested discard. Opponents\' hands are tile backs.<br>' +
+        '<b>Discarding takes two clicks</b>: the first click <b>lifts the tile</b> (gold outline, so a slip of the finger costs nothing), the second click on that same tile actually plays it. Click empty table space to cancel.<br>' +
         '<b>Reveal</b>: on a win the hand turns face-up, winning tile gold and set apart.<br>' +
         '<b>Action buttons</b>: Hu / Pong / Kong / Pass appear mid-table — <b>the decision to win is yours</b>, nothing wins for you automatically.<br>' +
         '<b>Blood Battle</b>: play continues until 3 wins or the wall empties.<br>' +
@@ -48143,6 +48148,7 @@ ${parts.join("\n")}
       evWinRon: function (s, tl, by, f) { return '🎉 ' + s + ' wins ' + tl + ' (' + by + ' discard, ' + f + ' fan)'; },
       evEnd: 'Round settled',
       teachReady: 'Ready',
+      teachDeadWait: 'Ready — but every tile you wait on is gone',
       teachWait: function (n) { return n + ' winning tiles left'; },
       teachShanten: function (n) { return n <= 0 ? 'Ready' : n + ' away from ready'; },
       teachImprove: function (n) { return n + ' tiles improve'; },
@@ -48185,6 +48191,8 @@ ${parts.join("\n")}
     teach: null,             // 本帧教学信息（A）
     banner: null,            // 胡牌横幅 {seat, fans, selfDraw, until}
     recTile: -1,
+    selId: -1,               // 出牌二次确认：已选中的牌（tile id），-1 = 无
+    selSlot: -1,             // 该牌在手牌槽位里的索引 —— 用槽位而非 id，避免同 id 的多张一起抬起
   };
   state.fxStats = { deals: 0, flights: 0, rings: 0, bursts: 0 };
 
@@ -48339,9 +48347,11 @@ ${parts.join("\n")}
       CM.discard(g, seat2, CM.botDiscardTile(g, seat2));
     }
   }
-  function act(fn) { return function () { fn(); pump(); render(); }; }
-  var humanDeclare = function (suit) { CM.declareMissing(state.g, HUMAN, suit); state.overlay = null; pump(); render(); };
-  var humanDiscard = function (tile) { CM.discard(state.g, HUMAN, tile); pump(); render(); };
+  /** 清空「待确认出牌」的选中态（出牌 / 鸣牌 / 换局时都要清） */
+  function clearSelection() { state.selId = -1; state.selSlot = -1; }
+  function act(fn) { return function () { clearSelection(); fn(); pump(); render(); }; }
+  var humanDeclare = function (suit) { clearSelection(); CM.declareMissing(state.g, HUMAN, suit); state.overlay = null; pump(); render(); };
+  var humanDiscard = function (tile) { clearSelection(); CM.discard(state.g, HUMAN, tile); pump(); render(); };
   var humanWin = act(function () {
     var g = state.g, c = g.claim;
     if (c && c.ron.indexOf(HUMAN) >= 0) CM.applyRon(g, HUMAN);
@@ -48756,6 +48766,9 @@ ${parts.join("\n")}
   function drawFelt(W, H) {
     var sp = new PIXI.Sprite(feltTexture(W, H));
     sp.width = W; sp.height = H;
+    // 出牌二次确认：点桌面空白处 = 取消已选中的牌（手牌节点在 felt 之上，点手牌不会走到这里）
+    sp.eventMode = 'static';
+    sp.on('pointerdown', function () { if (state.selId >= 0) { clearSelection(); render(); } });
     state.world.addChild(sp);
     // 桌边四环：外框暗边 → 金线 → 金线内高光（内发光感）→ 内侧绒倒角
     var rim = gfx();
@@ -48780,6 +48793,10 @@ ${parts.join("\n")}
     var i, node;
 
     // —— 手牌
+    // 出牌二次确认：第一次点牌只把牌「提起」1/3 牌高待确认，再点同一张才真正打出。
+    // 选中态按**槽位索引**记忆（同 id 的多张牌只抬一张），并随轮次/手牌变化自动失效。
+    if (isMe && (p.won || hide || G.phase !== 'playing' || G.turn !== HUMAN || G.claim)) clearSelection();
+    var selAlive = false;
     if (!hide) {
       for (i = 0; i < hs.slots.length; i++) {
         var sl = hs.slots[i];
@@ -48787,24 +48804,44 @@ ${parts.join("\n")}
         var legal = isMe && G.phase === 'playing' && G.turn === HUMAN && !G.claim && !p.won &&
           (!CM.holdsMissingSuit(p) || CM.suitOf(sl.id) === p.missing);
         var recThis = isMe && !p.won && sl.id === state.recTile;
+        var armed = isMe && !p.won && legal && state.selSlot === i && state.selId === sl.id;
+        if (armed) selAlive = true;
+        var yBase = armed ? sl.y - F.hH / 3 : sl.y;   // 提起量 = 牌高的 1/3
+        if (armed) {                                  // 待确认牌加一圈金框，和「推荐牌」的光晕区分开
+          var hb = gfx();
+          var hw2 = F.hW * 0.5, hh2 = F.hH * 0.5;
+          hb.roundRect(sl.x - hw2 - 3, yBase - hh2 - 3, hw2 * 2 + 6, hh2 * 2 + 6, Math.max(3, F.hW * 0.14));
+          hb.stroke({ width: 2.5, color: GOLD, alpha: 0.95 });
+          state.world.addChild(hb);
+        }
         node = tileNode(faceUp ? sl.id : -1, F.hW, F.hH, {
           rot: sl.rot, glow: isWinTile || recThis
         });
-        node.position.set(sl.x, sl.y);
-        node.__id = sl.id; node.__sep = sl.sep;
+        node.position.set(sl.x, yBase);
+        node.__id = sl.id; node.__sep = sl.sep; node.__slot = i; node.__yBase = yBase;
         if (isMe && !p.won) {
           node.eventMode = legal ? 'static' : 'none';
           node.cursor = legal ? 'pointer' : 'default';
           node.alpha = legal ? 1 : 0.42;
-          (function (nd, y0) {
-            nd.on('pointerover', function () { if (nd.alpha > 0.6) { nd.y = y0 - 12; nd.scale.set(1.06); } });
-            nd.on('pointerout', function () { nd.y = y0; nd.scale.set(1); });
-            nd.on('pointerdown', function () { if (nd.alpha > 0.6) humanDiscard(nd.__id); });
-          })(node, sl.y);
+          (function (nd) {
+            nd.on('pointerover', function () { if (nd.alpha > 0.6) { nd.y = nd.__yBase - 12; nd.scale.set(1.06); } });
+            nd.on('pointerout', function () { nd.y = nd.__yBase; nd.scale.set(1); });
+            nd.on('pointerdown', function () {
+              if (nd.alpha <= 0.6) return;                        // 非法牌（缺门没打完等）不可点
+              if (state.selSlot === nd.__slot && state.selId === nd.__id) {
+                humanDiscard(nd.__id);                            // 第二次点同一张 → 真正打出
+              } else {
+                state.selId = nd.__id; state.selSlot = nd.__slot;  // 第一次点 → 只提起待确认
+                render();
+              }
+            });
+          })(node);
           if (recThis) pulse(node, { period: 620, min: 0.72, max: 1 });
         }
         state.world.addChild(node);
       }
+      // 选中的那张已经不在手牌里（被副露吃掉 / 换了轮次）→ 清掉脏状态
+      if (isMe && state.selId >= 0 && !selAlive) clearSelection();
       // —— 听牌提示：把「你在等什么牌」直接摆到手牌右边（虚线金框 + 剩余张数）
       for (i = 0; i < ghosts.length; i++) {
         var gx = hs.start + hs.span + F.hW * 0.85 + gStep * i;
@@ -49176,10 +49213,14 @@ ${parts.join("\n")}
 
     var improving = 0;
     if (!mustMiss && sh > 0) improving = CM.improvingTiles(my.hand, melds).length;
+    // 死叫：手牌已经听牌（向听 0），但可和的那几张牌一张都不剩（全被打完 / 全落在缺门里）。
+    // 这时 waiting 为空但并不是「没下叫」—— 教学条要说清，否则玩家只看到「离下叫 0 张」却等不到牌。
+    var deadWait = canProbe && shAfter <= 0 && waitingRaw > 0 && waiting.length === 0;
     return {
       kind: 'live', sh: sh, shAfter: shAfter, shEff: (recInfo ? recInfo.shanten : sh),
       myTurn: myTurn, mustMiss: mustMiss,
       waiting: waiting, waitLeft: waitLeft, improving: improving, rec: rec, recInfo: recInfo,
+      deadWait: deadWait,
       // 诊断用（探针读取）
       diag: { need: need, total: total, melds: melds, canProbe: canProbe, waitingRaw: waitingRaw,
               turn: G.turn, hasClaim: !!G.claim,
@@ -49212,6 +49253,10 @@ ${parts.join("\n")}
     } else if (winNow) {
       msg = '🎉 ' + T0.teachCanWin;
       col = '#ffe07a';
+    } else if (state.selId >= 0 && G.turn === HUMAN && !G.claim) {
+      // 出牌二次确认：牌已提起，等第二次点击
+      msg = '🎯 ' + T0.hintArmed(MJT(state.selId));
+      col = '#ffe6a3';
     } else if (teach && teach.mustMiss) {
       msg = '⚠ ' + T0.teachMustMiss;
       col = '#ffc98a';
@@ -49223,6 +49268,9 @@ ${parts.join("\n")}
         msg = (teach.myTurn && teach.rec >= 0 ? '打这张就下叫 · ' : '✅ ') +
           T0.teachReady + ' · ' + T0.teachWait(teach.waitLeft);
         col = '#9ff0bd';
+      } else if (teach.deadWait) {
+        msg = '⚠ ' + T0.teachDeadWait;
+        col = '#ffc98a';
       } else if (shEff <= 0) {
         msg = '✅ ' + T0.teachReady;
         col = '#9ff0bd';
@@ -49297,6 +49345,18 @@ ${parts.join("\n")}
       state.boxes = [];
       state.world.removeChildren().forEach(function (c) { c.destroy({ children: true }); });
 
+      // 出牌二次确认：stage 兜底命中区（点在舞台空白、没落到任何物体上时也能取消选中）
+      // ⚠️ hitArea 用 app.screen（PIXI 自己维护的矩形），别 new PIXI.Rectangle ——
+      // build.mjs 只具名导出了 6 个 PIXI 符号，产物里没有 Rectangle，会在真机直接抛错。
+      state.app.stage.eventMode = 'static';
+      state.app.stage.hitArea = state.app.screen;
+      if (!state.stageBound) {
+        state.stageBound = true;
+        state.app.stage.on('pointerdown', function (e) {
+          if (e.target === state.app.stage && state.selId >= 0) { clearSelection(); render(); }
+        });
+      }
+
       // 未开局：处于「开局设置」时只画桌面 + 提示，绝不发牌
       if (!state.g) {
         drawFelt(W, H);
@@ -49344,6 +49404,8 @@ ${parts.join("\n")}
       W: W, H: H, boxes: state.boxes, overflow: over,
       handH: +M.handH.toFixed(1), riverH: +M.riverH.toFixed(1),
       tier: state.tier || null, uiK: +(state.k || 1).toFixed(2),
+      // 出牌二次确认：已提起待确认的牌（-1 = 无）
+      selTile: state.selId, selSlot: state.selSlot,
       // 座位朝向：应为 [0, -90, 180, 90]（牌顶朝向桌心）
       rots: SEATS.map(function (s) { return Math.round(seatFrame(s, M).rot * 180 / Math.PI); }),
       // 刚摸的牌是否排在「右手边」（沿 right 方向位于主体之后）
@@ -49380,6 +49442,7 @@ ${parts.join("\n")}
         shAfter: state.teach.shAfter,
         myTurn: state.teach.myTurn,
         mustMiss: state.teach.mustMiss,
+        deadWait: !!state.teach.deadWait,
         waitingKinds: state.teach.waiting.length,
         waitLeft: state.teach.waitLeft,
         recTile: state.teach.rec,
@@ -49751,6 +49814,40 @@ ${parts.join("\n")}
     },
     /** 诊断用：开启代打逐步记录（清空并开始记录） */
     dbgOn: function () { state.dbg = []; return true; },
+    /** 推进到「轮到人类打牌」的时刻停下（碰到鸣牌决策点就直接过），供探针做真实点击 */
+    stepToHumanTurn: function () {
+      if (!state.g) return false;
+      for (var i = 0; i < 300; i++) {
+        var G = state.g, my = G.players[HUMAN];
+        if (G.phase !== 'playing') break;
+        // ⚠️ 成功分支也要 render()：pump 里的摸牌只打了 requestRender 标记，layout 仍是上一帧的
+        //   （手牌数会少 1），探针据此断言会读到旧值。
+        if (!G.claim && !my.won && G.turn === HUMAN && !G.pendingDraw) { render(); return true; }
+        if (G.claim) { resolveHumanPass(); continue; }   // 停在可碰/可杠/可胡的点 → 直接过，继续推
+        pump();                                          // 非演示态：pump 自己会在人类行动点停下
+      }
+      render();
+      return false;
+    },
+    /** 探针用：第一张「此刻可打出」手牌的画布坐标（供 CDP 真实点击） */
+    handPoint: function () {
+      var G = state.g;
+      if (!G || G.phase !== 'playing') return null;
+      var p = G.players[HUMAN];
+      if (G.turn !== HUMAN || G.claim || p.won || performance.now() < state.hideHandsUntil) return null;
+      var W = state.app.screen.width, H = state.app.screen.height;
+      var M = metrics(W, H), F = seatFrame(HUMAN, M);
+      var teach = state.teach;
+      var ghosts = (teach && teach.kind === 'live' && !p.won && teach.waiting) ? teach.waiting : [];
+      var gStep = F.hW * 0.66 + 4, gw = ghosts.length ? ghosts.length * gStep + F.hW * 0.5 : 0;
+      var hs = handSlots(F, handPlan(p), -gw / 2);
+      for (var i = 0; i < hs.slots.length; i++) {
+        var sl = hs.slots[i];
+        var legal = (!CM.holdsMissingSuit(p) || CM.suitOf(sl.id) === p.missing);
+        if (legal) return { x: sl.x, y: sl.y, tile: sl.id, slot: i, W: W, H: H };
+      }
+      return null;
+    },
     fxWin: function (seat) { playWin(seat, metrics(state.app.screen.width, state.app.screen.height)); return true; },
     fxRing: function (seat) {
       var M = metrics(state.app.screen.width, state.app.screen.height);
