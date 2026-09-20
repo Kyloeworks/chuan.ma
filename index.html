@@ -8,19 +8,9 @@
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<nav><div class="navin">
-  <a class="brand" href="index.html">chuan<b>.</b>ma</a>
-  <a class="nl" href="learn-rules.html">Learn</a>
-  <a class="nl" href="learn-tiles.html">Tiles</a>
-  <a class="nl" href="learn-scoring.html">Scoring</a>
-  <a class="nl" href="learn-culture.html">Culture</a>
-  <a class="nl" href="glossary.html">Glossary</a>
-  <span class="navspace"></span>
-  <a class="nl cta" href="play.html">&#9654; Play</a>
-  <a class="nl" href="calculator.html">Calculator</a>
-</div></nav>
+<nav></nav>
 
-<div class="wrap">
+<div class="wrap" data-i18n="page">
 <header class="top">
   <div class="kicker">Sichuan Mahjong · 四川麻将</div>
   <h1>Learn to play 川麻</h1>
@@ -106,5 +96,90 @@
 
 <footer>chuan.ma · a free tool for learning Sichuan mahjong · rules match the engine used by the table</footer>
 </div>
+<script src="site.js"></script>
+<script>window.CM_I18N = { zh: { page: `<header class="top">
+  <div class="kicker">四川麻将 · 川麻</div>
+  <h1>学会打川麻</h1>
+  <p class="lede">如果你曾在中国坐到麻将桌边，心里默默希望没人叫你上场——这个站就是为你做的。它把<b>四川麻将</b>从第一张牌讲到最后的分数，背后是一套真正的规则引擎，算牌的方式和真桌上一模一样。</p>
+  <div class="hero-dots"><span>万</span><span>条</span><span>筒</span></div>
+</header>
+
+<h2>为什么是川麻，以及它为什么不像你见过的麻将</h2>
+<p>多数麻将资料讲的是广东麻将或日本麻将。四川麻将把这些全砍掉了，剩下的东西更快，也更怪：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>它有</th><th>它没有</th></tr></thead>
+  <tbody>
+    <tr><td>只有 <b>108 张牌</b>——三门花色，仅此而已</td><td>没有风牌、没有箭牌、没有花牌</td></tr>
+    <tr><td>必须打光一门<b>定缺</b></td><td>没有「吃」——永远不能鸣牌凑顺子</td></tr>
+    <tr><td><b>血战到底</b>：一局最多<b>三家</b>能胡</td><td>没有「第一家胡了这局就结束」</td></tr>
+    <tr><td>拖到流局要罚：查大叫、查花猪、退税</td><td>没有安全拖时间的打法</td></tr>
+  </tbody>
+</table>
+</div>
+<p>结果是一场干净得多的技术较量：没有字牌可以躲，整个游戏几乎就是<b>牌型效率</b>——你能多快把 13 张乱牌变成一副成手的牌。这也让它格外好学，而这正是本站存在的理由。</p>
+
+<h2>从这四节短课开始</h2>
+<div class="path">
+  <a class="step" href="learn-rules.html">
+    <div class="stepno">第 1 课 · 基础规则</div>
+    <h3>怎么打</h3>
+    <p>108 张的牌组、定缺、行动顺序、碰与杠、一局什么时候结束。</p>
+    <div class="go">开始上课 &rarr;</div>
+  </a>
+  <a class="step t2" href="learn-tiles.html">
+    <div class="stepno">第 2 课 · 识别牌型</div>
+    <h3>认牌</h3>
+    <p>三门花色、九个汉字数字，以及唯一一张画成鸟而不是数字的牌。</p>
+    <div class="go">去认牌 &rarr;</div>
+  </a>
+  <a class="step t3" href="learn-scoring.html">
+    <div class="stepno">第 3 课 · 计算番数</div>
+    <h3>番数与算分</h3>
+    <p>番种表、加成怎么叠加、自摸与点炮谁付钱，配四个算例。</p>
+    <div class="go">算一手牌 &rarr;</div>
+  </a>
+  <a class="step t4" href="learn-culture.html">
+    <div class="stepno">第 4 课 · 麻将文化</div>
+    <h3>文化与变体</h3>
+    <p>这个游戏从哪来、茶馆里的牌桌、桌上的规矩，以及你会遇到的各种打法。</p>
+    <div class="go">读读背景 &rarr;</div>
+  </a>
+</div>
+
+<h2>然后上手——工具箱</h2>
+<div class="path">
+  <a class="step" href="play.html">
+    <div class="stepno">对局 · 牌桌</div>
+    <h3>打一整局</h3>
+    <p>四人牌桌、三家对手，GPU 渲染。底部教学条一直告诉你离下叫还差几张、在等什么牌、该打哪张牌——以及为什么。三档难度。</p>
+    <div class="go">坐下开打 &rarr;</div>
+  </a>
+  <a class="step t3" href="calculator.html">
+    <div class="stepno">训练 · 计算器</div>
+    <h3>算牌器</h3>
+    <p>随手点出一手牌，立刻看到它离下叫还差多远、在等哪些牌、哪些牌能推进、该打哪张最好。建立牌型直觉最快的方式。</p>
+    <div class="go">打开算牌器 &rarr;</div>
+  </a>
+  <a class="step t2" href="tiles.html">
+    <div class="stepno">速查 · 牌面</div>
+    <h3>牌面图鉴</h3>
+    <p>每一张牌的矢量图，附实际尺寸预览。</p>
+    <div class="go">看牌面 &rarr;</div>
+  </a>
+  <a class="step t4" href="glossary.html">
+    <div class="stepno">速查 · 术语</div>
+    <h3>术语表</h3>
+    <p>每个术语的中英对照与拼音，让你在真桌上听得懂。</p>
+    <div class="go">打开术语表 &rarr;</div>
+  </a>
+</div>
+
+<div class="box good">
+  <h4>这个站是什么，不是什么</h4>
+  <p>这里全部是<b>纯静态网页</b>——不用注册、没有广告、没有服务器、不用装任何东西。教学提示与算分来自一套确定性的规则引擎，不是语言模型在猜。本站只写明一套规则，所以课程、牌桌和算牌器之间不可能互相矛盾——番值是怎么定的、各地桌规差在哪，见<a href="learn-scoring.html">番数与算分</a>。</p>
+</div>
+
+<footer>chuan.ma · 一个免费的川麻学习工具 · 规则与牌桌所用引擎完全一致</footer>` } };</script>
 </body>
 </html>

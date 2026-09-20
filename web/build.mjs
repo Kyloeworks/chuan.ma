@@ -99,7 +99,9 @@ const injectTokens = (text) =>
 // （色走兜底、万子无字），构建期无法察觉 —— 由 tiles.smoke.mjs 断言兜住。
 const SCRIPT_CHAIN = ['tokens.js', 'glyphs.js', 'tiles-ui.js'];
 const face = SCRIPT_CHAIN.concat(['app.js']);
-const gallery = SCRIPT_CHAIN.concat(['gallery.js']);
+// 牌面图鉴也要「品牌 + 设置」顶栏与语言入口，而它不加载 site.css，所以把 site.js 一起内联
+// （面板样式已在 tiles.template.html 里内联了一份同样的规则）
+const gallery = SCRIPT_CHAIN.concat(['gallery.js', 'content/site.js']);
 const table = SCRIPT_CHAIN.concat(['pixi-table.js']);
 const lessonTiles = SCRIPT_CHAIN.concat(['learn-tiles.js']);
 
@@ -139,7 +141,7 @@ for (const tg of targets) {
 // 注意 learn-tiles.html 不在这里 —— 它要接牌面资产，走上面的 targets 构建链。
 const statics = [
   'learn-rules.html', 'learn-scoring.html',
-  'learn-culture.html', 'glossary.html', 'site.css',
+  'learn-culture.html', 'glossary.html', 'site.css', 'site.js',
 ];
 for (const f of statics) {
   const src = path.resolve(here, 'content', f);

@@ -8,19 +8,9 @@
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<nav><div class="navin">
-  <a class="brand" href="index.html">chuan<b>.</b>ma</a>
-  <a class="nl on" href="learn-rules.html">Learn</a>
-  <a class="nl" href="learn-tiles.html">Tiles</a>
-  <a class="nl" href="learn-scoring.html">Scoring</a>
-  <a class="nl" href="learn-culture.html">Culture</a>
-  <a class="nl" href="glossary.html">Glossary</a>
-  <span class="navspace"></span>
-  <a class="nl cta" href="play.html">&#9654; Play</a>
-  <a class="nl" href="calculator.html">Calculator</a>
-</div></nav>
+<nav></nav>
 
-<div class="wrap">
+<div class="wrap" data-i18n="page">
 <header class="top">
   <div class="kicker">Lesson 1 · 基础规则</div>
   <h1>How to Play Sichuan Mahjong</h1>
@@ -146,5 +136,130 @@
 
 <footer>chuan.ma · a free tool for learning Sichuan mahjong · rules match the engine used by the table</footer>
 </div>
+<script src="site.js"></script>
+<script>window.CM_I18N = { zh: { page: `<header class="top">
+  <div class="kicker">第 1 课 · 基础规则</div>
+  <h1>川麻怎么打</h1>
+  <p class="lede">四川麻将比你见过的广东麻将、日本麻将更快、更狠，也更讲效率。没有风牌、没有箭牌、没有花牌——只剩三门花色。这一课讲完，你就能坐下来打完整一局。</p>
+</header>
+
+<h2>1. 牌组：108 张，三门花色</h2>
+<p>川麻用的是一副精简过的牌。风牌与箭牌整门去掉，剩下三门花色、每门 1–9、每张 4 副：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>花色</th><th>中文</th><th>点数</th><th>认牌线索</th></tr></thead>
+  <tbody>
+    <tr><td class="n">万子</td><td>万</td><td class="n">1&ndash;9</td><td>汉字数字 +「萬」</td></tr>
+    <tr><td class="n">条子</td><td>条</td><td class="n">1&ndash;9</td><td>画成竹节</td></tr>
+    <tr><td class="n">筒子</td><td>筒</td><td class="n">1&ndash;9</td><td>画成圆圈</td></tr>
+  </tbody>
+</table>
+</div>
+<p>3 门 &times; 9 点 &times; 4 副 = <b>108 张</b>，整副牌就这么多。只要能按花色认出 1–9，你就能叫出每一张牌的名字——见<a href="learn-tiles.html">认牌</a>。</p>
+
+<div class="box">
+  <h4>为什么这决定了打法</h4>
+  <p>没有字牌来拆散手牌，川麻几乎是一场纯粹的<b>牌型效率</b>比拼——你能多快把 13 张乱牌变成一副成型的牌。凭感觉打是要付代价的：不注意效率的人，往往连听牌都摸不到。</p>
+</div>
+
+<h2>2. 入座</h2>
+<ul>
+  <li>四人一桌，共用一副 108 张的牌墙。</li>
+  <li>每人发 <b>13 张</b>。庄家先行动，实际上第一巡按 14 张打。</li>
+  <li>行动顺序逆时针。</li>
+</ul>
+
+<h2>3. 定缺</h2>
+<p>这条规则就是川麻之所以是川麻的原因，也是新手最先懵的地方。</p>
+<p>开打之前，每家必须<b>公开指定一门本局不用的花色</b>。从那一刻起：</p>
+<ul>
+  <li>在打完这门牌之前，你<b>只能打这门牌</b>，不能打别的。</li>
+  <li>这门牌不能用来碰杠，而且<b>手上还留着它就不能胡牌</b>。</li>
+</ul>
+<p>选哪门随你——通行建议是选手上张数最少的一门，因为这样最快打干净。</p>
+<div class="box warn">
+  <h4>花猪</h4>
+  <p>如果这局结束时你手上还留着定缺的那门牌，你就是「花猪」，要赔给每个已打缺的人一笔重罚。打缺不是可选项——它是你的第一任务。</p>
+</div>
+
+<h2>4. 一巡：先摸后打</h2>
+<ol class="steps">
+  <li><b>摸牌</b>：从牌墙摸一张。手上现在是 14 张。</li>
+  <li><b>打牌</b>：亮出打掉一张。回到 13 张。</li>
+</ol>
+<p>打出的牌在面前排成<b>牌河</b>——所有人都看得见，也都在读它。你打出的每一张，都是关于你在做什么牌的公开声明。</p>
+
+<h2>5. 三种动作</h2>
+<p>别人打牌时，或你自己摸牌后，可以鸣牌，而不是老老实实摸一张打一张：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>动作</th><th>是什么</th><th>什么时候能叫</th></tr></thead>
+  <tbody>
+    <tr><td><b>碰</b></td><td>三张相同的牌，亮出来</td><td>任何时候别人打出你要的那张</td></tr>
+    <tr><td><b>杠</b></td><td>四张相同的牌</td><td>三种形态，见下</td></tr>
+    <tr><td><b>胡</b></td><td>凑成合法的和牌型</td><td>别人打出、或自己摸到都行</td></tr>
+  </tbody>
+</table>
+</div>
+<p>鸣牌意味着<b>跳过摸牌</b>，直接进入打牌。鸣牌不是白拿的：亮出的面子三家都看得见，也把手上的一部分牌锁成了固定形状。高手碰的频率，远低于新手的预期。</p>
+<div class="box warn">
+  <h4>川麻没有「吃」</h4>
+  <p>广东麻将和日本麻将里，你可以用别人打出的牌凑成<i>顺子</i>。<b>这里不行。</b>川麻只有碰、杠、胡三种鸣牌——所以你手上每一个顺子，都必须靠自己摸的牌凑出来。这也意味着你打出的牌永远不会被「吃掉」：能拿走它的，只有想凑刻子、杠、或者直接胡它的人。</p>
+</div>
+
+<h3>杠——三种形态，三种价钱</h3>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>类型</th><th>怎么来的</th><th>谁付给你</th></tr></thead>
+  <tbody>
+    <tr><td><b>直杠</b></td><td>别人打出第 4 张，你用手上的刻子杠</td><td>放杠者付 <b>2</b></td></tr>
+    <tr><td><b>暗杠</b></td><td>四张全在自己手上</td><td>其余三家各付 <b>2</b></td></tr>
+    <tr><td><b>补杠</b></td><td>摸到自己已碰那副的第 4 张</td><td>其余三家各付 <b>1</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p>杠完立刻补一张牌，然后继续你的回合。杠分是<b>当场结算</b>的——但带一个坑，见<a href="learn-scoring.html">番数与算分</a>：一局下来没胡的人，收过的杠分要全部退回去。</p>
+
+<h2>6. 什么算胡牌</h2>
+<p>和牌是 14 张，由<b>四副面子 + 一对将</b>组成：</p>
+<ul>
+  <li><b>面子</b>可以是三张相同的牌（刻子），也可以是同门连续的三张（顺子）。</li>
+  <li><b>将</b>是两张相同的牌。</li>
+</ul>
+<p>另有一种特殊牌型：<b>七对</b>——七个不同的对子，14 张，不能有副露。</p>
+<div class="box good">
+  <h4>先下叫，再等牌</h4>
+  <p>离和牌只差一张时，你就算<b>下叫</b>（听牌）。能把牌补齐的那几张，叫你的<b>所听之牌</b>。川麻桌上的进度说法是「离下叫还差几张」——等价于你可能见过的日本麻将「向听数」，也正是本站教学条给你显示的那个数字。「离下叫还差 2 张」意味着你还需要两张才能进入听牌。后面每一课，本质上都是在讲怎么把这个数字快速降下去。</p>
+</div>
+<p>和牌的分数由<b>番</b>决定——比如清一色、大对子这样的牌型加成。完整的番种表（牌型档 + 叠加番）见<a href="learn-scoring.html">番数与算分</a>。</p>
+
+<h2>7. 血战到底</h2>
+<p>这是让川麻与众不同的第二条规则，也是一局的手感和其他变体完全不同的原因。</p>
+<p><b>有人胡了，这局不结束。</b>胡牌的人拿分退出，剩下的人继续打——同一副牌墙、同一手牌，接着抢。</p>
+<ul>
+  <li>这局在<b>三家都胡了</b>、或者<b>牌墙摸完</b>时结束。</li>
+  <li>因为一局最多有三家能收分，在别的变体里早就该弃的牌，在这里可能后面还值得追。</li>
+</ul>
+
+<h2>8. 牌墙摸完怎么办</h2>
+<p>如果三家还没胡完牌墙就空了，这局改用罚款结算，而不是胡牌分：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>结算项</th><th>中文</th><th>怎么算</th></tr></thead>
+  <tbody>
+    <tr><td>查大叫</td><td>查叫</td><td>每个<b>没</b>下叫的人，赔给每个下叫的人「其所听之牌里最大的番值」</td></tr>
+    <tr><td>查花猪</td><td>查花猪</td><td>还留着定缺牌的人，赔给每个已打缺的人 <b>16</b></td></tr>
+    <tr><td>退税</td><td>退税</td><td>收过杠分但没胡的人，把杠分全部退回</td></tr>
+  </tbody>
+</table>
+</div>
+<p>道理是一致的：<b>打缺、下叫，这是底线，不是目标。</b>这个游戏的一切都在把你推向更高效的牌型。</p>
+
+<div class="next">
+  <a href="learn-tiles.html"><div class="k">下一课</div><div class="t">认牌 &rarr;</div></a>
+  <a href="play.html"><div class="k">上手试试</div><div class="t">打一局 &rarr;</div></a>
+</div>
+
+<footer>chuan.ma · 一个免费的川麻学习工具 · 规则与牌桌所用引擎完全一致</footer>` } };</script>
 </body>
 </html>

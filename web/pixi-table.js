@@ -89,6 +89,8 @@
       recommend: '推荐', start: '开始', again: '再来一局', close: '关闭',
       setupT: '开局设置',
       setupSub: '先定规则，再发牌。开局后每人 13 张，然后由你选一门「缺门」。',
+      settingsT: '设置',
+      settingsSub: '改动立即生效；要重开牌局请点「新开一局」。',
       seatPick: '谁先起手（庄）',
       seatHint: '庄家先摸第 14 张，有先手优势。',
       teachLbl: '教学提示',
@@ -165,6 +167,8 @@
       recommend: 'PICK', start: 'Start', again: 'Play again', close: 'Close',
       setupT: 'Round setup',
       setupSub: 'Set the rules before the tiles are dealt. After the deal you pick the suit to clear.',
+      settingsT: 'Settings',
+      settingsSub: 'Changes apply immediately. Pick “New game” to reshuffle.',
       seatPick: 'Who starts (dealer)',
       seatHint: 'The dealer draws the 14th tile and moves first.',
       teachLbl: 'Coaching',
@@ -228,9 +232,23 @@
     }
   };
 
+  /* 语言选择跨页记忆 —— 全站所有页面共用同一个 localStorage key，
+     所以在牌桌上切成英文，回到首页/学习页也是英文（页面各自读同一个 key）。 */
+  var LANG_KEY = 'chuanma.lang';
+  function readLang() {
+    try {
+      var v = localStorage.getItem(LANG_KEY);
+      if (v === 'zh' || v === 'en') return v;
+    } catch (e) { /* 隐私模式 / 禁用存储：退回默认 */ }
+    return 'zh';
+  }
+  function saveLang(v) {
+    try { localStorage.setItem(LANG_KEY, v); } catch (e) { /* ignore */ }
+    try { document.documentElement.lang = v === 'zh' ? 'zh-CN' : 'en'; } catch (e2) { /* ignore */ }
+  }
+
   var state = {
-    g: null, lang: 'zh', demo: false, timer: null, overlay: null,
-    loggedUpTo: 0, logLines: [],
+    g: null, lang: readLang(), demo: false, timer: null, overlay: null,
     app: null, world: null, fx: null, tex: {}, texCount: 0, ready: false,
     tweens: [], particles: [], pulses: [], boxes: [], fxStats: null,
     fxSeen: 0, pendingDeal: false, hideHandsUntil: 0, feltTex: null, feltKey: '',
@@ -418,14 +436,18 @@
   var humanCK = act(function () { var k = CM.botConcealedKongTile(state.g, HUMAN); if (k >= 0) CM.applyConcealedKong(state.g, HUMAN, k); });
   var humanAK = act(function () { var k = CM.botAddedKongTile(state.g, HUMAN); if (k >= 0) CM.applyAddedKong(state.g, HUMAN, k); });
 
-  /** 进入「开局设置」：不建牌局、不发牌，等玩家选好再开始 */
+  /** 打开设置面板。对局进行中调用时**不清牌局** —— 只把面板叠上来改设置（难度/教学/语言）。 */
+  function openSettings() {
+    state.overlay = 'setup';
+    render();
+  }
+  /** 回到「开局设置」：清掉当前牌局、重新发牌（「新开一局」走这里） */
   function openSetup() {
     if (state.timer) { clearInterval(state.timer); state.timer = null; }
     state.demo = false;
     state.started = false;
     state.overlay = 'setup';
     state.g = null;                 // 无牌局 → render 走「准备开始」画面
-    state.logLines = []; state.loggedUpTo = 0;
     state.teach = null; state.recTile = -1;
     clearFx();
   }
@@ -442,7 +464,6 @@
     // 起手位（庄）：createGame 固定 dealer = 0；declareMissing 收尾时会用 g.dealer 重置 turn，
     // 所以这里只改 dealer 即可让选中的一家先摸第 14 张。
     if (state.dealerSeat) state.g.dealer = state.dealerSeat;
-    state.loggedUpTo = 0; state.logLines = [];
     state.fxSeen = state.g.history.length;
     state.pendingDeal = true;
     clearFx();
@@ -859,17 +880,36 @@
   /* ================= 布局 ================= */
   function metrics(W, H) {
     var k = state.k || 1;
-    // 牌宽：随档放大；上限由「高度占比」和「13 张 + 摸牌位横向放得下」共同约束
-    var byW = (((W - 48 * k) / 14) - 4 * k) / AR;
-    var handH = clamp(82.5 * k, 34, Math.min(H * 0.135, byW));
+    // 窄屏（手机竖屏）：14 张横排由屏幕宽度硬约束，牌会被压得很小
+    var narrow = W < 560 * k;
+    // 手牌张间缝隙 —— **必须与 handSlots 用的是同一个值**，否则反推出来的牌高会偏大：
+    // 旧公式按「14 张等分」估算，而 handSlots 实际排的是「13 张主体 + 1 个摸牌位(0.55 张)」，
+    // 两者差着 13 个缝，窄屏下直接把整条手牌带顶出屏幕（实测 375px：带宽 399 > 屏宽 375）。
+    // 窄屏把缝收到 1px 左右，把宽度让给牌本身。
+    var handGap = narrow ? Math.max(1, 1.2 * k) : 4 * k;
+    var sidePad = narrow ? 12 * k : 48 * k;
+    // 手牌带实宽 = 13 个缝 + 1.55 张牌 → 反推最大牌高
+    var byW = ((W - 2 * sidePad - 13 * handGap) / 14.55) / AR;
+    var handH = clamp(82.5 * k, narrow ? 22 : 34, Math.min(H * 0.135, byW));
     return {
-      W: W, H: H, PAD: 12 * k,
-      handH: handH, handW: handH * AR,
-      oppH: handH * 0.62, meldH: handH * 0.70, riverH: handH * 0.44,
-      bottomPad: 58 * k, labelGap: 24 * k,   // 底部留出「教学条」的位置
-      stripH: 58 * k
+      W: W, H: H, PAD: (narrow ? 8 : 12) * k, narrow: narrow,
+      handH: handH, handW: handH * AR, handGap: handGap,
+      oppH: handH * (narrow ? 0.56 : 0.62), meldH: handH * 0.70, riverH: handH * 0.44,
+      bottomPad: (narrow ? 44 : 58) * k,
+      labelGap: 24 * k,
+      // 层间净间隙（手牌 → 副露 → 牌河）：单独拎出来，便于按档微调
+      air: (narrow ? 6 : 10) * k,
+      stripH: (narrow ? 44 : 58) * k   // 底部教学条高度
     };
   }
+  /**
+   * 一层牌实际占的「脚印半径」：半高 + 落地阴影的向下延伸。
+   *
+   * ⚠️ tileNode 里的阴影从牌心向下再延伸 `depth + 8`（depth ≈ 短边 × 0.17），
+   *   旧公式只用半高算间距，于是**上一层的阴影正好压住下一层的牌面** ——
+   *   玩家看到的就是「碰杠牌盖住手牌」。层级外推必须把这段脚印算进去。
+   */
+  function tileFoot(h) { return h / 2 + h * 0.13 + 8; }
   function seatFrame(s, M) {
     var W = M.W, H = M.H;
     var out = OUT[s], right = { x: out.y, y: -out.x };
@@ -883,11 +923,12 @@
     var cy = H / 2 + out.y * (halfExt - edge);
     var mH = isMe ? M.meldH : M.meldH * 0.80;
     var rH = isMe ? M.riverH : M.riverH * 0.88;
-    var mDist = hH / 2 + 8 + mH / 2;
-    var rDist = hH / 2 + 8 + mH + 9 + rH / 2;
+    // 逐层朝桌心外推，每层都留出「上一层阴影脚印 + 净间隙」
+    var mDist = tileFoot(hH) + mH / 2 + M.air;
+    var rDist = mDist + tileFoot(mH) + rH / 2 + M.air;
     return {
       s: s, out: out, right: right, rot: rot, isMe: isMe, isSide: isSide,
-      hx: cx, hy: cy, hH: hH, hW: hW,
+      hx: cx, hy: cy, hH: hH, hW: hW, gap: M.handGap,
       meldX: cx - out.x * mDist, meldY: cy - out.y * mDist, meldH: mH,
       riverX: cx - out.x * rDist, riverY: cy - out.y * rDist, riverH: rH,
       color: SEAT_C[s]
@@ -908,7 +949,8 @@
     return { tiles: tiles, sepId: sepId, winTile: winTile };
   }
   function handSlots(F, plan, shift) {
-    var gap = F.hW + 4, sepExtra = F.hW * 0.55, n = plan.tiles.length;
+    // 缝隙必须取 F.gap（metrics 里按档算的），不能写死 +4 —— 否则窄屏算出来的牌高会偏大、手牌带顶出屏幕
+    var gap = F.hW + F.gap, sepExtra = F.hW * 0.55, n = plan.tiles.length;
     var offs = [];
     for (var i = 0; i < n; i++) offs.push(i * gap);
     if (plan.sepId >= 0) offs.push(n * gap + sepExtra);
@@ -1512,9 +1554,14 @@
     state.world.addChild(main);
 
     // 左：座位信息　右：推荐牌的理由
+    // 顶栏那条状态栏已撤掉，「牌墙 / 轮到谁」并到这条常驻信息行里（窄屏只留牌墙数，避免挤成两行）
+    var wallInfo = T0.wall + ' ' + G.wall.length + ' · ' + T0.turn + ' ' +
+      (G.phase === 'playing' ? seatName(G.turn) : '—');
     var seatTxt = T0.you + ' · ' + CM.totalOf(my.hand) + ' 张' +
       (G.dealer === HUMAN ? ' · ' + T0.dealer : '') +
-      (my.missing >= 0 ? ' · 缺' + SUITS[my.missing].zh : '');
+      (my.missing >= 0 ? ' · 缺' + SUITS[my.missing].zh : '') +
+      (G.settlement ? ' · ' + T0.pts + ' ' + (G.settlement.seats[HUMAN].net > 0 ? '+' : '') + G.settlement.seats[HUMAN].net : '') +
+      (M && M.narrow ? ' · ' + T0.wall + G.wall.length : '　·　' + wallInfo);
     var L = label(seatTxt, 12, '#8fb8a2', '600');
     L.anchor.set(0, 0.5); L.position.set(20, y0 + 44);
     state.world.addChild(L);
@@ -1740,33 +1787,13 @@
 
   /* ================= DOM 层（按钮/弹层/日志） ================= */
   function renderChrome() {
-    var G = state.g;
-    document.getElementById('ttl').textContent = t().title;
-    document.getElementById('helpBtn').textContent = t().help;
-    document.getElementById('demoBtn').textContent = state.demo ? t().demoStop : t().demo;
-    document.getElementById('newBtn').textContent = t().newGame;
-    document.getElementById('langBtn').textContent = t().lang;
-    document.getElementById('logcap').textContent = t().logcap;
-    var lb = document.getElementById('logBtn');
-    if (lb) lb.textContent = (document.getElementById('drawer').className.indexOf('open') >= 0 ? '▾ ' : '▸ ') + t().logcap;
-    document.getElementById('hstat').innerHTML = G ? (
-      '<span>' + t().wall + ' <b>' + G.wall.length + '</b></span>' +
-      '<span>' + t().turn + ' <b>' + (G.phase === 'playing' ? seatName(G.turn) : '—') + '</b></span>' +
-      '<span>' + t().shanten + ' <b>' + CM.handShanten(G.players[HUMAN]) + '</b>' + (t().shantenUnit || '') + '</span>' +
-      (G.settlement ? '<span>' + t().pts + ' <b>' + (G.settlement.seats[HUMAN].net > 0 ? '+' : '') + G.settlement.seats[HUMAN].net + '</b></span>' : '')
-    ) : '';
-    // 难度选择器
-    var dl = document.getElementById('diffLbl');
-    if (dl) {
-      dl.textContent = t().diffLbl;
-      var txt = { easy: t().dEasy, normal: t().dNormal, hard: t().dHard };
-      document.querySelectorAll('#diffs .dbtn').forEach(function (b) {
-        b.textContent = txt[b.dataset.d];
-        b.className = 'dbtn' + (b.dataset.d === state.diff ? ' on' : '');
-      });
-    }
+    // 顶栏现在只剩「品牌 + 设置」：难度 / 教学 / 演示 / 新开局 / 语言 / 帮助 全部收进设置面板
+    // （setBtn → openSetup）。这里只维护诊断文本 —— 它是「渲染器 / 纹理数」的机器可读出口，
+    // 探针与设置面板都读它，所以即使 #diag 已从顶栏移到隐藏位，仍要持续更新。
     var d = document.getElementById('diag');
-    if (d.dataset.status === 'ok') d.textContent = t().diagOk(state.rendererName, state.texCount, Math.round(state.app ? state.app.ticker.FPS : 0));
+    if (d && d.dataset.status === 'ok') {
+      d.textContent = t().diagOk(state.rendererName, state.texCount, Math.round(state.app ? state.app.ticker.FPS : 0));
+    }
   }
   /** 牌形不变量：手牌张数 + 3×副露数 + 杠数 —— 正常恒为 13 或 14 */
   function shapeOf(p) {
@@ -1864,18 +1891,26 @@
       }
       return s + '</div>';
     }
-    var h = '<div class="modal"><h2>' + t().setupT + '</h2><p class="lead">' + t().setupSub + '</p>';
+    var live = !!state.g;    // 牌局已开始 → 这是「设置」而不是「开局设置」
+    var h = '<div class="modal"><h2>' + (live ? t().settingsT : t().setupT) + '</h2>' +
+      '<p class="lead">' + (live ? t().settingsSub : t().setupSub) + '</p>';
     h += '<div class="sgroup"><div class="slbl">' + t().diffLbl + '</div>' +
       pills('diff', [{ v: 'easy', t: t().dEasy }, { v: 'normal', t: t().dNormal }, { v: 'hard', t: t().dHard }], state.diff) + '</div>';
-    h += '<div class="sgroup"><div class="slbl">' + t().seatPick + '</div>' +
-      pills('dealer', [0, 1, 2, 3].map(function (s) { return { v: s, t: seatName(s) }; }), state.dealerSeat) +
-      '<div class="shint">' + t().seatHint + '</div></div>';
+    // 起手位只在开局前可选（牌局进行中换庄没有意义，隐藏掉减少噪音）
+    if (!live) {
+      h += '<div class="sgroup"><div class="slbl">' + t().seatPick + '</div>' +
+        pills('dealer', [0, 1, 2, 3].map(function (s) { return { v: s, t: seatName(s) }; }), state.dealerSeat) +
+        '<div class="shint">' + t().seatHint + '</div></div>';
+    }
     h += '<div class="sgroup"><div class="slbl">' + t().teachLbl + '</div>' +
       pills('teach', [{ v: '1', t: t().optOn }, { v: '0', t: t().optOff }], state.teachOn ? '1' : '0') + '</div>';
     h += '<div class="sgroup"><div class="slbl">' + t().langLbl + '</div>' +
       pills('lang', [{ v: 'zh', t: '中文' }, { v: 'en', t: 'English' }], state.lang) + '</div>';
-    h += '<div style="margin-top:var(--sp-xl);display:flex;gap:var(--sp-md)">' +
-      '<button class="btn pri" id="startGameBtn">' + t().startGame + '</button>' +
+    h += '<div class="actions">' + (live
+      ? '<button class="btn" id="demoBtn2">' + (state.demo ? t().demoStop : t().demo) + '</button>' +
+        '<button class="btn" id="newBtn2">' + t().newGame + '</button>' +
+        '<button class="btn pri" id="closeSet">' + t().close + '</button>'
+      : '<button class="btn pri" id="startGameBtn">' + t().startGame + '</button>') +
       '<button class="btn" id="helpBtn2">' + t().help + '</button></div></div>';
     return h;
   }
@@ -1912,39 +1947,24 @@
         if (k === 'diff') state.diff = v;
         else if (k === 'dealer') state.dealerSeat = +v;
         else if (k === 'teach') state.teachOn = v === '1';
-        else if (k === 'lang') state.lang = v;
+        else if (k === 'lang') { state.lang = v; saveLang(v); }
         render();
       };
     });
     var b;
     if ((b = document.getElementById('startGameBtn'))) b.onclick = startGame;
     if ((b = document.getElementById('againBtn'))) b.onclick = startGame;
-    if ((b = document.getElementById('settingsBtn'))) b.onclick = function () { openSetup(); render(); };
+    if ((b = document.getElementById('demoBtn2'))) b.onclick = function () { state.overlay = null; toggleDemo(); };
+    if ((b = document.getElementById('newBtn2'))) b.onclick = function () { openSetup(); render(); };
+    if ((b = document.getElementById('closeSet'))) b.onclick = function () { state.overlay = null; render(); };
+    if ((b = document.getElementById('settingsBtn'))) b.onclick = openSettings;
     if ((b = document.getElementById('helpBtn2'))) b.onclick = function () { state.overlay = 'help'; render(); };
     if ((b = document.getElementById('closeRes'))) b.onclick = function () { state.overlay = 'none'; render(); };
     if ((b = document.getElementById('helpClose'))) b.onclick = function () { state.overlay = state.g ? null : 'setup'; render(); };
   }
   function renderLog() {
-    var G = state.g; if (!G) return;
-    var lines = [];
-    for (var i = state.loggedUpTo; i < G.history.length; i++) {
-      var e = G.history[i], s = e.seat !== undefined ? seatName(e.seat) : '';
-      var by = e.by !== undefined && e.by >= 0 ? seatName(e.by) : '';
-      var tl = e.tile !== undefined ? MJT(e.tile) : '', line = null;
-      if (e.type === 'declareMissing') line = t().evDeclare(s, SUITS[G.players[e.seat].missing].zh);
-      else if (e.type === 'discard') line = t().evDiscard(s, tl);
-      else if (e.type === 'pong') line = t().evPong(s, tl);
-      else if (e.type === 'kong') line = t().evKong(s, tl);
-      else if (e.type === 'win') { var rec = G.players[e.seat].winInfo; line = e.by >= 0 ? t().evWinRon(s, tl, by, rec ? rec.fans.total : '?') : t().evWinSelf(s, tl, rec ? rec.fans.total : '?'); }
-      else if (e.type === 'roundEnd') line = t().evEnd;
-      if (line) lines.push(line);
-    }
-    state.loggedUpTo = G.history.length;
-    state.logLines = state.logLines.concat(lines);
-    if (state.logLines.length > 150) state.logLines = state.logLines.slice(-150);
-    var el = document.getElementById('log');
-    el.innerHTML = state.logLines.map(function (l, i) { return '<div><span class="n">' + (i + 1) + '</span>' + l + '</div>'; }).join('');
-    el.scrollTop = el.scrollHeight;
+    // 对局记录抽屉已移除。历史仍完整保留在 state.g.history（回放/测试用），只是不再铺到屏幕上：
+    // 每手过程看牌河 + 最后一张的白色呼吸框就够，日志属于「看得多、用得少」的信息。
   }
 
   function fail(msg) {
@@ -1999,24 +2019,15 @@
     } catch (e) { fail((e && e.message) || e); }
   }
 
-  document.getElementById('logBtn').onclick = function () {
-    var d = document.getElementById('drawer');
-    d.className = d.className.indexOf('open') >= 0 ? 'drawer' : 'drawer open';
-    renderChrome();
-    if (d.className.indexOf('open') >= 0) {
-      var el = document.getElementById('log');
-      if (el) el.scrollTop = el.scrollHeight;
-    }
-  };
-  document.getElementById('newBtn').onclick = function () { if (state.ready) { openSetup(); render(); } };
-  document.getElementById('demoBtn').onclick = function () {
+  /** 自动演示开关（设置面板与测试钩子都走这里） */
+  function toggleDemo() {
     if (!state.ready) return;
     if (state.demo) {
       state.demo = false;
       if (state.timer) { clearInterval(state.timer); state.timer = null; }
       render(); return;
     }
-    // 还在「开局设置」（无牌局）时点演示：先按当前设置开局，否则按钮点了等于没反应、还顺手关掉了设置弹层
+    // 还在「开局设置」（无牌局）时点演示：先按当前设置开局，否则按钮点了等于没反应
     if (!state.g) startGame();
     state.overlay = null; state.demo = true;
     if (state.timer) clearInterval(state.timer);
@@ -2027,12 +2038,15 @@
       pump(1); render();
     }, 320);
     render();
+  }
+
+  /* 顶栏现在只有两个入口：左边的品牌（回首页）和右边的设置。
+     难度 / 教学 / 演示 / 新开局 / 语言 / 帮助 全部收在设置面板里（见 setupModal）。 */
+  document.getElementById('setBtn').onclick = function () {
+    if (!state.ready) return;
+    if (state.overlay === 'setup') { state.overlay = null; render(); return; }   // 再点一次收起
+    openSettings();
   };
-  document.getElementById('helpBtn').onclick = function () { state.overlay = state.overlay === 'help' ? null : 'help'; render(); };
-  document.getElementById('langBtn').onclick = function () { state.lang = state.lang === 'zh' ? 'en' : 'zh'; render(); };
-  document.querySelectorAll('#diffs .dbtn').forEach(function (b) {
-    b.onclick = function () { state.diff = b.dataset.d; render(); };
-  });
 
   /* 只读测试钩子：供无头浏览器验证「胡牌粒子 / 高光」确实会被触发（不改变任何游戏规则） */
   window.__CM_TESTHOOK__ = {

@@ -84,7 +84,27 @@ const HAND_POINT = `(function(){
 /** 手牌张数（主体 + 单独排开的那张） */
 const HAND_N = `(function(){ var t = window.__PIXI_TABLE__.layout.handTiles[0]; return t.main + t.sep; })()`;
 
-/** 牌桌上一个「不被任何区域占据」的空白点（用于验证「点空白取消」） */
+/** 打开设置面板 —— 顶栏现在只有「品牌 + 设置」，难度/教学/演示/新开局/语言都在面板里 */
+const OPEN_SET = `(function(){
+  var ov = document.getElementById('overlay');
+  if (ov && ov.className.indexOf('show') >= 0 && ov.querySelector('.pill')) return true;  // 已经开着
+  var b = document.getElementById('setBtn'); if (!b) return false; b.click(); return true;
+})()`;
+/** 收起设置面板（#setBtn 是 toggle，再点一次即可） */
+const CLOSE_SET = `(function(){
+  var ov = document.getElementById('overlay');
+  if (ov && ov.className.indexOf('show') >= 0 && ov.querySelector('.pill')) {
+    var b = document.getElementById('setBtn'); if (b) b.click();
+  }
+})()`;
+/** 在设置面板里点某个选项（diff / lang / teach / dealer） */
+const pickPill = (k, v) => `(function(){
+  var b = document.querySelector('#overlay .pill[data-k="${k}"][data-v="${v}"]');
+  if (!b) return false; b.click(); return true;
+})()`;
+/** 顶栏按钮 id 列表（用于断言「只剩品牌 + 设置」） */
+const HEAD_IDS = `JSON.stringify(Array.from(document.querySelectorAll('header a,header button')).map(function(e){return e.id||'';}))`;
+
 const BLANK_POINT = `(function(){
   var L = window.__PIXI_TABLE__.layout;
   var c = document.querySelector('#stage canvas');
@@ -230,8 +250,15 @@ try {
   ck('开局设置弹层可见（含「开始对局」按钮）', setupShown === true);
   const fxIdle = await ev("JSON.stringify(window.__PIXI_TABLE__.fx)");
   ck('开局前零发牌动作（deals=0）', JSON.parse(fxIdle || '{}').deals === 0, fxIdle);
-  const idleHstat = await ev("document.getElementById('hstat').textContent.trim()");
-  ck('未开局时顶栏不显示牌局数据', idleHstat === '', 'hstat="' + idleHstat + '"');
+  // 顶栏只剩「品牌 + 设置」，其余控件全在设置面板里
+  const headIds = await ev(HEAD_IDS);
+  ck('顶栏只有「品牌 + 设置」两个入口',
+    /homeBtn/.test(headIds) && /setBtn/.test(headIds) && !/demoBtn|helpBtn|newBtn|langBtn|ttl|hstat|diffs/.test(headIds),
+    headIds);
+  const brandTxt = await ev("(document.querySelector('header .brand')||{}).textContent||''");
+  ck('品牌显示为 Chuan.Ma - 川麻', /Chuan/.test(brandTxt) && /川麻/.test(brandTxt), JSON.stringify(brandTxt));
+  const drawerGone = await ev("!document.getElementById('drawer') && !document.getElementById('logBtn') && !document.getElementById('log')");
+  ck('对局记录抽屉已移除', drawerGone === true);
 
   // 三个设置项都可点选并高亮
   await ev("(function(){var b=document.querySelector('#overlay .pill[data-k=\"diff\"][data-v=\"hard\"]');if(b)b.click();})()");
@@ -258,7 +285,8 @@ try {
     aDealer && aDealer.firstDraw === 2, 'firstDraw=' + (aDealer && aDealer.firstDraw) + ' wallPointer=' + (aDealer && aDealer.draws) + '（你先起手时 firstDraw=0）');
 
   // 回开局设置，改回「你」先起手，供后续 14 张布局断言使用
-  await ev("(function(){document.getElementById('newBtn').click();})()");
+  await ev(OPEN_SET);
+  await ev("(function(){var n=document.getElementById('newBtn2');if(n)n.click();})()");
   await sleep(300);
   const backSetup = await ev("(function(){return !!(document.getElementById('startGameBtn') && document.getElementById('overlay').className.indexOf('show')>=0);})()");
   ck('「新开一局」回到开局设置（不直接发牌）', backSetup === true);
@@ -284,7 +312,7 @@ try {
     await sleep(450);
     const s = JSON.parse((await ev(`(function(){
       var de=document.documentElement, b=document.body, L=window.__PIXI_TABLE__.layout||{};
-      var el=document.getElementById('hstat');
+      var el=document.querySelector('header .brand');   // 顶栏唯一常驻文字，用它代表 DOM 字号
       var c=document.querySelector('#stage canvas');
       return JSON.stringify({
         iw: window.innerWidth, ih: window.innerHeight,
@@ -316,17 +344,59 @@ try {
   await cmd('Emulation.setDeviceMetricsOverride', baseView);
   await sleep(520);
 
-  // —— 浮动层：对局记录抽屉（不再占用牌桌高度）——
-  const DX = JSON.parse((await ev(`(function(){
-    var d=document.getElementById('drawer'), b=document.getElementById('logBtn');
-    b.click();
-    var open=d.className.indexOf('open')>=0, disp=getComputedStyle(d.querySelector('.panel')).display;
-    var draft=document.getElementById('overlay').className.indexOf('show')>=0;
-    b.click();
-    return JSON.stringify({ open:open, disp:disp, closed:d.className.indexOf('open')<0, blockedOverlay:draft });
+  // —— 手机竖屏 375×812：牌桌不能越界、手牌要可辨认、顶栏要够矮、设置入口要够大 ——
+  {
+    await cmd('Emulation.setDeviceMetricsOverride', { width: 375, height: 812, deviceScaleFactor: 2, mobile: true });
+    await sleep(800);
+    const p = await evJSON(`(function(){
+      var L = window.__PIXI_TABLE__.layout || {}, de = document.documentElement;
+      var b = document.getElementById('setBtn'), r = b ? b.getBoundingClientRect() : null;
+      var c = document.querySelector('#stage canvas'), st = document.getElementById('stage');
+      var hd = document.querySelector('header');
+      return JSON.stringify({
+        w: window.innerWidth, h: window.innerHeight,
+        sw: de.scrollWidth, sh: de.scrollHeight,
+        overflow: L.overflow, nboxes: (L.boxes || []).length, handH: L.handH, tier: L.tier,
+        canvas: c ? [c.clientWidth, c.clientHeight] : null,
+        stageH: st ? st.clientHeight : 0,
+        setBtn: r ? [Math.round(r.width), Math.round(r.height)] : null,
+        headH: hd ? Math.round(hd.getBoundingClientRect().height) : 0,
+        bad: (L.boxes || []).filter(function (b) {
+          return b.x < -1 || b.y < -1 || b.x + b.w > (L.W || 0) + 1 || b.y + b.h > (L.H || 0) + 1;
+        }).map(function (b) {
+          return b.name + '@' + [b.x, b.y, b.w, b.h].map(Math.round).join(',');
+        })
+      });
+    })()`);
+    shotTrace += `\n  竖屏实测: ` + JSON.stringify(p);
+    ck('竖屏 375×812：无页面滚动条',
+      p && p.sw <= p.w + 1 && p.sh <= p.h + 1, JSON.stringify(p));
+    ck('竖屏：牌桌元素全部在屏内', p && p.overflow === 0, 'overflow=' + (p && p.overflow) + ' bad=' + JSON.stringify(p && p.bad));
+    ck('竖屏：手牌仍可辨认（牌高 ≥ 24px）', p && p.handH >= 24, 'handH=' + (p && p.handH));
+    ck('竖屏：画布跟随舞台重算', p && p.canvas && Math.abs(p.canvas[1] - p.stageH) <= 2,
+      JSON.stringify(p && p.canvas) + ' stageH=' + (p && p.stageH));
+    ck('竖屏：设置入口可点（≥40×40）',
+      p && p.setBtn && p.setBtn[0] >= 40 && p.setBtn[1] >= 40, JSON.stringify(p && p.setBtn));
+    ck('竖屏：顶栏够矮（≤64px，把高度留给牌桌）', p && p.headH > 0 && p.headH <= 64, 'headH=' + (p && p.headH));
+    await cmd('Emulation.setDeviceMetricsOverride', baseView);
+    await sleep(520);
+  }
+
+  // —— 设置面板：顶栏唯一的入口，开合正常且不挡住牌桌交互 ——
+  const ST = JSON.parse((await ev(`(function(){
+    var ov = document.getElementById('overlay');
+    document.getElementById('setBtn').click();
+    var opened = ov.className.indexOf('show') >= 0 && !!document.getElementById('closeSet');
+    var pills = ov.querySelectorAll('.pill[data-k="lang"]').length;
+    var startBtn = !!document.getElementById('startGameBtn');
+    document.getElementById('closeSet').click();
+    var closed = ov.className.indexOf('show') < 0;
+    return JSON.stringify({ opened: opened, closed: closed, pills: pills, startBtnInLive: startBtn });
   })()`)) || '{}');
-  ck('对局记录放在浮动层（抽屉可开合、不占牌桌高度）',
-    DX.open === true && DX.disp === 'block' && DX.closed === true, JSON.stringify(DX));
+  ck('设置面板可开合（对局中点设置不重开牌局）',
+    ST.opened === true && ST.closed === true, JSON.stringify(ST));
+  ck('设置面板内含语言切换（贯穿全站语言入口）', ST.pills >= 1, JSON.stringify(ST));
+  ck('对局中的设置面板不再出现「开始对局」', ST.startBtnInLive === false, JSON.stringify(ST));
 
   // 布局体检
   const audit = await ev(AUDIT);
@@ -350,11 +420,15 @@ try {
 
   // 难度切换（B）：切到新手档，设置必须真正生效
   const dBefore = await ev("JSON.stringify(window.__PIXI_TABLE__.layout.diff)");
-  await ev("(function(){var b=document.querySelector('#diffs .dbtn[data-d=\"easy\"]');if(b)b.click();})()");
+  await ev(OPEN_SET);
+  await ev(pickPill('diff', 'easy'));
+  await ev(CLOSE_SET);
   await sleep(400);
   const dAfter = await ev("JSON.stringify(window.__PIXI_TABLE__.layout.diff)");
   ck('难度切换到「新手」生效', dAfter === '"easy"', `${dBefore} → ${dAfter}`);
-  await ev("(function(){var b=document.querySelector('#diffs .dbtn[data-d=\"normal\"]');if(b)b.click();})()");
+  await ev(OPEN_SET);
+  await ev(pickPill('diff', 'normal'));
+  await ev(CLOSE_SET);
   await sleep(300);
 
   // 确定性推进 ~40 个循环步（≈十几手）→ 人类已打完缺门，教学条应给出推荐与理由
@@ -433,18 +507,20 @@ try {
   }
 
   // 演示模式：动作级节奏自动推进，期间应产生飞行牌轨迹 / 碰杠高光
-  const logLen0 = await ev("document.getElementById('log').textContent.length");
-  await ev("document.getElementById('demoBtn').click()");
+  // （日志抽屉已移除，推进指标改用「出牌飞行动画计数」——fx 字段恒定存在，不依赖布局对象）
+  const fxBefore = JSON.parse((await ev('JSON.stringify(window.__PIXI_TABLE__.fx)')) || '{}');
+  await ev(OPEN_SET);
+  await ev("(function(){var b=document.getElementById('demoBtn2');if(b)b.click();})()");
   await sleep(9000);
-  const mid = await ev("document.getElementById('hstat').textContent");
-  const logLen1 = await ev("document.getElementById('log').textContent.length");
   const fx1 = await ev("JSON.stringify(window.__PIXI_TABLE__.fx)");
   const audit2 = await ev(AUDIT);
-  await ev("document.getElementById('demoBtn').click()");
+  await ev(OPEN_SET);
+  await ev("(function(){var b=document.getElementById('demoBtn2');if(b)b.click();})()");
   await sleep(800);
 
   const F = JSON.parse(fx1 || '{}');
-  ck('对局推进（日志增长）', logLen1 > logLen0, `${logLen0} → ${logLen1}`);
+  ck('对局推进（出牌飞行数增长）', (F.flights || 0) > (fxBefore.flights || 0),
+    `${fxBefore.flights} → ${F.flights}`);
   ck('出牌轨迹动画已执行（flights 增长）', F.flights > 52, 'flights=' + F.flights);
   ck('碰/杠高光已触发', (F.rings || 0) > 0, 'rings=' + F.rings);
   if (audit2 && !audit2.err) {
@@ -482,7 +558,10 @@ try {
   let shapeViolations = 0, shapeSamples = 0, shapeDiag = '';
   for (let i = 0; i < GAMES; i++) {
     // 结算弹层若已关闭（overlay='none'）就没有 againBtn，退回顶栏「新开一局 → 开始对局」
-    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}var n=document.getElementById('newBtn');if(n)n.click();})()");
+    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}})()");
+    // 结算弹层已关闭时退回「设置 → 新开一局」
+    await ev(OPEN_SET);
+    await ev("(function(){var n=document.getElementById('newBtn2');if(n)n.click();})()");
     await sleep(90);
     await ev("(function(){var b=document.getElementById('startGameBtn');if(b)b.click();})()");
     await sleep(110);
@@ -523,14 +602,19 @@ try {
     `seatWins=${JSON.stringify(seatWins)}`);
 
   // —— 胡牌必须由玩家点按钮，不能自动替玩家胡 ——
-  await ev("(function(){var b=document.querySelector('#diffs .dbtn[data-d=\"normal\"]');if(b)b.click();})()");
+  await ev(OPEN_SET);
+  await ev(pickPill('diff', 'normal'));
+  await ev(CLOSE_SET);
   await sleep(150);
   let gotWin = false;
   for (let k = 0; k < 12 && !gotWin; k++) {
     // 每次都从「新的一局」开始：先把上一局收尾（若有），再开新局并定缺
     await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
     await sleep(160);
-    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}var n=document.getElementById('newBtn');if(n)n.click();})()");
+    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}})()");
+    // 结算弹层已关闭时退回「设置 → 新开一局」
+    await ev(OPEN_SET);
+    await ev("(function(){var n=document.getElementById('newBtn2');if(n)n.click();})()");
     await sleep(200);
     await ev("(function(){var b=document.getElementById('startGameBtn');if(b)b.click();})()");
     await sleep(260);
@@ -590,7 +674,10 @@ try {
     await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.dbgOn()");
     await ev("window.__CM_TESTHOOK__ && window.__CM_TESTHOOK__.runToEnd()");
     await sleep(200);
-    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}var n=document.getElementById('newBtn');if(n)n.click();})()");
+    await ev("(function(){var b=document.getElementById('againBtn');if(b){b.click();return;}})()");
+    // 结算弹层已关闭时退回「设置 → 新开一局」
+    await ev(OPEN_SET);
+    await ev("(function(){var n=document.getElementById('newBtn2');if(n)n.click();})()");
     await sleep(200);
     await ev("(function(){var b=document.getElementById('startGameBtn');if(b)b.click();})()");
     await sleep(2100);
@@ -648,7 +735,9 @@ try {
   const fails = checks.filter((c) => c.indexOf('❌') === 0).length;
   pass = ready && fails === 0;
   // 报告由 Node 自己以 UTF-8 写盘（不要经 PowerShell 转手，否则中文/emoji 会被二次编码）
-  detail = checks.join('\n  ') + `\n  顶部状态: ${mid}` +
+  // 顶栏状态栏已移除，这里改报「设置面板 / 顶栏」的结构事实
+  const headInfo = await ev("(function(){var h=document.querySelector('header');return (h?h.textContent.replace(/\\s+/g,' ').trim():'')+' | pills='+(document.querySelectorAll('#overlay .pill').length);})()");
+  detail = checks.join('\n  ') + `\n  顶栏/设置: ${headInfo}` +
     (audit && !audit.err ? `\n  关键盒: ${JSON.stringify(audit.boxes.center)} center / hand0 ${JSON.stringify(audit.boxes.hand0)} / river0 ${JSON.stringify(audit.boxes.river0)}` : '') +
     shotTrace +
     (shot ? `\n  截图: ${shot}` : '');

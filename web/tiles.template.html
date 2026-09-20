@@ -66,9 +66,45 @@
     .grid{grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:var(--sp-md)}
     .felt{padding:var(--sp-lg) var(--sp-md)}
   }
+  /* ── 全站统一顶栏（与内容页、牌桌同款）：只有「品牌 + 设置」，
+        导航与语言在设置面板里。样式与 content/site.css 保持一致。 ── */
+  nav.cmbar{background:var(--card);border-bottom:var(--bw-hair) solid var(--line);
+    position:sticky;top:0;z-index:9;display:flex;align-items:center;
+    padding:var(--sp-xs) var(--sp-xl);gap:var(--sp-sm)}
+  nav.cmbar .spacer{flex:1}
+  nav.cmbar .brand{font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink);
+    font-size:var(--fs-ui);display:inline-flex;align-items:baseline;gap:var(--sp-sm)}
+  nav.cmbar .brand b span{color:var(--gold)}
+  nav.cmbar .brand i{font-style:normal;font-weight:600;color:var(--sub);font-size:var(--fs-small)}
+  nav.cmbar .iconbtn{border:var(--bw-hair) solid var(--line);background:transparent;color:var(--ink);
+    width:40px;height:40px;border-radius:var(--r-full);display:inline-flex;align-items:center;
+    justify-content:center;cursor:pointer;padding:0;flex:0 0 auto}
+  nav.cmbar .iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+  nav.cmbar .iconbtn svg{width:20px;height:20px}
+  .cmsheet{position:fixed;inset:0;background:rgba(16,22,28,.55);display:none;z-index:60;
+    align-items:flex-start;justify-content:flex-end;padding:var(--sp-4xl) var(--sp-xl)}
+  .cmsheet.show{display:flex}
+  .cmsheet-in{background:var(--card);border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+    padding:var(--sp-xl);max-width:min(420px,92vw);width:100%;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+  .cmgroup{margin-bottom:var(--sp-lg)}
+  .cmlbl{font-size:var(--fs-meta);font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--sub);margin-bottom:var(--sp-sm)}
+  .cmpills{display:flex;flex-wrap:wrap;gap:var(--sp-xs)}
+  .cmpill{border:var(--bw-hair) solid var(--line);background:transparent;color:var(--ink);
+    border-radius:var(--r-full);padding:0 var(--sp-md);min-height:32px;
+    display:inline-flex;align-items:center;font-size:var(--fs-small);font-weight:600;
+    text-decoration:none;cursor:pointer}
+  .cmpill:hover{border-color:var(--accent);color:var(--accent)}
+  .cmpill.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .cmactions{display:flex;justify-content:flex-end}
+  .cmbtn{border:var(--bw-hair) solid var(--line);background:transparent;color:var(--ink);
+    border-radius:var(--r-sm);padding:0 var(--sp-lg);min-height:36px;font-size:var(--fs-small);
+    font-weight:700;cursor:pointer}
+  .cmbtn:hover{border-color:var(--accent);color:var(--accent)}
 </style>
 </head>
 <body>
+<nav></nav>
 <div class="wrap">
   <header>
     <div class="kicker">chuan.ma · UI Assets</div>

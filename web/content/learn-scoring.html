@@ -8,19 +8,9 @@
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<nav><div class="navin">
-  <a class="brand" href="index.html">chuan<b>.</b>ma</a>
-  <a class="nl" href="learn-rules.html">Learn</a>
-  <a class="nl" href="learn-tiles.html">Tiles</a>
-  <a class="nl on" href="learn-scoring.html">Scoring</a>
-  <a class="nl" href="learn-culture.html">Culture</a>
-  <a class="nl" href="glossary.html">Glossary</a>
-  <span class="navspace"></span>
-  <a class="nl cta" href="play.html">&#9654; Play</a>
-  <a class="nl" href="calculator.html">Calculator</a>
-</div></nav>
+<nav></nav>
 
-<div class="wrap">
+<div class="wrap" data-i18n="page">
 <header class="top">
   <div class="kicker">Lesson 3 · 计算番数</div>
   <h1>Scoring &amp; Fan</h1>
@@ -217,5 +207,192 @@
 
 <footer>chuan.ma · a free tool for learning Sichuan mahjong · rules match the engine used by the table</footer>
 </div>
+<script src="site.js"></script>
+<script>window.CM_I18N = { zh: { page: `<header class="top">
+  <div class="kicker">第 3 课 · 计算番数</div>
+  <h1>番数与算分</h1>
+  <p class="lede">和牌不等于和牌。每一手和牌都要按<b>番</b>定价——一层层叠上去的牌型加成——而价格决定了谁付给谁多少。这一课从一手成型的牌，走到真正换手的那个分数。</p>
+</header>
+
+<h2>1. 从手牌到一个数字</h2>
+<p>三步，按顺序来：</p>
+<ol class="steps">
+  <li><b>先定牌型档</b>：一手牌只取<em>一档</em>，从最底下的平胡到最顶上的清龙七对。档位互斥，命中哪档用哪档，而且每一档都已含底番。</li>
+  <li><b>再加叠加番</b>：清一色、带幺九、根，以及情境番（自摸、杠上花、抢杠胡……）。这些是<b>加法</b>，能叠的都叠上。唯一的例外是清一色——名字带「清」的打包档里已经含了它。</li>
+  <li><b>换算成分</b>：分 = 番 × 底分。底分是桌面约定，本站取 <b>1</b>，所以一番一分，番数就是分数。单局封顶 <b>32 番</b>。</li>
+</ol>
+<div class="box">
+  <h4>叠起来才是钱</h4>
+  <p>一手普通牌赢 1 分。同样普通的一手牌，门清自摸加清一色就是 6 分；若再带两个根，就是 8 分。新手只数牌型，老手数的是<b>叠了多少层</b>。</p>
+</div>
+
+<h2>2. 番种表</h2>
+<h3>牌型档 —— 命中的最高一档</h3>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>牌型</th><th class="n">中文</th><th class="n">番</th><th>成立条件</th></tr></thead>
+  <tbody>
+    <tr><td><b>平胡</b></td><td class="n">平胡</td><td class="n">1</td><td>任何标准和牌——四副面子 + 一对将。整张表的地板。</td></tr>
+    <tr><td><b>大对子</b></td><td class="n">大对子</td><td class="n">3</td><td>四副面子全是刻子或杠，没有顺子。等于 1 + 2。副露的碰杠照样算。</td></tr>
+    <tr><td><b>金钩钓</b></td><td class="n">金钩钓</td><td class="n">3</td><td>四副全副露（碰或杠），手上只剩一对将单钓一张。</td></tr>
+    <tr><td><b>七对</b></td><td class="n">七对</td><td class="n">4</td><td>七个不同的对子，不能有副露。<i>取代</i>平胡。</td></tr>
+    <tr><td><b>龙七对</b></td><td class="n">龙七对</td><td class="n">8</td><td>七对里含四张相同的牌。那四张已经算在这个数里，<b>不再</b>另计根。</td></tr>
+    <tr><td><b>十八罗汉</b></td><td class="n">十八罗汉</td><td class="n">16</td><td>四副副露全是杠——大多数牌手一辈子见不到一次的牌型。</td></tr>
+    <tr><td><b>清对</b></td><td class="n">清对</td><td class="n">8</td><td>打包价：清一色 <i>且</i> 全刻子。</td></tr>
+    <tr><td><b>清金钩钓</b></td><td class="n">清金钩钓</td><td class="n">8</td><td>打包价：清一色 <i>且</i> 金钩钓牌型。</td></tr>
+    <tr><td><b>清七对</b></td><td class="n">清七对</td><td class="n">16</td><td>打包价：清一色 <i>且</i> 七对。</td></tr>
+    <tr><td><b>清龙七对</b></td><td class="n">清龙七对</td><td class="n">32</td><td>打包价：清一色 <i>且</i> 龙七对。这就是封顶。</td></tr>
+  </tbody>
+</table>
+</div>
+<p>注意表里有两种数。平胡 → 大对子 → 七对……是<b>单档</b>：一手牌只取一个。清对、清七对这类是<b>打包价</b>——因为把两个概念乘起来比加起来更值钱，所以直接报一个数，而不是让你一件件叠。</p>
+
+<h3>叠加番 —— 能叠的都叠上</h3>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>牌型</th><th class="n">中文</th><th class="n">番</th><th>成立条件</th></tr></thead>
+  <tbody>
+    <tr><td><b>清一色</b></td><td class="n">清一色</td><td class="n">+4</td><td>手牌与副露全在同一门。牌型档已经是「清」字打包档时跳过。最大的一项。</td></tr>
+    <tr><td><b>带幺九</b></td><td class="n">带幺九</td><td class="n">+2</td><td>每一副面子和将牌都含 1 或 9。</td></tr>
+    <tr><td><b>断幺九</b></td><td class="n">断幺九</td><td class="n">关</td><td>全手没有 1 和 9。<b>不是川麻番种</b>——它属于国标与日麻。本站做成开关，默认关闭，想看差异时可以打开。</td></tr>
+    <tr><td><b>根</b></td><td class="n">根</td><td class="n">每个 +1</td><td>某张牌你凑齐四张。七对牌型跳过——龙七对已经付过这笔钱。</td></tr>
+    <tr><td><b>自摸</b></td><td class="n">自摸</td><td class="n">+1</td><td>和的是自己摸到的牌，而不是别人打的。</td></tr>
+    <tr><td><b>杠上花</b></td><td class="n">杠上花</td><td class="n">+1</td><td>杠后补的那张牌，正好自己摸到和了。</td></tr>
+    <tr><td><b>杠上炮</b></td><td class="n">杠上炮</td><td class="n">+1</td><td>别人杠完之后被迫打出的那张，正好点炮给你。</td></tr>
+    <tr><td><b>抢杠胡</b></td><td class="n">抢杠胡</td><td class="n">+1</td><td>别人给自己的碰补第 4 张时，你正好和了那张。杠不成立，也不产生任何杠分。</td></tr>
+    <tr><td><b>海底</b></td><td class="n">海底</td><td class="n">+1</td><td>和的是牌墙里的最后一张。</td></tr>
+  </tbody>
+</table>
+</div>
+<p>叠加番加在牌型档<i>之后</i>，所以门清自摸的清一色是 1 + 4 + 1 = 6，不是 4。自摸与杠上花也互相叠加：杠后补牌自摸是 +1 +1。</p>
+
+<h2>3. 四个算例</h2>
+
+<h3>例 A —— 普通牌，自摸</h3>
+<div class="hand">
+  1条 2条 3条 &nbsp;·&nbsp; 5条 5条 5条 &nbsp;·&nbsp; 7万 8万 9万 &nbsp;·&nbsp; 2筒 2筒 2筒 &nbsp;·&nbsp; 6筒 6筒
+</div>
+<p>跨三门花色的标准四面子 + 一将，自己摸到的。</p>
+<div class="tbl-scroll">
+<table>
+  <tbody>
+    <tr><td>平胡底</td><td class="n">1</td></tr>
+    <tr><td>自摸</td><td class="n">+1</td></tr>
+    <tr><td><b>合计</b></td><td class="n"><b>2 番 → 2 分</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p>还没人胡，所以<b>三家各付 2 分</b>，你收 6 分。</p>
+
+<h3>例 B —— 清一色，点炮和</h3>
+<div class="hand">
+  2筒 3筒 4筒 &nbsp;·&nbsp; 5筒 5筒 5筒 &nbsp;·&nbsp; 6筒 7筒 8筒 &nbsp;·&nbsp; 9筒 9筒 9筒 &nbsp;·&nbsp; 1筒 1筒
+</div>
+<p>全是筒子。最后一张来自别人的弃牌。</p>
+<div class="tbl-scroll">
+<table>
+  <tbody>
+    <tr><td>平胡底</td><td class="n">1</td></tr>
+    <tr><td>清一色</td><td class="n">+4</td></tr>
+    <tr><td>自摸（非自摸）</td><td class="n">—</td></tr>
+    <tr><td><b>合计</b></td><td class="n"><b>5 番 → 5 分</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p>点炮和<b>只有放炮的那个人付</b>——5 分，一家出。</p>
+
+<h3>例 C —— 带两个碰的大对子</h3>
+<div class="hand">
+  碰 5万 &nbsp;·&nbsp; 碰 6万 &nbsp;·&nbsp; 2条 2条 2条 &nbsp;·&nbsp; 3筒 3筒 3筒 &nbsp;·&nbsp; 8筒 8筒
+</div>
+<p>四副里有两副是从弃牌鸣来的，所以手上只剩八张——另外六张作为碰摆在桌上。这仍然是大对子，而且手上没有 1 或 9。</p>
+<div class="tbl-scroll">
+<table>
+  <tbody>
+    <tr><td>大对子（1 + 2）</td><td class="n">3</td></tr>
+    <tr><td>清一色（用了两门）</td><td class="n">—</td></tr>
+    <tr><td>断幺九（开关默认关，且非川麻番种）</td><td class="n">—</td></tr>
+    <tr><td><b>合计</b></td><td class="n"><b>3 番 → 3 分</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p>副露永远不会削弱牌型档：档位看的是这手牌的<b>形状</b>，不是它还剩几张。这是最常见的误解，所以这页专门写出来。</p>
+
+<h3>例 D —— 清龙七对，点炮和</h3>
+<div class="hand">
+  3条 3条 &nbsp;·&nbsp; 3条 3条（四张相同） &nbsp;·&nbsp; 5条 5条 &nbsp;·&nbsp; 6条 6条 &nbsp;·&nbsp; 7条 7条 &nbsp;·&nbsp; 8条 8条 &nbsp;·&nbsp; 9条 9条
+</div>
+<p>同一门里的七对，其中四张 3条 让它成为「龙」。</p>
+<div class="tbl-scroll">
+<table>
+  <tbody>
+    <tr><td>清龙七对</td><td class="n">32</td></tr>
+    <tr><td>根（四张相同）</td><td class="n">— 已含在龙七对里</td></tr>
+    <tr><td>清一色</td><td class="n">— 已含在「清」打包档里</td></tr>
+    <tr><td><b>合计</b></td><td class="n"><b>32 番 → 32 分（触顶）</b></td></tr>
+  </tbody>
+</table>
+</div>
+<p>两点要留意。七对<b>取代</b>平胡而不是叠加——你要么按七对和，要么按标准牌型和，不会两者都算。而「清」字打包档是把一切都含在里面的：这手牌不会一路收 4 + 8 + 4 + 1，它就是直接落在 32。</p>
+
+<h2>4. 谁付钱</h2>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>怎么和的</th><th>谁付</th><th>各付多少</th></tr></thead>
+  <tbody>
+    <tr><td><b>自摸</b></td><td>本局<b>还没胡</b>的每一家</td><td>各付满额番值</td></tr>
+    <tr><td><b>点炮</b></td><td>只由打出那张牌的人付</td><td>一家付满额番值</td></tr>
+  </tbody>
+</table>
+</div>
+<p>两个后果值得记牢。第一，自摸大约值点炮的三倍，因为三家付而不是一家——这就是为什么值得追自摸。第二，既然是<b>血战到底</b>，「还没胡的人」会越来越少：第三个胡牌的人，只有一家付他。</p>
+
+<h2>5. 杠分当场结</h2>
+<p>杠分不等终局，杠一成立就换手：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>杠的类型</th><th class="n">中文</th><th>谁付</th><th class="n">各付</th></tr></thead>
+  <tbody>
+    <tr><td>明杠（用弃牌杠）</td><td class="n">直杠</td><td>打出第 4 张的那个人</td><td class="n">2</td></tr>
+    <tr><td>暗杠（四张都在手上）</td><td class="n">暗杠</td><td>其余三家</td><td class="n">2</td></tr>
+    <tr><td>补杠（给自己的碰补第 4 张）</td><td class="n">补杠</td><td>其余三家</td><td class="n">1</td></tr>
+  </tbody>
+</table>
+</div>
+<p>一个例外：如果有人抢了你的补杠（<b>抢杠胡</b>），这次杠从不成立，<b>完全不产生杠分</b>。你的碰还是碰，抢的人拿走那张牌，并多拿 1 番。</p>
+<div class="box warn">
+  <h4>退税条款</h4>
+  <p>杠分只有在你<b>最终胡了这局</b>时才真正属于你。收了杠分却没胡的人，结算时要把每一分都退回去。这是新手最意外的一条规则——也正是为什么杠是一个承诺，而不是白捡的钱。</p>
+</div>
+
+<h2>6. 牌墙摸完怎么办</h2>
+<p>如果三家还没胡完牌墙就空了，这局没人赢，改用罚款结算：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>结算项</th><th class="n">中文</th><th>怎么算</th></tr></thead>
+  <tbody>
+    <tr><td><b>查大叫</b></td><td class="n">查叫</td><td>每个<b>没</b>下叫的人，赔给每个下叫的人「其所听之牌里能拿到的最大番值」——所以叫得越好，收得越多。</td></tr>
+    <tr><td><b>查花猪</b></td><td class="n">查花猪</td><td>还留着定缺牌的人，赔给<b>每个已打缺的人 16 分</b>。这个游戏里最贵的错误。</td></tr>
+    <tr><td><b>退税</b></td><td class="n">退税</td><td>所有没胡的人，把收过的杠分全部退回去。</td></tr>
+  </tbody>
+</table>
+</div>
+<p>把这三条连起来读，整个游戏的激励结构就出来了：<b>打缺、下叫、把叫留得越肥越好。</b>川麻里几乎所有的战术想法，都是这句话的下游产物。</p>
+
+<h2>7. 这些规则是怎么来的</h2>
+<div class="box good">
+  <h4>一份写明白的预设，不是唯一的标准</h4>
+  <p>川麻的番值确实一地一价、一桌一价——清一色有的地方算 2 番有的算 4 番，冷门番种的<i>名字</i>也会变。大对子在四川桌上就叫大对子（外省叫碰碰胡）。金钩钓与十八罗汉在这里是两个独立番种，因为它们是两种不同的牌型——四副全副露单钓、对比四副全杠——尽管有些地方用同一个名字叫两者。</p>
+  <p>断幺九是<b>刻意关着</b>的。它在国标麻将和日本麻将里都是正经番种，但不是四川的打法；川麻对应的是带幺九。它留在规则文件里当开关，让这个差异看得见，而不是靠嘴说。</p>
+  <p>名字真有争议的地方，本站就用自己引擎算出来的那个说法，并如实说明，而不是悄悄把某一地的叫法当成通行标准。</p>
+  <p>这一页上的每个数字，都和本站<a href="play.html">牌桌</a>与<a href="calculator.html">算牌器</a>算出来的完全一致，所以课程和分数不可能互相矛盾。把它当成一份写得清楚的预设——然后在你真要赌点什么的之前，先问清本地桌规。</p>
+</div>
+
+<div class="next">
+  <a href="learn-culture.html"><div class="k">下一课</div><div class="t">文化与变体 &rarr;</div></a>
+  <a href="play.html"><div class="k">上手试试</div><div class="t">打一局 &rarr;</div></a>
+</div>
+
+<footer>chuan.ma · 一个免费的川麻学习工具 · 规则与牌桌所用引擎完全一致</footer>` } };</script>
 </body>
 </html>

@@ -106,20 +106,43 @@ img,svg,table{max-width:100%}
 /* ── 顶部导航 ──
    链接的可点区域用「padding + 等量负 margin」放大到 ≥32px 高：
    视觉位置与间距完全不变，但满足触控目标下限（此前只有 22px 高）。 */
+/* ── 全站统一顶栏：只有「品牌 + 设置」两件事，其余导航与语言都进设置面板 ──
+   由 site.js 就地改写页面里的 <nav>，所以这里只留 .cmbar 一套样式。 */
 nav{background:#fff;border-bottom:var(--bw-hair) solid var(--line);position:sticky;top:0;z-index:9}
-.navin{max-width:820px;margin:0 auto;padding:var(--sp-md) var(--sp-xl);
-  display:flex;align-items:center;gap:var(--sp-lg);flex-wrap:wrap}
-.brand{font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink);
-  font-size:var(--fs-body);display:inline-flex;align-items:center;min-height:var(--sp-3xl)}
-.brand b{color:var(--accent)}
-nav a.nl{font-size:var(--fs-small);color:var(--sub);text-decoration:none;font-weight:600;
-  white-space:nowrap;display:inline-flex;align-items:center;min-height:var(--sp-3xl);
-  padding:0 var(--sp-xs);margin:0 calc(-1 * var(--sp-xs));border-radius:var(--r-sm)}
-nav a.nl:hover,nav a.nl.on{color:var(--accent)}
-nav a.nl.cta{color:#fff;background:var(--accent);padding:0 var(--sp-md);
-  margin:0;min-height:var(--sp-3xl);border-radius:var(--r-sm)}
-nav a.nl.cta:hover{color:#fff;opacity:.9}
-.navspace{flex:1}
+nav.cmbar{display:flex;align-items:center;padding:var(--sp-xs) var(--sp-xl);gap:var(--sp-sm);min-height:0}
+nav.cmbar .spacer{flex:1}
+nav.cmbar .brand{font-weight:800;letter-spacing:-.01em;text-decoration:none;color:var(--ink);
+  font-size:var(--fs-body);display:inline-flex;align-items:baseline;gap:var(--sp-sm)}
+nav.cmbar .brand b span{color:var(--gold)}
+nav.cmbar .brand i{font-style:normal;font-weight:600;color:var(--sub);font-size:var(--fs-small)}
+nav.cmbar .brand:hover i{color:var(--accent)}
+nav.cmbar .iconbtn{border:var(--bw-hair) solid var(--line);background:transparent;color:var(--ink);
+  width:40px;height:40px;border-radius:var(--r-full);display:inline-flex;align-items:center;
+  justify-content:center;cursor:pointer;padding:0;flex:0 0 auto}
+nav.cmbar .iconbtn:hover{border-color:var(--accent);color:var(--accent)}
+nav.cmbar .iconbtn svg{width:20px;height:20px}
+
+/* ── 设置面板（语言 + 页面导航）── */
+.cmsheet{position:fixed;inset:0;background:rgba(16,22,28,.55);display:none;z-index:60;
+  align-items:flex-start;justify-content:flex-end;padding:var(--sp-4xl) var(--sp-xl)}
+.cmsheet.show{display:flex}
+.cmsheet-in{background:var(--card);border:var(--bw-hair) solid var(--line);border-radius:var(--r-md);
+  padding:var(--sp-xl);max-width:min(420px,92vw);width:100%;box-shadow:0 18px 50px rgba(0,0,0,.28)}
+.cmgroup{margin-bottom:var(--sp-lg)}
+.cmlbl{font-size:var(--fs-meta);font-weight:800;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--sub);margin-bottom:var(--sp-sm)}
+.cmpills{display:flex;flex-wrap:wrap;gap:var(--sp-xs)}
+.cmpill{border:var(--bw-hair) solid var(--line);background:transparent;color:var(--ink);
+  border-radius:var(--r-full);padding:0 var(--sp-md);min-height:32px;
+  display:inline-flex;align-items:center;font-size:var(--fs-small);font-weight:600;
+  text-decoration:none;cursor:pointer}
+.cmpill:hover{border-color:var(--accent);color:var(--accent)}
+.cmpill.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.cmactions{display:flex;justify-content:flex-end}
+.cmbtn{border:var(--bw-hair) solid var(--line);background:transparent;color:var(--ink);
+  border-radius:var(--r-sm);padding:0 var(--sp-lg);min-height:36px;font-size:var(--fs-small);
+  font-weight:700;cursor:pointer}
+.cmbtn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* ── 页头 ── */
 header.top{padding:var(--sp-4xl) 0 var(--sp-sm)}

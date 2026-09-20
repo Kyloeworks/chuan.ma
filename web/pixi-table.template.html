@@ -30,10 +30,22 @@
     padding:calc(var(--sp-sm) * var(--k)) calc(var(--sp-lg) * var(--k));
     background:var(--cm-shell-head);color:var(--cm-head-ink);border-bottom:var(--bw-hair) solid var(--cm-shell-line);
     min-height:0}
-  h1{font-size:calc(var(--fs-h3) * var(--k));margin:0;white-space:nowrap;color:#fff}
-  .hstat{display:flex;gap:calc(var(--sp-md) * var(--k));align-items:center;min-width:0;
-    font-size:calc(var(--fs-small) * var(--k));color:var(--cm-dim);white-space:nowrap;overflow:hidden}
-  .hstat b{color:#fff;font-variant-numeric:tabular-nums}
+  /* 品牌位：Chuan.Ma - 川麻 */
+  .brand{display:inline-flex;align-items:baseline;gap:calc(var(--sp-sm) * var(--k));
+    text-decoration:none;color:#fff;font-weight:800;white-space:nowrap;
+    font-size:calc(var(--fs-h3) * var(--k))}
+  .brand b{font-weight:800;letter-spacing:-.01em}
+  .brand b span{color:var(--gold)}
+  .brand i{font-style:normal;font-weight:600;color:var(--cm-dim);
+    font-size:calc(var(--fs-small) * var(--k))}
+  .brand:hover i{color:var(--cm-head-ink)}
+  /* 顶栏图标按钮：手机上是唯一的入口，可点尺寸给足（≥40px） */
+  .iconbtn{border:var(--bw-hair) solid var(--cm-shell-line);background:transparent;color:var(--cm-head-ink);
+    width:max(40px,calc(40px * var(--k)));height:max(40px,calc(40px * var(--k)));
+    border-radius:var(--r-full);display:inline-flex;align-items:center;justify-content:center;
+    cursor:pointer;padding:0;flex:0 0 auto}
+  .iconbtn:hover{border-color:var(--cm-btn-hi);color:var(--cm-btn-hi)}
+  .iconbtn svg{width:calc(20px * var(--k));height:calc(20px * var(--k));min-width:20px;min-height:20px}
   .diag{font-size:calc(var(--fs-meta) * var(--k));font-family:var(--mono);
     padding:calc(var(--sp-hair) * var(--k)) calc(var(--sp-sm) * var(--k));
     border-radius:var(--r-full);background:var(--cm-shell-line);color:var(--cm-dim);white-space:nowrap;
@@ -41,19 +53,7 @@
   .diag[data-status=ok]{background:var(--cm-ok-bg);color:var(--cm-ok-ink)}
   .diag[data-status=fail]{background:var(--cm-fail-bg);color:var(--cm-fail-ink)}
   .spacer{flex:1;min-width:0}
-  .diffs{display:flex;align-items:center;gap:calc(var(--sp-xs) * var(--k));
-    padding:calc(var(--sp-hair) * var(--k)) calc(var(--sp-sm) * var(--k));
-    border-radius:var(--r-full);background:var(--cm-panel);white-space:nowrap}
-  .dlbl{font-size:calc(var(--fs-meta) * var(--k));color:var(--cm-faint)}
-  /* 难度档：可点高度有下限，窄屏也不低于 32px（本站统一的可点下限） */
-  .dbtn{border:var(--bw-hair) solid transparent;background:transparent;color:var(--cm-dim);
-    font-size:calc(var(--fs-small) * var(--k));padding:0 calc(var(--sp-sm) * var(--k));
-    min-height:max(32px, calc(var(--sp-3xl) * var(--k)));
-    border-radius:var(--r-full);cursor:pointer;font-weight:600;display:inline-flex;align-items:center}
-  .dbtn:hover{color:var(--cm-btn-hi)}
-  .dbtn.on{background:var(--accent);color:#fff;border-color:var(--accent)}
-  .dbtn.on[data-d=easy]{background:var(--cm-easy);border-color:var(--cm-easy)}
-  .dbtn.on[data-d=hard]{background:var(--cm-hard);border-color:var(--cm-hard)}
+  /* 难度 / 语言 / 演示 / 新开局 / 帮助 已全部移入「设置面板」（#overlay 里的 .pill），顶栏不再有这组按钮 */
   .res-table tr.me td{background:var(--cm-me)}
   .res-table tr.me td:first-child{font-weight:800}
   .btn{border:var(--bw-hair) solid var(--cm-panel-line);background:var(--cm-panel);
@@ -80,21 +80,8 @@
   /* 牌桌：吃满剩余高度，绝不给页面留滚动条 */
   .stage{flex:1 1 auto;min-height:0;position:relative;background:var(--cm-stage);overflow:hidden}
   .stage canvas{display:block;position:absolute;inset:0}
-  /* 对局记录：浮动抽屉（不再占用牌桌高度） */
-  .drawer{position:fixed;right:0;bottom:0;z-index:15;display:flex;flex-direction:column;
-    align-items:flex-end;gap:calc(var(--sp-sm) * var(--k));
-    padding:0 calc(var(--sp-md) * var(--k)) calc(var(--sp-md) * var(--k)) 0}
-  .drawer .panel{display:none;width:min(calc(560px * var(--k)),44vw);max-height:44vh;overflow:auto;
-    background:var(--cm-drawer-bg);border:var(--bw-hair) solid var(--cm-drawer-line);
-    border-radius:calc(var(--r-md) * var(--k));padding:calc(var(--sp-md) * var(--k));
-    color:var(--cm-drawer-ink);box-shadow:0 14px 40px rgba(0,0,0,.55);
-    font-size:calc(var(--fs-small) * var(--k))}
-  .drawer.open .panel{display:block}
-  .drawer .panel .logcap{font-size:calc(var(--fs-meta) * var(--k));font-weight:800;letter-spacing:.06em;
-    text-transform:uppercase;color:var(--cm-faint);margin-bottom:calc(var(--sp-sm) * var(--k))}
-  .log .n{color:var(--cm-faint);font-family:var(--mono);font-size:calc(var(--fs-meta) * var(--k));
-    margin-right:calc(var(--sp-xs) * var(--k))}
-  .log div{padding:var(--sp-hair) 0}
+  /* 对局记录抽屉已移除（信息量低、还占屏幕）：相关 .drawer/.log 样式一并删除。
+     每手过程仍可从牌河与底部的「刚刚打出」高亮读到。 */
   .overlay{position:fixed;inset:0;background:var(--cm-overlay);display:none;align-items:center;
     justify-content:center;padding:calc(var(--sp-xl) * var(--k));z-index:20}
   .overlay.show{display:flex}
@@ -136,12 +123,24 @@
   .fallback{padding:var(--sp-lg);color:#e9edf2}
   .fallback code{font-family:var(--mono);font-size:var(--fs-small);background:var(--cm-shell-line);
     padding:var(--sp-hair) var(--sp-sm);border-radius:var(--r-sm)}
-  /* 窄窗口优先保牌桌：依次收起技术诊断、标题、状态栏 —— 剩下的换行收纳，不挤出视口 */
+  /* 窄窗口优先保牌桌：顶栏只剩「品牌 + 设置」，本身就很矮，这里只收紧留白 */
   @media (max-width:1180px){ .diag{display:none} }
-  @media (max-width:1000px){ h1{display:none} }
   @media (max-width:640px){
-    .hstat{display:none}              /* 窄屏先把状态数字收起，牌桌本身优先 */
-    header{padding:calc(var(--sp-sm) * var(--k)) calc(var(--sp-md) * var(--k))}
+    header{padding:calc(var(--sp-xs) * var(--k)) calc(var(--sp-sm) * var(--k))}
+    .brand{font-size:calc(var(--fs-small) * var(--k))}
+    .brand i{font-size:calc(var(--fs-meta) * var(--k))}
+  }
+  /* 手机竖屏（窄且高）：牌桌按「窄高比」重新定尺（见 pixi-table.js 的 metrics），
+     这里只负责让 DOM 侧（设置面板 / 动作按钮 / 结果表）不越界、可点。 */
+  @media (max-width:480px) and (orientation:portrait){
+    .overlay{padding:calc(var(--sp-sm) * var(--k))}
+    .modal{padding:calc(var(--sp-lg) * var(--k));border-radius:calc(var(--r-md) * var(--k));max-height:94vh}
+    .modal h2{font-size:calc(var(--fs-h3) * var(--k))}
+    /* 开局/设置面板里的选项在窄屏改为单列，避免挤成两行碎块 */
+    .sgroup{width:100%}
+    .pills{flex-wrap:wrap}
+    .actions{flex-direction:column;align-items:stretch}
+    .actions .btn{width:100%}
   }
 
   /* ── 首屏资产加载层 ──
@@ -178,31 +177,24 @@
 <body>
 <div class="app">
   <header>
-    <a class="btn" id="homeBtn" href="index.html" title="chuan.ma">&#8592; chuan.ma</a>
-    <h1 id="ttl"></h1>
-    <div class="hstat" id="hstat"></div>
-    <span class="diag" id="diag" data-status="init">PixiJS 初始化中…</span>
-    <div class="spacer"></div>
-    <div class="diffs" id="diffs">
-      <span class="dlbl" id="diffLbl"></span>
-      <button class="dbtn" data-d="easy"></button>
-      <button class="dbtn" data-d="normal"></button>
-      <button class="dbtn" data-d="hard"></button>
-    </div>
-    <button class="btn" id="helpBtn"></button>
-    <button class="btn" id="demoBtn"></button>
-    <button class="btn" id="newBtn"></button>
-    <button class="btn" id="langBtn">EN</button>
+    <a class="brand" id="homeBtn" href="index.html" title="chuan.ma">
+      <b>Chuan<span>.</span>Ma</b><i>川麻</i>
+    </a>
+    <span class="spacer"></span>
+    <!-- 顶栏只留「品牌 + 设置」：难度 / 教学 / 演示 / 新开局 / 语言 / 帮助 全部收进设置面板 -->
+    <button class="iconbtn" id="setBtn" aria-label="设置" title="设置 / Settings">
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor"
+           stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+    </button>
   </header>
   <div class="stage" id="stage"></div>
 </div>
-<div class="drawer" id="drawer">
-  <button class="btn" id="logBtn"></button>
-  <div class="panel">
-    <div class="logcap" id="logcap"></div>
-    <div class="log" id="log"></div>
-  </div>
-</div>
+<!-- 诊断位：不再占顶栏，仍作为「渲染器 / 纹理数」的机器可读出口（设置面板与探针都读它） -->
+<span class="diag" id="diag" data-status="init" hidden></span>
+
 <div class="overlay" id="overlay"></div>
 <div class="boot" id="boot">
   <div class="bootin">

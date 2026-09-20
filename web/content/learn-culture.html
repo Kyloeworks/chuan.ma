@@ -8,19 +8,9 @@
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<nav><div class="navin">
-  <a class="brand" href="index.html">chuan<b>.</b>ma</a>
-  <a class="nl" href="learn-rules.html">Learn</a>
-  <a class="nl" href="learn-tiles.html">Tiles</a>
-  <a class="nl" href="learn-scoring.html">Scoring</a>
-  <a class="nl on" href="learn-culture.html">Culture</a>
-  <a class="nl" href="glossary.html">Glossary</a>
-  <span class="navspace"></span>
-  <a class="nl cta" href="play.html">&#9654; Play</a>
-  <a class="nl" href="calculator.html">Calculator</a>
-</div></nav>
+<nav></nav>
 
-<div class="wrap">
+<div class="wrap" data-i18n="page">
 <header class="top">
   <div class="kicker">Lesson 4 · 麻将文化</div>
   <h1>Culture &amp; Variants</h1>
@@ -111,5 +101,95 @@
 
 <footer>chuan.ma · a free tool for learning Sichuan mahjong · rules match the engine used by the table</footer>
 </div>
+<script src="site.js"></script>
+<script>window.CM_I18N = { zh: { page: `<header class="top">
+  <div class="kicker">第 4 课 · 麻将文化</div>
+  <h1>文化与变体</h1>
+  <p class="lede">四川麻将不是「删掉几条规则的麻将」。它是一个独立的本地游戏，有自己的逻辑、自己的规矩、自己的脾气——明白这一点，规则反而好记得多。</p>
+</header>
+
+<h2>1. 一个游戏，很多家族</h2>
+<p>麻将出现在 19 世纪的中国，从长江三角洲一带向外扩散。牌组在 1920 年代定型为大致今天的 136 张，各地从此分家——广东麻将保留了一大套番种，日本麻将加上了自己的算分和正式联赛体系，而四川麻将走了完全相反的方向。</p>
+<p>大多数变体在历史上是不断<b>做加法</b>，四川麻将则是<b>做减法</b>：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th></th><th>川麻</th><th>其他多数变体</th></tr></thead>
+  <tbody>
+    <tr><td>牌组</td><td><b>108 张</b>——只有三门</td><td>136 张以上，含风牌箭牌</td></tr>
+    <tr><td>字牌</td><td>一张都没有</td><td>风牌 東南西北、箭牌 中發白</td></tr>
+    <tr><td>鸣牌</td><td>只有碰、杠、胡</td><td>还有吃，能鸣牌凑顺子</td></tr>
+    <tr><td>花色约束</td><td>必须<b>打光一整门</b>（定缺）</td><td>没有这种规则</td></tr>
+    <tr><td>有人胡之后</td><td>这局<b>继续打</b>（血战到底）</td><td>第一家胡了就收牌</td></tr>
+    <tr><td>一局赢家数</td><td>最多三家</td><td>通常只有一家</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>2. 为什么长成这样</h2>
+<p>川麻主要在四川流行——成都是它的精神故乡，这个游戏和这座城市的<b>茶馆文化</b>分不开。牌桌在茶馆里摆一整天，人们边聊边打几个钟头，牌声哗啦，打出的牌要喊出来。</p>
+<p>这个场景就解释了它的设计。茶馆里的牌局奖励<b>速度</b>、惩罚仪式感：</p>
+<ul>
+  <li>去掉字牌，砍掉了一大堆又慢又没信息量的选择——每张牌现在都属于同一个三门谜题。</li>
+  <li>强制每家打光一门（定缺），把一次真正的决策压进开局十秒，然后替你把后面三分之一的思考量也去掉了。</li>
+  <li>允许三家都能胡（血战到底），一局就很少空转，几乎总还有值得打下去的理由。</li>
+</ul>
+<div class="box">
+  <h4>这个游戏的脾气</h4>
+  <p>川麻对低效是直白而不留情的。没有安全的、耐心的「先等等看」模式：如果你不快些打缺、不快些向<b>下叫</b>爬，这局就会在你身边结束，然后你付罚款。本地人形容这种风格是快、直、不讲情面——规则确实把这一点写进去了。</p>
+</div>
+
+<h2>3. 你会遇到的变体</h2>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>变体</th><th class="n">中文</th><th>差别在哪</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>血战到底</b></td><td class="n">血战到底</td>
+      <td>现代通行玩法，也是本站教的：胡了就退出，最多三家胡，牌墙摸完则按罚款结算。</td>
+    </tr>
+    <tr>
+      <td><b>血流成河</b></td><td class="n">血流成河</td>
+      <td>极端版本——胡了以后<b>继续打</b>，同一局里可以一胡再胡。分数会很大，局会很长，手感完全变了。</td>
+    </tr>
+    <tr>
+      <td><b>成都 / 重庆地方规则</b></td><td class="n">成都 / 重庆麻将</td>
+      <td>番值、杠分、以及定缺管得严不严，都有小差别。这就是为什么每一桌开打前都要先争一遍数字。</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>真坐上桌，你听到的第一件事就是围绕这些数字的讨价还价。本站用的是哪套预设、怎么把它当成若干选择中的一种来读，见<a href="learn-scoring.html">番数与算分</a>。</p>
+
+<h2>4. 桌上规矩</h2>
+<ol class="steps">
+  <li>打第一张牌之前，<b>把定缺说出口</b>。所有人都得知道你扔掉哪一门——这是公开信息，没有藏这一说。</li>
+  <li>打出牌时<b>把牌名喊出来</b>（三万、五筒……）。喊牌是游戏的一部分，不是噪音。这也是你练出快速认牌的方式。</li>
+  <li><b>鸣牌要喊清楚</b>——碰、杠、自摸。先喊，再碰牌。</li>
+  <li><b>节奏要快。</b>拖时间是四川牌桌上唯一真正不被容忍的事。</li>
+  <li><b>别碰牌墙。</b>只摸自己那张，不摸别人的。</li>
+</ol>
+<div class="box good">
+  <h4>几句能撑过一整桌的话</h4>
+  <p>碰 pèng · 杠 gàng · 胡 hú · 自摸 zì mō · 定缺 dìng quē · 幺鸡 yāo jī（一条）。完整清单在<a href="glossary.html">术语表</a>里。</p>
+</div>
+
+<h2>5. 关于赌注</h2>
+<p>川麻通常是社交性的，在茶馆、在家里打，有时带很小的注——它一半是社交仪式，一半是竞技。中国大陆对赌博有严格的法律规定，本站的所有工具都不涉及金钱：算分引擎存在的意义，是让你学会一手牌的<b>算术</b>，看懂为什么一手牌值这个价。把它当成一场关于技术与牌型的游戏，它本来就是。</p>
+
+<h2>6. 接下来去哪</h2>
+<ul>
+  <li><a href="learn-rules.html">第 1 课 · 基础规则</a>：牌组、定缺、行动顺序、一局怎么结束。</li>
+  <li><a href="learn-tiles.html">第 2 课 · 认牌</a>：认清每一张牌，包括那只鸟。</li>
+  <li><a href="learn-scoring.html">第 3 课 · 算分</a>：番、分、谁付给谁。</li>
+  <li><a href="play.html">打一局</a>：和三个对手打完整一桌，底部教学条会告诉你正在等什么牌。</li>
+  <li><a href="calculator.html">算牌器</a>：点出一手牌，立刻看到它的价值——建立番数直觉最快的方式。</li>
+</ul>
+
+<div class="next">
+  <a href="glossary.html"><div class="k">速查</div><div class="t">术语表 &rarr;</div></a>
+  <a href="play.html"><div class="k">上手试试</div><div class="t">打一局 &rarr;</div></a>
+</div>
+
+<footer>chuan.ma · 一个免费的川麻学习工具 · 规则与牌桌所用引擎完全一致</footer>` } };</script>
 </body>
 </html>

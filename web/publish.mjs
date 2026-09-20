@@ -17,7 +17,7 @@ if (!existsSync(dist)) {
   process.exit(1);
 }
 
-const isPage = (f) => f.endsWith('.html') || f.endsWith('.css');
+const isPage = (f) => f.endsWith('.html') || f.endsWith('.css') || f.endsWith('.js');
 const files = readdirSync(dist).filter((f) => statSync(path.join(dist, f)).isFile() && isPage(f));
 if (!files.some((f) => f.endsWith('.html'))) {
   console.error('dist/ 里没有 .html，先构建。');

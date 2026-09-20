@@ -8,19 +8,9 @@
 <link rel="stylesheet" href="site.css">
 </head>
 <body>
-<nav><div class="navin">
-  <a class="brand" href="index.html">chuan<b>.</b>ma</a>
-  <a class="nl" href="learn-rules.html">Learn</a>
-  <a class="nl on" href="learn-tiles.html">Tiles</a>
-  <a class="nl" href="learn-scoring.html">Scoring</a>
-  <a class="nl" href="learn-culture.html">Culture</a>
-  <a class="nl" href="glossary.html">Glossary</a>
-  <span class="navspace"></span>
-  <a class="nl cta" href="play.html">&#9654; Play</a>
-  <a class="nl" href="calculator.html">Calculator</a>
-</div></nav>
+<nav></nav>
 
-<div class="wrap">
+<div class="wrap" data-i18n="page">
 <header class="top">
   <div class="kicker">Lesson 2 · 识别牌面</div>
   <h1>Reading the Tiles</h1>
@@ -1414,5 +1404,159 @@
   DrillVoid();
 })();
 </script>
+<script src="site.js"></script>
+<script>window.CM_I18N = { zh: { page: `<header class="top">
+  <div class="kicker">第 2 课 · 识别牌面</div>
+  <h1>认牌</h1>
+  <p class="lede">认不出牌，就打不了牌。好消息是：川麻是主流变体里牌最少的一种——<b>108 张、三门花色、九个数字</b>。下面是全部牌面，按你在桌上实际看到的尺寸画出来。掌握九个汉字、四个颜色地标、以及一个视觉陷阱，你就能在一秒内叫出桌上任何一张牌。</p>
+</header>
+
+<h2>1. 一副刻意精简过的牌</h2>
+<p>如果你见过香港麻将或日本麻将，你会习惯那些额外的牌：风牌 東南西北、箭牌 中發白、花牌和季牌。川麻把它们全扔了。</p>
+<p>剩下的是三门花色、每门九个点数，每张四副：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th>花色</th><th class="n">中文</th><th class="n">拼音</th><th>实际看到的样子</th><th>记法</th></tr></thead>
+  <tbody>
+    <tr>
+      <td><b>万子</b></td><td class="n">万</td><td class="n">wàn</td>
+      <td>汉字数字压在「萬」字上方</td>
+      <td>万＝一万，钱的那一门</td>
+    </tr>
+    <tr>
+      <td><b>条子</b></td><td class="n">条</td><td class="n">tiáo</td>
+      <td>牌面上画着对应根数的竹节</td>
+      <td>条＝细长的一根</td>
+    </tr>
+    <tr>
+      <td><b>筒子</b></td><td class="n">筒</td><td class="n">tǒng</td>
+      <td>牌面上画着对应个数的圆圈</td>
+      <td>筒＝圆管、圆桶</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>3 门 × 9 点 × 4 副 = <b>108 张</b>。整个游戏就这么点牌。</p>
+<div class="box good">
+  <h4>牌少意味着什么</h4>
+  <p>没有风牌箭牌来搅局，几乎每一手牌都是用同一批原材料做的：三门花色里的顺子和刻子。所以川麻比其他变体纯粹得多——它几乎完全是在考<b>牌型效率</b>。这条线怎么落到实战，见<a href="learn-rules.html">基础规则</a>。</p>
+</div>
+
+<h2>2. 全部 27 个牌面，按实桌尺寸</h2>
+<p>这就是这个游戏的全部词汇表，一屏看得完。不多一张、不少一张——能叫出这些，你就能读任何一手牌。</p>
+<div id="deck" class="deckwrap"></div>
+<p>注意三门花色表达数字的方式完全不同。万子是把数字<i>写</i>出来；条子和筒子是<i>数</i>出来的——所以条筒是读得最快的两门，而万子是唯一值得专门练的。</p>
+
+<h2>3. 九个汉字数字</h2>
+<p>每张牌都由一个汉字数字标识。下面这些是日常写法——那套大写记账体（壹貳叁肆伍陆柒捌玖）属于银行单据，不属于牌面。</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th class="c">牌面</th><th class="n">汉字</th><th class="n">拼音</th><th class="n">数字</th><th class="c">牌面</th><th class="n">汉字</th><th class="n">拼音</th><th class="n">数字</th><th class="c">牌面</th><th class="n">汉字</th><th class="n">拼音</th><th class="n">数字</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="c"><span class="face" data-face="0"></span></td><td class="n">一</td><td class="n">yī</td><td class="n">1</td>
+      <td class="c"><span class="face" data-face="3"></span></td><td class="n">四</td><td class="n">sì</td><td class="n">4</td>
+      <td class="c"><span class="face" data-face="6"></span></td><td class="n">七</td><td class="n">qī</td><td class="n">7</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="face" data-face="1"></span></td><td class="n">二</td><td class="n">èr</td><td class="n">2</td>
+      <td class="c"><span class="face" data-face="4"></span></td><td class="n">五</td><td class="n">wǔ</td><td class="n">5</td>
+      <td class="c"><span class="face" data-face="7"></span></td><td class="n">八</td><td class="n">bā</td><td class="n">8</td>
+    </tr>
+    <tr>
+      <td class="c"><span class="face" data-face="2"></span></td><td class="n">三</td><td class="n">sān</td><td class="n">3</td>
+      <td class="c"><span class="face" data-face="5"></span></td><td class="n">六</td><td class="n">liù</td><td class="n">6</td>
+      <td class="c"><span class="face" data-face="8"></span></td><td class="n">九</td><td class="n">jiǔ</td><td class="n">9</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<p>数字上方永远是「萬」，从来不变，所以要训练自己**完全忽略万子牌的下半部分**——上面那个字才是全部信息。如果这辈子只背九个形状，就背这些：</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th class="n">字形</th><th>一眼怎么区分</th></tr></thead>
+  <tbody>
+    <tr><td class="n">一 二 三</td><td>一横、两横、三横——白送，不用学</td></tr>
+    <tr><td class="n">四</td><td>那个「框」：一个方框里装着东西</td></tr>
+    <tr><td class="n">五</td><td>一个带盖带腿的方折形状</td></tr>
+    <tr><td class="n">六</td><td>一顶小帽子下面两条腿</td></tr>
+    <tr><td class="n">七</td><td>一横一竖交叉在下方——笔画数最少的一个</td></tr>
+    <tr><td class="n">八</td><td>两笔向外分开，互不相连</td></tr>
+    <tr><td class="n">九</td><td>收笔带个钩</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>4. 唯一一张「不像自己」的牌</h2>
+<div class="box warn">
+  <h4>一条画成了一只鸟 <span class="face lg" data-face="9"></span></h4>
+  <p>其他每一张条子都用竹节的数量表示点数——<b>只有一条例外</b>。传统上它画的是一只<b>鸟</b>（孔雀或麻雀），不是一根竹节。玩家叫它「幺鸡」（yāo jī，字面意思就是小鸡）。</p>
+  <p>所以当你在手牌里找「一条」时，别再找那根孤零零的竹节了——那只鸟<i>就是</i>一条。这一个牌面设计坑掉的新手，比这个游戏里任何一条规则都多。</p>
+  <p>那只鸟上有三处可看，按你实际会注意到的顺序：头上的<b>红冠</b>、向左下扫去的<b>长尾羽</b>、以及尾部离身处的那颗小<b>红结</b>——最后这个是化石。这张牌最早画的是<i>一串铜钱</i>（一百钱为一串），用红绳打结系住；后来人们把结看成了鸟头、把钱串看成了鸟身，而那个结就这么留了下来。</p>
+</div>
+
+<h2>5. 四张只看颜色就能认出的条子</h2>
+<p>条子并不是一堆一模一样的竹节网格。真实的牌会把特定的竹节印成红色，八条更是排得和其他点数都不一样——所以九张条子里有四张<b>根本不用数</b>就能认出来。多数人是在牌桌上、赶时间的时候，吃个亏才发现的。</p>
+<div class="landmark">
+  <div class="lm"><span class="face xl" data-face="13"></span><b>5 条</b><span class="lm-note"><em>中间</em>那根是红的</span></div>
+  <div class="lm"><span class="face xl" data-face="15"></span><b>7 条</b><span class="lm-note"><em>最上面</em>那根是红的</span></div>
+  <div class="lm"><span class="face xl" data-face="17"></span><b>9 条</b><span class="lm-note">整整<em>中间一排</em>是红的</span></div>
+  <div class="lm"><span class="face xl" data-face="16"></span><b>8 条</b><span class="lm-note">两根直立的竹节，中间夹着一座<em>山</em></span></div>
+</div>
+<p>其中三张纯粹靠颜色：中间一个红点（5）、顶上一点红（7）、中间横贯一条红带（9）。九条是整副牌里最好认的一张，隔着屋子都能一眼看到，就是因为那条红带。</p>
+<p>八条靠的是形状。它是全副牌里唯一两侧是<b>两根直立竹节</b>的牌——其他所有牌都是网格结构。中间是两根更短、斜得更陡的竹节在中点相接：上半是个 <b>∧</b>，下半是个 <b>∨</b>，镜像对称，中间留一条缝。中国牌桌上给它起的外号都不太客气：坦克（从上往下看）、脚开开，以及 <b>BMW</b>——B 是八（bā），M 是下半截，W 是上半截。</p>
+<div class="box">
+  <h4>为什么颜色比数数快</h4>
+  <p>数九根竹节要占用一拍主动注意力；看到一条红带完全不占。在时间压力下，这个差别就是全部——但有个前提：<b>红竹节是惯例，不是定律</b>。便宜或特殊的牌有时不印。把颜色当作快速提示，把数数当作永远有效的兜底手段。</p>
+</div>
+
+<h2>6. 把一张牌念出口</h2>
+<p>规律永远是 <b>[数字][花色]</b>——先说数字，再说花色。这和英语使用者的直觉顺序正好相反。</p>
+<div class="tbl-scroll">
+<table>
+  <thead><tr><th class="c">牌面</th><th class="n">牌名</th><th class="n">中文</th><th class="n">拼音</th><th class="n">意思</th></tr></thead>
+  <tbody>
+    <tr><td class="c"><span class="face" data-face="2"></span></td><td class="n">三万</td><td class="n">三 + 万</td><td class="n">sān wàn</td><td class="n">3 万</td></tr>
+    <tr><td class="c"><span class="face" data-face="15"></span></td><td class="n">七条</td><td class="n">七 + 条</td><td class="n">qī tiáo</td><td class="n">7 条</td></tr>
+    <tr><td class="c"><span class="face" data-face="22"></span></td><td class="n">五筒</td><td class="n">五 + 筒</td><td class="n">wǔ tǒng</td><td class="n">5 筒</td></tr>
+    <tr><td class="c"><span class="face" data-face="9"></span></td><td class="n">幺鸡</td><td class="n">幺 + 鸡</td><td class="n">yāo jī</td><td class="n">1 条（那只鸟）</td></tr>
+    <tr><td class="c"><span class="face" data-face="8"></span></td><td class="n">九万</td><td class="n">九 + 万</td><td class="n">jiǔ wàn</td><td class="n">9 万</td></tr>
+  </tbody>
+</table>
+</div>
+<p>中国麻将桌之所以吵，有一半是因为弃牌要<b>喊出来</b>：打哪张就念哪张。学会这五个说法，你就能跟上真桌上在聊什么。</p>
+<p>还有一个你会不停听到的报牌习惯：因为数字在前，一门从 1 排到 9 的手牌念下来就是一串数字——幺鸡、二条、三条……而且排好的手牌还会<b>按形状报</b>，比如「我有一二三筒」。你很快也会这样念自己的牌。</p>
+
+<h2>7. 真正的本事：快速理牌</h2>
+<p>能叫出牌名只是入场券。真正让你成为牌手的是每一局的头三秒：<b>把 13 张牌按三门分开，看出哪一门最薄。</b></p>
+<ol class="steps">
+  <li><b>分成三堆</b>——万左、条中、筒右（顺序随你，但永远别换）。</li>
+  <li><b>每堆从 1 排到 9</b>，让顺子和对子自己跳出来。</li>
+  <li><b>数每堆的张数</b>。最少的那一门就是你的<b>定缺</b>——本局要整门扔掉的牌。</li>
+</ol>
+<p>把这个动作变成反射，比本站任何一条战术建议都值钱。如果还得想一下，每局前三巡你都会输掉。</p>
+
+<h2>8. 现在就能做的练习</h2>
+<p>两个练习用的都是桌上那副牌面。点选作答；反馈会告诉你实际点到了哪张，并标出最经典的几种混淆。</p>
+
+<h3>练习 A · 认牌</h3>
+<p>一次一张——刚开始有时先盖着。在看选项<i>之前</i>先把牌名念出来。</p>
+<div class="drill" id="drillName"></div>
+
+<h3>练习 B · 报定缺</h3>
+<p>从真牌墙发 13 张。数三门张数、扔掉最薄的——一气呵成，不要停顿。</p>
+<div class="drill" id="drillVoid"></div>
+
+<div class="box good">
+  <h4>练习 C · 限时理牌</h4>
+  <p>给自己发 13 张真牌，按三门排好。目标：10 秒内、零失误。可以在<a href="tiles.html">牌面图鉴</a>上练（每个牌面都有多种尺寸），也可以在<a href="calculator.html">算牌器</a>上练——那里点进牌就能立刻看到这手牌值多少。</p>
+</div>
+
+<div class="next">
+  <a href="learn-scoring.html"><div class="k">下一课</div><div class="t">番数与算分 &rarr;</div></a>
+  <a href="tiles.html"><div class="k">速查</div><div class="t">看全部牌面 &rarr;</div></a>
+</div>
+
+<footer>chuan.ma · 一个免费的川麻学习工具 · 规则与牌桌所用引擎完全一致</footer>` } };</script>
 </body>
 </html>
